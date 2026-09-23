@@ -5,7 +5,9 @@ import 'dotenv/config';
 pg.types.setTypeParser(pg.types.builtins.NUMERIC, (v) => Number(v));
 pg.types.setTypeParser(pg.types.builtins.DATE, (v) => v);
 
-export const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+export const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL ?? 'postgres://postgres:postgres@localhost:5432/tesla_management',
+});
 
 export async function query<T extends pg.QueryResultRow = any>(text: string, params: unknown[] = []) {
   const res = await pool.query<T>(text, params);

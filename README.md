@@ -56,27 +56,29 @@ docker compose down               # หยุดระบบ (ข้อมูล
 docker compose down -v            # หยุดและล้างฐานข้อมูล (จะสร้างข้อมูลตัวอย่างใหม่ตอนเปิดครั้งถัดไป)
 ```
 
-### วิธีที่ 2: รันแบบ dev (แก้โค้ดแล้วเห็นผลทันที)
+### วิธีที่ 2: รันด้วย Node.js (สำหรับพัฒนา แก้โค้ดแล้วเห็นผลทันที)
 
-ต้องมี Node.js 22.12+ (แนะนำ LTS ล่าสุด) และ Docker สำหรับฐานข้อมูล
+ต้องมี Node.js 22.12+ (แนะนำ 24 LTS) และ Docker Desktop (ใช้เปิดฐานข้อมูล)
+
+รันที่โฟลเดอร์หลัก `D:\PLA_TESLA_Management`:
 
 ```bash
-# 1) เปิดเฉพาะฐานข้อมูล
-docker compose up -d db
-
-# 2) Backend  (หน้าต่างที่ 1)
-cd backend
-copy .env.example .env
-npm install
-npm run dev               # http://localhost:3000/api
-
-# 3) Frontend (หน้าต่างที่ 2)
-cd frontend
-npm install
-npm start                 # http://localhost:4200
+npm run setup     # ติดตั้ง package ทั้งหมด (ทำครั้งแรกครั้งเดียว)
+npm run db        # เปิดฐานข้อมูล PostgreSQL (Docker)
+npm run seed      # สร้างตาราง + ข้อมูลตัวอย่าง (ล้างข้อมูลเดิมทั้งหมด!)
+npm run dev       # เปิด API + เว็บพร้อมกัน -> http://localhost:4200
 ```
 
-Frontend (dev) จะ proxy `/api` ไปที่ `http://localhost:3000` ให้อัตโนมัติ (ดู `frontend/proxy.conf.json`)
+| คำสั่ง | ทำอะไร |
+|--------|--------|
+| `npm run dev` | เปิด API (port 3000) และเว็บ (port 4200) พร้อมกัน กด `Ctrl+C` เพื่อหยุด |
+| `npm run dev:api` | เปิดเฉพาะ API |
+| `npm run dev:web` | เปิดเฉพาะเว็บ |
+| `npm run seed` | รีเซ็ตฐานข้อมูลกลับเป็นข้อมูลตัวอย่าง |
+
+> ถ้าเคยรันวิธีที่ 1 ไว้ ให้หยุด container `api` และ `web` ก่อน (`docker compose stop api web`) เพราะใช้ port ชนกัน
+
+ค่าการเชื่อมต่อฐานข้อมูลตั้งได้ที่ `backend/.env` (คัดลอกจาก `.env.example`) ถ้าไม่มีไฟล์นี้จะใช้ค่า default ที่ตรงกับ Docker
 
 ## ฟีเจอร์
 

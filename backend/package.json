@@ -6,7 +6,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "db:init": "psql \"$DATABASE_URL\" -f ../database/schema.sql && psql \"$DATABASE_URL\" -f ../database/seed.sql"
+    "seed": "tsx src/seed.ts"
   },
   "keywords": [],
   "author": "",

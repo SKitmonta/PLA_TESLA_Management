@@ -26,47 +26,57 @@
 │       ├── core/         # models, ApiService, NotifyService
 │       ├── shared/       # component/คลาสที่ใช้ร่วมกัน (CrudPage, FormDialog, StatusChip ...)
 │       └── pages/        # dashboard, packages, campaigns, agents, agent-groups, combinations
-└── docker-compose.yml    # PostgreSQL สำหรับ dev
+└── docker-compose.yml    # รันทั้งระบบ: db + api + web
 ```
 
 ## เริ่มต้นใช้งาน
 
-**สิ่งที่ต้องมี:** Node.js 22+, PostgreSQL 16 (หรือ Docker)
+### วิธีที่ 1: รันทั้งระบบด้วย Docker (แนะนำ)
 
-### 1. ฐานข้อมูล
-
-ใช้ Docker (สร้างตาราง + ข้อมูลตัวอย่างให้อัตโนมัติ):
+ต้องมีแค่ [Docker Desktop](https://www.docker.com/products/docker-desktop/) (ไม่ต้องติดตั้ง Node.js หรือ PostgreSQL)
 
 ```bash
-docker compose up -d
+cd D:\PLA_TESLA_Management
+docker compose up -d --build
 ```
 
-หรือใช้ PostgreSQL ที่ติดตั้งในเครื่อง:
+| บริการ | URL |
+|--------|-----|
+| หน้าเว็บ | http://localhost:8080 |
+| API | http://localhost:3000/api |
+| PostgreSQL | `localhost:5432` (user/pass: `postgres` / `postgres`, db: `tesla_management`) |
+
+คำสั่งที่ใช้บ่อย:
 
 ```bash
-createdb tesla_management
-psql -d tesla_management -f database/schema.sql
-psql -d tesla_management -f database/seed.sql
+docker compose ps                 # ดูสถานะ
+docker compose logs -f api        # ดู log ของ API
+docker compose up -d --build      # build ใหม่หลังแก้โค้ด
+docker compose down               # หยุดระบบ (ข้อมูลยังอยู่)
+docker compose down -v            # หยุดและล้างฐานข้อมูล (จะสร้างข้อมูลตัวอย่างใหม่ตอนเปิดครั้งถัดไป)
 ```
 
-### 2. Backend
+### วิธีที่ 2: รันแบบ dev (แก้โค้ดแล้วเห็นผลทันที)
+
+ต้องมี Node.js 22.12+ (แนะนำ LTS ล่าสุด) และ Docker สำหรับฐานข้อมูล
 
 ```bash
+# 1) เปิดเฉพาะฐานข้อมูล
+docker compose up -d db
+
+# 2) Backend  (หน้าต่างที่ 1)
 cd backend
-cp .env.example .env      # แก้ DATABASE_URL ให้ตรงกับเครื่อง
+copy .env.example .env
 npm install
 npm run dev               # http://localhost:3000/api
-```
 
-### 3. Frontend
-
-```bash
+# 3) Frontend (หน้าต่างที่ 2)
 cd frontend
 npm install
 npm start                 # http://localhost:4200
 ```
 
-Frontend จะ proxy `/api` ไปที่ `http://localhost:3000` ให้อัตโนมัติ (ดู `frontend/proxy.conf.json`)
+Frontend (dev) จะ proxy `/api` ไปที่ `http://localhost:3000` ให้อัตโนมัติ (ดู `frontend/proxy.conf.json`)
 
 ## ฟีเจอร์
 

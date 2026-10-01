@@ -1,0 +1,290 @@
+@use 'tokens' as *;
+
+// หน้า Content Editor — Figma V2 (27 ก.ย.): Header เต็มความกว้าง + List content (350px) + การ์ดฟอร์ม
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ---------- Header แถบขาวเต็มความกว้าง (ชิดใต้ Breadcrumb)
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: -24px -40px 0;
+  padding: 20px 40px;
+  background: #fff;
+  border-bottom: 1px solid $border-divider;
+}
+
+:host-context(.tablet) .head {
+  margin: -20px -24px 0;
+  padding: 16px 24px;
+}
+
+:host-context(.mobile) .head {
+  margin: -16px -12px 0;
+  padding: 14px 12px;
+}
+
+.back {
+  align-self: flex-start;
+  margin-top: 2px;
+  display: inline-flex;
+  color: $text;
+
+  &:hover {
+    color: $primary-9;
+  }
+}
+
+.title {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  h1 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: $fs-heading;
+    font-weight: 700;
+    line-height: 1.4;
+    color: $brand-navy;
+  }
+  .name-th {
+    margin: 0;
+    font-size: $fs-body;
+    color: $text-muted;
+  }
+  .meta {
+    margin: 2px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+    font-size: 13px;
+    color: $text;
+
+    > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sep {
+      padding-left: 12px;
+      border-left: 1px solid #c9ced8;
+    }
+  }
+}
+
+.tpl {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: $fs-small;
+  font-weight: 700;
+
+  &.t-ol_ob { background: $tag-ob-bg; color: $tag-ob-fg; }
+  &.t-ol_pa { background: $tag-pa-bg; color: $tag-pa-fg; }
+  &.t-agent { background: $tag-ag-bg; color: $tag-ag-fg; }
+}
+
+.pill {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: $fs-small;
+  font-weight: 600;
+  background: $status-draft-bg;
+  color: $status-draft-fg;
+
+  &.p-pending { background: $status-wait-bg; color: $status-wait-fg; }
+  &.p-approved { background: $status-ok-bg; color: $status-ok-fg; }
+  &.p-rejected { background: $status-rej-bg; color: $status-rej-fg; }
+  &.p-inactive { background: $status-off-bg; color: $status-off-fg; }
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+// ปุ่ม 170×50 ตาม Figma (PrimeNG Button)
+:host ::ng-deep .hdr-btn {
+  width: 170px;
+  height: 50px;
+  font-weight: 600;
+}
+
+:host ::ng-deep .hdr-btn.p-button:disabled:not(.p-button-outlined) {
+  border-color: #d9d9d9;
+  background: #d9d9d9;
+  color: #fff;
+  opacity: 1;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  font-size: $fs-small;
+  color: $text-slate;
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .muted {
+    color: $text-muted;
+  }
+  .tag-diff,
+  .tag-agent {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .tag-diff {
+    background: $primary-light;
+    color: $primary-9;
+  }
+  .tag-agent {
+    background: #fff0e5;
+    color: #a64b00;
+  }
+}
+
+// ---------- List content (350px) + ฟอร์ม
+.layout {
+  display: grid;
+  grid-template-columns: 350px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.sec-nav {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 30px;
+  border: 1px solid $border-input;
+  border-radius: 20px;
+  background: #fff;
+
+  h2 {
+    margin: 0 0 18px;
+    font-size: $fs-heading;
+    font-weight: 700;
+    color: $primary-9;
+  }
+
+  button {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    font-family: inherit;
+    font-size: $fs-subheading;
+    color: #757575;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      color: $primary-9;
+    }
+    &.on {
+      background: #f5f9ff;
+      color: $primary-9;
+    }
+  }
+  .nid {
+    width: 48px;
+    flex-shrink: 0;
+    font-size: $fs-small;
+    font-weight: 700;
+    color: $text-slate;
+  }
+  .ntitle {
+    flex: 1;
+  }
+  .check {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: $primary-9;
+  }
+}
+
+.sec-pick {
+  display: none;
+}
+
+// การ์ดขาวครอบฟอร์ม (Figma)
+fieldset.main {
+  min-width: 0;
+  margin: 0;
+  padding: 30px;
+  border: 1px solid $border-input;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.loading {
+  color: $text-muted;
+}
+
+// ≤ 1100: List content เป็น Dropdown ด้านบน
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .sec-nav {
+    display: none;
+  }
+  .sec-pick {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  fieldset.main {
+    padding: 16px;
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .buttons {
+    width: 100%;
+    gap: 8px;
+
+    p-button {
+      flex: 1;
+    }
+    ::ng-deep .hdr-btn {
+      width: 100%;
+      height: 44px;
+    }
+  }
+  fieldset.main {
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+}

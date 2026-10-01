@@ -1,0 +1,151 @@
+@use 'tokens' as *;
+
+// P-05 เครื่องมือจัดกลุ่ม (Figma 17:733)
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.v2-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  scroll-margin-top: 16px;
+}
+
+.head {
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .page-h1 {
+    margin: 0;
+  }
+  .page-sub {
+    margin: 6px 0 0;
+  }
+}
+
+:host ::ng-deep .head-btn {
+  height: 40px;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+:host-context(.tablet) .two,
+:host-context(.mobile) .two {
+  grid-template-columns: 1fr;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+:host-context(.mobile) .pair {
+  grid-template-columns: 1fr;
+}
+
+.hint {
+  margin: 0;
+  padding: 18px;
+  text-align: center;
+  border: 1px dashed $border-divider;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.num {
+  text-align: right;
+}
+
+.ok {
+  color: #0f8a5f;
+  font-weight: 600;
+}
+
+.gdot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+:host ::ng-deep .note {
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  text-align: center;
+
+  i {
+    font-size: 28px;
+    color: $primary-9;
+  }
+  small {
+    font-size: 12px;
+  }
+}
+
+.result-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.tall {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.small {
+  font-size: 12px;
+}
+
+.block {
+  display: block;
+  font-size: 11px;
+}
+
+.audit-filters {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1fr 1fr;
+  gap: 12px;
+}
+
+:host-context(.tablet) .audit-filters {
+  grid-template-columns: 1fr 1fr;
+}
+
+:host-context(.mobile) .audit-filters {
+  grid-template-columns: 1fr;
+}
+
+td a {
+  color: $primary-9;
+  font-weight: 600;
+  text-decoration: none;
+}

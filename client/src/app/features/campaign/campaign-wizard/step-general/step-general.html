@@ -1,0 +1,103 @@
+@let f = form();
+@let d = f.data;
+
+<section class="card">
+  <h2>ข้อมูล Campaign</h2>
+  <div class="g2">
+    <app-text-field label="ชื่อ Campaign (TH)" [required]="true" [maxlength]="150" [(ngModel)]="f.nameTh" />
+    <app-text-field label="ชื่อ Campaign (EN)" [maxlength]="150" [(ngModel)]="f.nameEn" />
+    <app-select-field label="วัตถุประสงค์" [showClear]="true" [options]="opts(src.objective)" optionLabel="label" optionValue="value" [(ngModel)]="d.objective" />
+    <app-number-field label="ลำดับการแสดงผล (น้อย = แสดงก่อน)" [min]="1" [(ngModel)]="d.sortOrder" />
+    <div class="span2">
+      <app-textarea-field label="รายละเอียดโดยย่อ" [rows]="3" [maxlength]="500" [(ngModel)]="d.description" />
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Package · ช่วงวัน · ช่องทางขาย</h2>
+  <p class="hint">เลือก Package ก่อน — กรอบวันของ Campaign มาจาก Package (CC-01) · เลือกได้เฉพาะ Package ที่ Content Approved</p>
+  <div class="g2">
+    <div class="span2">
+      <app-multiselect-field label="Package ที่ใช้ได้" [required]="true" [options]="opts(src.packages)" optionLabel="label" optionValue="value" [ngModel]="f.packageCodes" (ngModelChange)="setPackages($event)" />
+      @if (packageInfo()) {
+        <p class="hint small">{{ packageInfo() }}</p>
+      } @else if (!opts(src.packages).length) {
+        <p class="hint small err">ยังไม่มี Package ที่ Content Approved — อนุมัติ Content ในเมนู Package ก่อน</p>
+      }
+    </div>
+    <app-date-field label="วันเริ่ม" [required]="true" [min]="window().min" [max]="f.endDate || window().max" [disabled]="!f.packageCodes.length" [(ngModel)]="f.startDate" (ngModelChange)="checkOverlap()" />
+    <app-date-field label="วันสิ้นสุด" [required]="true" [min]="f.startDate || window().min" [max]="window().max" [disabled]="!f.packageCodes.length" [(ngModel)]="f.endDate" (ngModelChange)="checkOverlap()" />
+    @if (f.packageCodes.length) {
+      <p class="hint small span2">ช่วงที่เลือกได้: {{ windowText() }} · ใช้ตรวจช่วงวันทับซ้อนกับ Campaign ประเภทเดียวกัน</p>
+    }
+    @if (overlaps(); as o) {
+      <div class="span2">
+        @if (o.length) {
+          <p-message severity="warn" icon="pi pi-exclamation-triangle" styleClass="msg">
+            ช่วงวันทับซ้อนกับ Campaign ประเภท {{ typeLabel() }} ที่ใช้ Package เดียวกัน:
+            @for (x of o; track x.campaignCode) {
+              <b>{{ x.campaignCode }}</b> ({{ x.sharedPackages.join(', ') }} · {{ x.startDate | thDate: '–' }} – {{ x.endDate | thDate: 'ไม่ระบุ' }}){{ $last ? '' : ', ' }}
+            }
+            — ส่งอนุมัติไม่ได้จนกว่าจะเปลี่ยนช่วงวันหรือ Package
+          </p-message>
+        } @else {
+          <p-message severity="success" icon="pi pi-check" styleClass="msg">
+            ไม่มี Campaign ประเภท {{ typeLabel() }} อื่นใน {{ f.packageCodes.join(', ') }} ที่ช่วงวันทับซ้อน
+          </p-message>
+        }
+      </div>
+    }
+    <div class="span2">
+      <app-multiselect-field label="ช่องทางขาย" [required]="true" [options]="channelOpts()" optionLabel="label" optionValue="value" [disabled]="!f.packageCodes.length" [(ngModel)]="f.channelCodes" />
+    </div>
+  </div>
+</section>
+
+@if (!referral()) {
+  <section class="card">
+    <h2>งบประมาณ · สิทธิ์ · การให้สิทธิ์</h2>
+    <p class="hint">จองงบ / สิทธิ์เมื่อกรมธรรม์เข้าเงื่อนไข → ตัดจริงเมื่ออนุมัติ · ไม่อนุมัติ / ยกเลิก = คืนอัตโนมัติ (CC-06) · ว่าง = ไม่จำกัด</p>
+    <div class="g3">
+      <app-number-field label="งบประมาณรวม" suffix=" บาท" [decimals]="2" [min]="0" [(ngModel)]="d.budget" />
+      <app-number-field label="จำนวนสิทธิ์รวม (กรมธรรม์)" [min]="1" [(ngModel)]="d.quotaTotal" />
+      <app-number-field label="สิทธิ์ต่อกรมธรรม์" [min]="1" [(ngModel)]="d.quotaPerPolicy" />
+      <app-select-field label="จังหวะการให้สิทธิ์" [required]="true" [options]="opts(src.rewardTiming)" optionLabel="label" optionValue="value" [(ngModel)]="d.rewardTiming" />
+      <app-select-field label="กติกาเรียกคืนสิทธิ์ (Clawback)" [required]="true" [options]="opts(src.clawback)" optionLabel="label" optionValue="value" [(ngModel)]="d.clawback" />
+      <app-text-field label="Promo code (ว่าง = ให้อัตโนมัติ)" [maxlength]="20" [(ngModel)]="d.promoCode" />
+    </div>
+  </section>
+} @else {
+  <p-message severity="info" icon="pi pi-link" styleClass="msg">
+    Referral เป็นลิงก์ขายรายผู้ขายเพื่อนับยอดเท่านั้น (CC-10) — ไม่มีงบประมาณ / จำนวนสิทธิ์ / Promo code และไม่มีขั้นเงื่อนไขผู้มีสิทธิ์
+  </p-message>
+}
+
+<section class="card">
+  <h2>ข้อกำหนดและเงื่อนไข</h2>
+  <p class="hint">ต้องระบุเงื่อนไขครบตามหลักเกณฑ์การโฆษณาของ คปภ. (Compliance ตรวจ) · เลือก Template แล้วแก้ต่อได้</p>
+  <div class="g2">
+    <app-select-field label="Template ข้อกำหนด" [options]="opts(src.tnc)" optionLabel="label" optionValue="value" [ngModel]="d.tncTemplate" (ngModelChange)="setTnc($event)" />
+    <span></span>
+    <app-textarea-field label="ข้อกำหนดและเงื่อนไข (TH)" [required]="true" [rows]="5" [(ngModel)]="d.tncTh" />
+    <app-textarea-field label="ข้อกำหนดและเงื่อนไข (EN)" [rows]="5" [(ngModel)]="d.tncEn" />
+  </div>
+</section>
+
+<section class="card">
+  <h2>รูปสำหรับหน้าเว็บ</h2>
+  <p class="hint">ใช้ใน Carousel โปรโมชันของ Content (OB-08){{ referral() ? ' · Referral ไม่บังคับ' : '' }}</p>
+  <div class="g3 uploads">
+    <app-upload-box [label]="'Banner Desktop' + (referral() ? '' : ' *')" spec="1920×640 px · .webp/.jpg ≤ 1 MB" [value]="d.bannerDesktop ?? ''" (valueChange)="d.bannerDesktop = $event" />
+    <app-upload-box [label]="'Banner Mobile' + (referral() ? '' : ' *')" spec="750×750 px · .webp/.jpg ≤ 1 MB" [value]="d.bannerMobile ?? ''" (valueChange)="d.bannerMobile = $event" />
+    <app-upload-box [label]="'Thumbnail' + (referral() ? '' : ' *')" spec="800×600 px · .webp/.jpg ≤ 1 MB" [value]="d.thumbnail ?? ''" (valueChange)="d.thumbnail = $event" />
+  </div>
+</section>
+
+<section class="card">
+  <h2>บัญชีและเอกสาร</h2>
+  <div class="g2">
+    <app-select-field label="หน่วยงานเจ้าของ / Cost center / GL" [required]="true" [options]="opts(src.costCenter)" optionLabel="label" optionValue="value" [(ngModel)]="d.costCenter" />
+    <app-upload-box label="เอกสารแนบ (Memo อนุมัติ, หนังสือขออนุญาต)" spec=".pdf ≤ 10 MB" accept=".pdf" [maxMb]="10" [compact]="false" [value]="d.attachment ?? ''" (valueChange)="d.attachment = $event" />
+  </div>
+</section>

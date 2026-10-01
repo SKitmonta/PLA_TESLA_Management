@@ -1,117 +1,114 @@
-# TESLA Management
+# TESLA Management (PLA) — Prototype
 
-ระบบจัดการ **Package**, **Campaign**, **Agent / Agent Group** และการ **จับคู่ (Combine) Package + Agent Group + Campaign** พร้อม **Dashboard** สรุปภาพรวม
+ระบบ Back-office — เมนู Overview · Package (Content selling tools) · Campaign · Seller · Master setup
+ออกแบบหลักที่ 1920px + Responsive (Desktop / iPad / Mobile) ตาม Figma `R5FgFh0qCxUUZeITKV0Pfv`
+Stack: **Angular 22** (TypeScript) · **Node.js 24 + Express 5** (TypeScript) · **SQLite** (`node:sqlite` ที่มากับ Node)
 
-| ส่วน | เทคโนโลยี |
-|------|-----------|
-| Frontend | Angular 21 + TypeScript + Angular Material |
-| Backend  | Node.js + Express 5 + TypeScript + Zod |
-| Database | PostgreSQL 16 |
+---
 
-## โครงสร้างโปรเจกต์
+## วิธีรัน (ครั้งแรก)
 
-```
-.
-├── database/
-│   ├── schema.sql        # ตารางทั้งหมด
-│   └── seed.sql          # ข้อมูลตัวอย่าง
-├── backend/              # REST API (port 3000)
-│   └── src/
-│       ├── index.ts      # ตั้งค่า Express + จัดการ error
-│       ├── crud.ts       # CRUD router กลาง (list/get/create/update/delete)
-│       ├── routes.ts     # API ของแต่ละหน้า + dashboard
-│       └── db.ts         # การเชื่อมต่อ PostgreSQL
-├── frontend/             # Angular app (port 4200)
-│   └── src/app/
-│       ├── core/         # models, ApiService, NotifyService
-│       ├── shared/       # component/คลาสที่ใช้ร่วมกัน (CrudPage, FormDialog, StatusChip ...)
-│       └── pages/        # dashboard, packages, campaigns, agents, agent-groups, combinations
-└── docker-compose.yml    # รันทั้งระบบ: db + api + web
+ดับเบิลคลิก **`setup.bat`** (ครั้งแรก) แล้ว **`start.bat`** — หรือใน Terminal ของ VS Code:
+
+```powershell
+.\setup.bat      # = npm install --legacy-peer-deps (ติดตั้งครั้งแรก หรือเมื่อ package.json เปลี่ยน)
+.\start.bat      # = npm start  (Server port 3000 + Angular port 4200)
 ```
 
-## เริ่มต้นใช้งาน
+> **UI ใช้ PrimeNG 21.1.10** (MIT, ไม่ต้องใช้ License key — v22 ต้องมี Key) ซึ่งประกาศ peer เป็น Angular 21 จึงต้องติดตั้งด้วย `--legacy-peer-deps` เสมอ · Theme อยู่ที่ `client/src/app/core/theme/tesla-preset.ts` · ช่องกรอกใช้ Component กลางใน `client/src/app/shared/components/form/` (text / select / date / number / textarea)
 
-### วิธีที่ 1: รันทั้งระบบด้วย Docker (แนะนำ)
+> PowerShell บนเครื่องนี้บล็อกคำสั่ง `npm` — ใช้ `.bat` ด้านบน, พิมพ์ `npm.cmd` แทน `npm`, หรือเปลี่ยน Terminal เป็น Command Prompt
 
-ต้องมีแค่ [Docker Desktop](https://www.docker.com/products/docker-desktop/) (ไม่ต้องติดตั้ง Node.js หรือ PostgreSQL)
+เปิด Browser ที่ **http://localhost:4200**
+หยุดการทำงาน: กด `Ctrl + C` ใน Terminal
 
-```bash
-cd D:\PLA_TESLA_Management
-docker compose up -d --build
-```
+| คำสั่ง | ใช้ทำอะไร |
+|---|---|
+| `npm start` | รันทั้งระบบ (แก้ไฟล์แล้วหน้าเว็บ / Server รีโหลดเอง) |
+| `npm run server` | รันเฉพาะ API Server |
+| `npm run client` | รันเฉพาะ Angular |
+| `npm run db:reset` | ล้างฐานข้อมูลกลับเป็นข้อมูลตั้งต้น (หยุด Server ก่อน) |
+| `npm run build` | Build Angular สำหรับ Deploy |
 
-| บริการ | URL |
-|--------|-----|
-| หน้าเว็บ | http://localhost:8080 |
-| API | http://localhost:3000/api |
-| PostgreSQL | `localhost:5432` (user/pass: `postgres` / `postgres`, db: `tesla_management`) |
+---
 
-คำสั่งที่ใช้บ่อย:
-
-```bash
-docker compose ps                 # ดูสถานะ
-docker compose logs -f api        # ดู log ของ API
-docker compose up -d --build      # build ใหม่หลังแก้โค้ด
-docker compose down               # หยุดระบบ (ข้อมูลยังอยู่)
-docker compose down -v            # หยุดและล้างฐานข้อมูล (จะสร้างข้อมูลตัวอย่างใหม่ตอนเปิดครั้งถัดไป)
-```
-
-### วิธีที่ 2: รันด้วย Node.js (สำหรับพัฒนา แก้โค้ดแล้วเห็นผลทันที)
-
-ต้องมี Node.js 22.12+ (แนะนำ 24 LTS) และ Docker Desktop (ใช้เปิดฐานข้อมูล)
-
-รันที่โฟลเดอร์หลัก `D:\PLA_TESLA_Management`:
-
-```bash
-npm run setup     # ติดตั้ง package ทั้งหมด (ทำครั้งแรกครั้งเดียว)
-npm run db        # เปิดฐานข้อมูล PostgreSQL (Docker)
-npm run seed      # สร้างตาราง + ข้อมูลตัวอย่าง (ล้างข้อมูลเดิมทั้งหมด!)
-npm run dev       # เปิด API + เว็บพร้อมกัน -> http://localhost:4200
-```
-
-| คำสั่ง | ทำอะไร |
-|--------|--------|
-| `npm run dev` | เปิด API (port 3000) และเว็บ (port 4200) พร้อมกัน กด `Ctrl+C` เพื่อหยุด |
-| `npm run dev:api` | เปิดเฉพาะ API |
-| `npm run dev:web` | เปิดเฉพาะเว็บ |
-| `npm run seed` | รีเซ็ตฐานข้อมูลกลับเป็นข้อมูลตัวอย่าง |
-
-> ถ้าเคยรันวิธีที่ 1 ไว้ ให้หยุด container `api` และ `web` ก่อน (`docker compose stop api web`) เพราะใช้ port ชนกัน
-
-ค่าการเชื่อมต่อฐานข้อมูลตั้งได้ที่ `backend/.env` (คัดลอกจาก `.env.example`) ถ้าไม่มีไฟล์นี้จะใช้ค่า default ที่ตรงกับ Docker
-
-## ฟีเจอร์
-
-- **Dashboard** – ตัวเลขสรุป (ทั้งหมด / Active), Package ที่ถูกจับคู่มากที่สุด, จำนวน Agent ต่อกลุ่ม, Campaign timeline, การจับคู่ล่าสุด
-- **Packages** – รหัส ชื่อ ราคา รายละเอียด สถานะ
-- **Campaigns** – ช่วงวันที่ ส่วนลด (% หรือ ฿) พร้อมตรวจสอบวันที่และเพดาน 100%
-- **Agents** – ข้อมูลตัวแทน และแสดงกลุ่มที่สังกัด
-- **Agent Groups** – สร้างกลุ่มและเลือกสมาชิกแบบ checklist ค้นหาได้
-- **Combine** – จับคู่ Package + Agent Group + Campaign (Campaign ไม่บังคับ) แสดงราคาสุทธิหลังหักส่วนลดแบบ real-time และกันการจับคู่ซ้ำ
-- ทุกหน้ามีค้นหา กรองสถานะ เพิ่ม/แก้ไข/ลบ (ยืนยันก่อนลบ) และรองรับมือถือ
-
-สถานะของทุกข้อมูล: `DRAFT` · `ACTIVE` · `INACTIVE`
-
-## REST API
-
-| Method | Path | คำอธิบาย |
-|--------|------|----------|
-| GET | `/api/dashboard` | ข้อมูลสรุปสำหรับ Dashboard |
-| GET | `/api/{resource}?q=&status=` | รายการ (ค้นหา/กรองสถานะ) |
-| GET | `/api/{resource}/:id` | ข้อมูลรายการเดียว |
-| POST | `/api/{resource}` | สร้าง |
-| PUT | `/api/{resource}/:id` | แก้ไข (ส่งเฉพาะ field ที่ต้องการ) |
-| DELETE | `/api/{resource}/:id` | ลบ |
-| PUT | `/api/agent-groups/:id/members` | กำหนดสมาชิกกลุ่ม `{ "agent_ids": [1,2] }` |
-
-`{resource}` = `packages`, `campaigns`, `agents`, `agent-groups`, `combinations`
-
-ข้อมูลที่ถูกอ้างอิงอยู่ (เช่น Package ที่ใช้ใน Combine) จะลบไม่ได้ ระบบจะแจ้งเตือนเป็นภาษาไทย
-
-## ER Diagram
+## โครงสร้างโปรเจค — 1 เมนู = 1 folder
 
 ```
-packages ──┐
-           ├──< combinations >── agent_groups ──< agent_group_members >── agents
-campaigns ─┘   (campaign_id ไม่บังคับ)
+Claude_project/
+├─ client/                         Angular (หน้าจอ)
+│  └─ src/
+│     ├─ styles/_tokens.scss       ★ สี / ขนาด / Theme ทั้งระบบ (BMW-UW)
+│     ├─ styles.scss               Class กลาง: .card .btn .pill .tag table.dt .input
+│     └─ app/
+│        ├─ app.routes.ts          Route หลักของ 5 เมนู
+│        ├─ core/                  สิ่งที่ใช้ทั้งระบบ (app-info.ts = Version ที่การ์ดล่าง Sidebar)
+│        │  ├─ auth/               Role, สิทธิ์เมนู (permissions.ts), สลับผู้ใช้
+│        │  ├─ navigation/         ★ รายการเมนู Sidebar (menu.config.ts)
+│        │  ├─ layout/             Responsive: desktop / tablet / mobile
+│        │  ├─ models/             Type ข้อมูล
+│        │  └─ services/           เรียก API
+│        ├─ layout/                shell / sidebar / header / breadcrumb / role-switcher
+│        ├─ shared/components/     Component ใช้ร่วม (icon, page-placeholder, …)
+│        └─ features/              ★ หน้าจอแยกตามเมนู
+│           ├─ overview/           dashboard/  target-setting/
+│           ├─ package/            เมนู Package: package-list/ (Sprint 2: add-package-dialog/, editor-*/, content-approval/)
+│           ├─ campaign/           campaign-list/ (Sprint 3: campaign-wizard/, campaign-detail/)
+│           ├─ seller/             เมนู Seller: workspace-list/ (Sprint 4: group-board/, group-detail/, …)
+│           └─ master-setup/       package-master/  master-maintenance/  display-mapping/  synced-master/
+│
+└─ server/                         API (Express + SQLite)
+   └─ src/
+      ├─ index.ts                  จุดเริ่ม Server
+      ├─ routes/                   ★ API แยกไฟล์ตามเมนู: overview / content / campaign / people / master / system
+      ├─ middleware/               ผู้ใช้ปัจจุบัน (X-User-Id, X-Role), จัดการ Error
+      └─ db/
+         ├─ schema.sql             ★ โครงสร้างตาราง
+         ├─ seed/                  ★ ข้อมูลตั้งต้น (ผู้ใช้, Package, ผู้ขาย, …)
+         └─ database.ts            เปิดฐานข้อมูล server/data/tesla.db
 ```
+
+**แต่ละหน้าจอมี 3 ไฟล์** เช่น `features/package/package-list/`
+- `package-list.ts` — Logic / ข้อมูล
+- `package-list.html` — หน้าตา (Template)
+- `package-list.scss` — สไตล์เฉพาะหน้า
+
+Icon / Logo จาก Figma อยู่ที่ `client/public/assets/figma/` · เอกสาร Spec ล่าสุดอยู่ที่ `docs/`
+
+### แก้อะไร ที่ไฟล์ไหน
+
+| อยากแก้ | ไฟล์ |
+|---|---|
+| สีหลัก / ฟอนต์ / มุมโค้ง | `client/src/styles/_tokens.scss` |
+| ชื่อเมนู / เมนูย่อยใน Sidebar | `client/src/app/core/navigation/menu.config.ts` |
+| Role ไหนเห็นเมนูไหน | `client/src/app/core/auth/permissions.ts` |
+| ผู้ใช้จำลอง | `server/src/db/seed/users.seed.ts` แล้วรัน `npm run db:reset` |
+| ตารางฐานข้อมูล | `server/src/db/schema.sql` แล้วรัน `npm run db:reset` |
+
+ดูข้อมูลใน SQLite: ติดตั้ง Extension **SQLite Viewer** (VS Code จะแนะนำให้อัตโนมัติ) แล้วคลิกไฟล์ `server/data/tesla.db`
+
+---
+
+## สลับผู้ใช้ / Role (แทน Login ใน Prototype)
+
+กดปุ่ม **Role: …** ที่มุมขวาบน → เลือกผู้ใช้ → เลือก Role
+Sidebar จะแสดงเฉพาะเมนูที่ Role นั้นมีสิทธิ์ (doc 09 §3) — ใช้ทดสอบ Maker ≠ Approver ด้วย User A (Maker) / User B (Approver)
+
+---
+
+## สถานะ Sprint
+
+| Sprint | งาน | สถานะ |
+|---|---|---|
+| 0 | Scaffold, Layout, Theme, สลับ Role | ✅ |
+| 1 | Master setup + Seed data (MS-01…MS-04) | ✅ |
+| 2 | Package (Content List, Add Package, Editor OB/PA/AGENT, Approval, Version ใหม่) | ✅ |
+| 3 | Campaign (Wizard 9 ประเภท, Rule builder, Grant, อนุมัติ) | ✅ |
+| 4 | Seller (Workspace, Drag & Drop, ผูก Campaign, Referral links, เครื่องมือ) | ✅ |
+| 5 | Overview (Dashboard ตาม Role, ตั้ง Target) | ✅ |
+| 6 | User guide (คู่มือขั้นตอน 1 2 3 พร้อมรูป + User journey) | 🔄 กำลังปรับรูปประกอบ |
+
+System Admin ทำได้ทุก Function · กราฟใน Overview วาดด้วย HTML/CSS (ไม่ใช้ chart.js)
+ถ้า `npm start` แจ้ง `Failed to resolve import "chart.js/auto"` ให้ลบโฟลเดอร์ `client/.angular/cache` แล้วรันใหม่
+
+Git: branch `dev` — push เมื่อพี่ฟิล์มสั่งเท่านั้น

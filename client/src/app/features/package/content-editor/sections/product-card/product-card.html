@@ -1,0 +1,17 @@
+@let f = form();
+<div class="body">
+  <div class="card-grid">
+    <app-upload-box label="รูปการ์ด" spec="600×400 px" [(value)]="f.card.image" />
+    <div class="body" style="gap: 12px">
+      <div class="g2">
+        <app-text-field label="Label หมวด" [(ngModel)]="f.card.label" />
+        <app-text-field label="ชื่อบนการ์ด" [(ngModel)]="f.card.name" />
+      </div>
+      <div class="g3">
+        @for (b of f.card.bullets; track $index; let i = $index) {
+          <app-text-field [label]="'Bullet ' + (i + 1)" [(ngModel)]="f.card.bullets[i]" />
+        }
+      </div>
+    </div>
+  </div>
+</div>

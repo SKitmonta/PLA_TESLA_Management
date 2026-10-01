@@ -1,0 +1,122 @@
+@use 'tokens' as *;
+
+// ค่าจาก Figma (แถวล่างของ Package List)
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 70px;
+  padding: 12px 24px;
+}
+
+.summary {
+  font-size: $fs-body;
+  font-weight: 300;
+  line-height: 18px;
+  color: #757575;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+button {
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ctrl {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background: $bg-subtle;
+  }
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  &.mirror img {
+    transform: scaleX(-1);
+  }
+  img {
+    display: block;
+  }
+}
+
+.page {
+  min-width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $fs-subheading;
+  font-weight: 600;
+  color: #333;
+
+  &:hover:not(.current):not(.gap) {
+    background: $bg-subtle;
+  }
+
+  &.current {
+    min-width: 30px;
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+    border-radius: 54px;
+    border: 1px solid $primary-9;
+    color: $primary-9;
+    font-size: 16px;
+  }
+
+  &.gap {
+    cursor: default;
+  }
+}
+
+// จำนวนแถวต่อหน้า — PrimeNG Select
+p-floatlabel.size {
+  display: block;
+  width: 96px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  :host {
+    justify-content: center;
+    padding: 12px;
+  }
+  .page {
+    min-width: 32px;
+    font-size: 16px;
+  }
+  .ctrl {
+    width: 32px;
+  }
+}

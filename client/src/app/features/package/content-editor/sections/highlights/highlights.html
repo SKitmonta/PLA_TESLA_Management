@@ -1,0 +1,15 @@
+@let f = form();
+<div class="body">
+  <app-text-field label="Header" [(ngModel)]="f.highlights.header" />
+  <div class="cards">
+    @for (card of f.highlights.cards; track $index; let i = $index) {
+      <div class="mini-card">
+        <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" size="small" styleClass="x" ariaLabel="ลบการ์ด" [disabled]="locked()" (onClick)="remove(i)" />
+        <app-upload-box label="รูปการ์ด" spec="400×300 px" [(value)]="card.image" />
+        <app-text-field label="Title" [(ngModel)]="card.title" />
+        <app-text-field [label]="valueLabel()" [(ngModel)]="card.value" />
+      </div>
+    }
+  </div>
+  <p-button label="เพิ่มการ์ด" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="add()" />
+</div>

@@ -1,0 +1,195 @@
+@if (error()) {
+  <p-message severity="error" icon="pi pi-times-circle">{{ error() }}</p-message>
+}
+
+@if (group(); as g) {
+  <header class="head" [style.--c]="g.color">
+    <a class="back" [routerLink]="['/seller/workspace', g.workspace.packageCode, g.workspace.channelCode]" aria-label="กลับไป Board"><i class="pi pi-arrow-circle-left"></i></a>
+    <div class="title">
+      <h1><span class="dot"></span>{{ g.groupName }} <span class="count">{{ g.members.length }} คน</span></h1>
+      <p class="meta">
+        <a [routerLink]="['/seller/workspace', g.workspace.packageCode, g.workspace.channelCode]">{{ g.workspace.packageCode }} × {{ g.workspace.channelCode }}</a>
+        · {{ g.workspace.nameTh }} · แก้ไขล่าสุด {{ dateTime(g.updatedAt) }}
+      </p>
+    </div>
+    <div class="buttons">
+      <p-button label="ลบกลุ่ม" icon="pi pi-trash" [outlined]="true" severity="danger" styleClass="hdr-btn" [disabled]="!canEdit() || !!busy()" (onClick)="confirmDelete.set(true)" />
+      <p-button label="บันทึก" icon="pi pi-save" styleClass="hdr-btn" [loading]="busy() === 'save'" [disabled]="!canEdit() || !!busy()" (onClick)="save()" />
+    </div>
+  </header>
+
+  @if (!canEdit()) {
+    <p-message severity="info" icon="pi pi-eye">Role ปัจจุบันดูได้อย่างเดียว — แก้ไขกลุ่มได้เฉพาะ Seller Admin</p-message>
+  }
+
+  <div class="layout">
+    <div class="main">
+      <!-- ข้อมูลกลุ่ม -->
+      <section class="v2-card">
+        <h2 class="v2-card-title">ข้อมูลกลุ่ม</h2>
+        <div class="info-grid">
+          <div>
+            <app-text-field label="ชื่อกลุ่ม" [required]="true" [maxlength]="100" [(ngModel)]="form.groupName" [disabled]="!canEdit()" />
+            <small class="muted">ห้ามซ้ำใน Workspace</small>
+          </div>
+          <div class="colors">
+            <span class="lbl">สีกลุ่ม</span>
+            @for (c of colors; track c) {
+              <button type="button" class="swatch" [style.background]="c" [class.on]="form.color === c" [disabled]="!canEdit()" (click)="form.color = c" [attr.aria-label]="'สี ' + c"></button>
+            }
+          </div>
+          <app-textarea-field class="span2" label="คำอธิบาย" [rows]="2" [maxlength]="500" [(ngModel)]="form.description" [disabled]="!canEdit()" />
+        </div>
+      </section>
+
+      <!-- สมาชิก -->
+      <section class="v2-card">
+        <div class="v2-card-head">
+          <h2 class="v2-card-title">สมาชิก <span class="muted small">แสดง {{ members().length }} จาก {{ g.members.length }}</span></h2>
+          <app-text-field class="search" label="ค้นหารหัส / ชื่อ" [ngModel]="memberSearch()" (ngModelChange)="memberSearch.set($event ?? '')" />
+        </div>
+        <div class="v2-table-wrap">
+          <div class="v2-table-scroll tall">
+            <table class="v2-table">
+              <thead>
+                <tr>
+                  <th>รหัส</th>
+                  <th>ชื่อ</th>
+                  <th>ประเภท</th>
+                  <th>สาขา</th>
+                  <th>ใบอนุญาต</th>
+                  <th>หมดอายุ</th>
+                  <th>สถานะ</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (m of members(); track m.sellerCode) {
+                  <tr [class.off]="!m.ready">
+                    <td class="nowrap">{{ m.sellerCode }}</td>
+                    <td class="nowrap">{{ m.sellerName }}</td>
+                    <td class="nowrap">{{ typeLabel[m.sellerType] }}</td>
+                    <td class="nowrap">{{ m.branch ?? '–' }}</td>
+                    <td class="nowrap">{{ m.licenseNo ?? 'ไม่ต้องมี' }}</td>
+                    <td class="nowrap">{{ m.licenseExpiry | thDate: '–' }}</td>
+                    <td class="nowrap">
+                      <p-tag [value]="readiness(m).text" [severity]="readiness(m).tone === 'ok' ? 'success' : readiness(m).tone === 'warn' ? 'warn' : 'danger'" />
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="table-empty">ยังไม่มีสมาชิก — ลากผู้ขายเข้ากลุ่มที่หน้า Board</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ประวัติ -->
+      <section class="v2-card">
+        <h2 class="v2-card-title">ประวัติ (Audit log)</h2>
+        <div class="v2-table-wrap">
+          <div class="v2-table-scroll tall">
+            <table class="v2-table">
+              <thead>
+                <tr>
+                  <th>วันเวลา</th>
+                  <th>การกระทำ</th>
+                  <th>รายละเอียด</th>
+                  <th>ผู้ทำ</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (l of g.logs; track l.logId) {
+                  <tr>
+                    <td class="nowrap">{{ dateTime(l.createdAt) }}</td>
+                    <td class="nowrap">{{ actionLabel[l.action] ?? l.action }}</td>
+                    <td>{{ l.detail }}</td>
+                    <td class="nowrap">{{ l.actorName }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="table-empty">ยังไม่มีประวัติ</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Campaign ที่ผูก -->
+    <aside class="v2-card side">
+      <div class="v2-card-head">
+        <h2 class="v2-card-title">Campaign ที่ผูกกับกลุ่ม</h2>
+        <span class="muted small">{{ g.campaigns.length }} รายการ</span>
+      </div>
+
+      <ul class="camps">
+        @for (c of g.campaigns; track c.campaignCode) {
+          <li>
+            <div class="c-main">
+              <a [routerLink]="['/campaign', c.campaignCode]"><strong>{{ c.campaignCode }}</strong></a>
+              <span class="c-name">{{ c.nameTh }}</span>
+              <small class="muted">{{ c.startDate | thDate: '–' }} – {{ c.endDate | thDate: 'ไม่ระบุ' }}</small>
+            </div>
+            <p-tag [value]="c.typeName ?? c.typeCode" [severity]="c.typeCode === 'REFERRAL' ? 'success' : 'info'" />
+            <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="danger" ariaLabel="ถอด Campaign" pTooltip="ถอด Campaign" [loading]="busy() === c.campaignCode" [disabled]="!canEdit() || !!busy()" (onClick)="unbind(c.campaignCode)" />
+          </li>
+        } @empty {
+          <li class="empty">ยังไม่ผูก Campaign</li>
+        }
+      </ul>
+
+      <div class="add">
+        <app-select-field
+          label="เพิ่ม Campaign"
+          [options]="candidateOptions()"
+          optionLabel="label"
+          optionValue="value"
+          optionDisabled="disabled"
+          [ngModel]="pick()"
+          (ngModelChange)="pick.set($event)"
+          [disabled]="!canEdit() || !candidateOptions().length"
+        />
+        <p-button label="ผูก" icon="pi pi-link" [loading]="busy() === 'bind'" [disabled]="!canEdit() || !pick() || !!busy()" (onClick)="bind()" styleClass="bind-btn" />
+      </div>
+
+      @if (g.candidates.length) {
+        <ul class="cands">
+          @for (c of g.candidates; track c.campaignCode) {
+            <li [class.off]="!c.bindable">
+              <span>{{ c.campaignCode }} · {{ c.nameTh }}</span>
+              @if (!c.bindable) {
+                <p-tag [value]="c.reason ?? ''" severity="secondary" />
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      <p-message severity="secondary" icon="pi pi-info-circle" styleClass="note">
+        แสดงเฉพาะ Campaign ที่มี {{ g.workspace.packageCode }} และช่องทาง {{ g.workspace.channelCode }} · ผูกได้เฉพาะ Approved ·
+        ผูก / ถอดไม่ต้องอนุมัติ มีผลกับใบคำขอใหม่ทันที (ใบคำขอเดิมใช้ Snapshot)
+      </p-message>
+    </aside>
+  </div>
+
+  <p-dialog header="ลบกลุ่ม" [visible]="confirmDelete()" (visibleChange)="confirmDelete.set($event)" [modal]="true" [style]="{ width: '460px' }" [breakpoints]="{ '640px': '94vw' }" [draggable]="false">
+    <p class="confirm">
+      ลบกลุ่ม <strong>"{{ g.groupName }}"</strong>? สมาชิก {{ g.members.length }} คนจะกลับเป็น "ยังไม่มีกลุ่ม"
+      @if (g.campaigns.length) {
+        และถอด Campaign {{ g.campaigns.length }} รายการทันที
+      }
+      — ประวัติยังเก็บใน Audit log
+    </p>
+    <ng-template #footer>
+      <p-button label="ยกเลิก" [text]="true" severity="secondary" (onClick)="confirmDelete.set(false)" />
+      <p-button label="ลบกลุ่ม" icon="pi pi-trash" severity="danger" [loading]="busy() === 'delete'" (onClick)="remove()" />
+    </ng-template>
+  </p-dialog>
+} @else if (!error()) {
+  <p class="muted">กำลังโหลด…</p>
+}

@@ -1,0 +1,45 @@
+<!-- Popup Add Package — Figma "Content · Add Package (popup)_V2" (5:3902) · doc 05 §2 -->
+<div class="backdrop" (click)="closed.emit()"></div>
+
+<section class="dialog" role="dialog" aria-modal="true" aria-labelledby="add-package-title">
+  <header class="head">
+    <h2 id="add-package-title">Add Package</h2>
+    <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="secondary" ariaLabel="ปิด" (onClick)="closed.emit()" />
+  </header>
+
+  <div class="body">
+    @if (error()) {
+      <div class="alert error">{{ error() }}</div>
+    }
+
+    <app-select-field label="Distribution Channel" [required]="true" [filter]="true" [options]="channelOptions()" optionLabel="label" optionValue="value" [disabled]="loading()" [ngModel]="channel() || null" (ngModelChange)="setChannel($event ?? '')" />
+    <app-select-field label="Product Type" [required]="true" [options]="productTypeOptions()" optionLabel="label" optionValue="value" [disabled]="!channel()" [ngModel]="productType() || null" (ngModelChange)="setProductType($event ?? '')" />
+    <app-select-field label="Sub Product Type" [required]="true" [options]="subTypeOptions()" optionLabel="label" optionValue="value" [disabled]="!productType()" [ngModel]="subType() || null" (ngModelChange)="setSubType($event ?? '')" />
+
+    <div class="package-box">
+      <h3>Package</h3>
+      <app-select-field label="Package" [required]="true" [filter]="true" [options]="packageOptions()" optionLabel="label" optionValue="value" [disabled]="!subType()" [ngModel]="packageCode() || null" (ngModelChange)="packageCode.set($event ?? '')" />
+
+      @if (selected(); as p) {
+        <div class="pkg-card">
+          <span class="ribbon" [attr.title]="'Template ' + p.template">{{ p.channelName ?? p.channelCode }}</span>
+          <span class="code-tag">Package code : {{ p.packageCode }}</span>
+          <p class="name-en">{{ p.nameEn ?? p.nameTh }}</p>
+          <p class="name-th">{{ p.nameTh }}</p>
+          <p class="sale">
+            <img src="assets/figma/clock.svg" width="12" height="12" alt="" />
+            Sale start date : {{ p.saleStartDate | thDate }}
+          </p>
+        </div>
+      } @else if (!loading() && candidates().length === 0) {
+        <p class="empty-note">ทุก Package ที่ใช้ได้มี Content แล้ว — ไม่มี Package ให้เพิ่ม</p>
+      }
+    </div>
+  </div>
+
+  <footer class="foot">
+    <p-button label="Cancel" [outlined]="true" severity="secondary" styleClass="foot-btn" (onClick)="closed.emit()" />
+    <p-button label="Reset" [outlined]="true" styleClass="foot-btn" (onClick)="reset()" />
+    <p-button label="Save" styleClass="foot-btn" [loading]="saving()" [disabled]="!canSave()" (onClick)="save()" />
+  </footer>
+</section>

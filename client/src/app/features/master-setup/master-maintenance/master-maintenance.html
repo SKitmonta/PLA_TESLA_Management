@@ -1,0 +1,170 @@
+<div class="layout">
+  <!-- รายการ Master (ซ้าย) -->
+  <nav class="v2-card types" aria-label="รายการ Master">
+    <p-floatlabel variant="in" class="mobile-pick">
+      <p-select
+        inputId="ms-pick"
+        [options]="groupOptions()"
+        [group]="true"
+        optionGroupLabel="label"
+        optionGroupChildren="items"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="current()?.code ?? null"
+        (ngModelChange)="selectByCode($event)"
+        [filter]="true"
+        [fluid]="true"
+        appendTo="body"
+      />
+      <label for="ms-pick">เลือก Master</label>
+    </p-floatlabel>
+
+    @for (g of groups(); track g.name) {
+      <div class="group">
+        <h3>{{ g.name }}</h3>
+        @for (t of g.list; track t.code) {
+          <button type="button" class="type" [class.on]="t.code === current()?.code" (click)="select(t)">
+            <span class="code">{{ t.code }}</span>
+            <span class="name">{{ t.name }}</span>
+            <span class="count">{{ t.count }}</span>
+          </button>
+        }
+      </div>
+    }
+    <p class="note">MS-20 Referral Link เป็นข้อมูลที่ระบบสร้าง (ไม่ใช่ Master) — ดูในเมนู Seller</p>
+  </nav>
+
+  <!-- รายการ + ฟอร์ม (ขวา) -->
+  <div class="main">
+    @if (current(); as t) {
+      <div class="page-head">
+        <div>
+          <h1 class="page-h1">{{ t.code }} · {{ t.name }}</h1>
+          <p class="page-sub">{{ t.description }}</p>
+        </div>
+        @if (canEdit()) {
+          <p-button [label]="'เพิ่ม ' + t.name" icon="pi pi-plus" (onClick)="startNew()" />
+        }
+      </div>
+
+      @if (error()) {
+        <div class="alert error">{{ error() }}</div>
+      }
+      @if (!canEdit()) {
+        <div class="alert info">Role ปัจจุบันดูได้อย่างเดียว — เพิ่ม / แก้ไขได้เฉพาะ System Admin</div>
+      }
+
+      @if (mode()) {
+        <section class="v2-card form-card">
+          <h2 class="v2-card-title">{{ mode() === 'new' ? 'เพิ่ม ' + t.name : 'แก้ไข ' + form.itemCode }}</h2>
+
+          <div class="v2-form-grid">
+            <app-text-field label="รหัส" [required]="true" [readonly]="mode() === 'edit'" [maxlength]="30" [(ngModel)]="form.itemCode" />
+            <app-text-field label="ชื่อ (TH)" [required]="true" [(ngModel)]="form.nameTh" />
+            <app-text-field label="ชื่อ (EN)" [(ngModel)]="form.nameEn" />
+
+            @for (f of t.fields; track f.key) {
+              <div class="v2-field" [class.wide]="f.type === 'textarea'">
+                @switch (f.type) {
+                  @case ('textarea') {
+                    <app-textarea-field [label]="f.label" [required]="!!f.required" [rows]="3" [(ngModel)]="form.attributes[f.key]" />
+                  }
+                  @case ('select') {
+                    <app-select-field [label]="f.label" [required]="!!f.required" [showClear]="true" [options]="f.options ?? []" [(ngModel)]="form.attributes[f.key]" />
+                  }
+                  @case ('boolean') {
+                    <label class="check">
+                      <p-checkbox [binary]="true" [inputId]="'f-' + f.key" [(ngModel)]="form.attributes[f.key]" />
+                      {{ f.label }} @if (f.required) {<span class="req">*</span>}
+                    </label>
+                  }
+                  @case ('number') {
+                    <app-number-field [label]="f.label" [required]="!!f.required" [decimals]="2" [(ngModel)]="form.attributes[f.key]" />
+                  }
+                  @case ('date') {
+                    <app-date-field [label]="f.label" [required]="!!f.required" [(ngModel)]="form.attributes[f.key]" />
+                  }
+                  @default {
+                    <app-text-field [label]="f.label" [required]="!!f.required" [(ngModel)]="form.attributes[f.key]" />
+                  }
+                }
+              </div>
+            }
+
+            <label class="check">
+              <p-toggleswitch inputId="f-active" [(ngModel)]="form.isActive" />
+              ใช้งาน (Active)
+            </label>
+          </div>
+
+          @if (formError()) {
+            <div class="alert error">{{ formError() }}</div>
+          }
+
+          <div class="actions">
+            <p-button label="ยกเลิก" [outlined]="true" severity="secondary" (onClick)="closeForm()" />
+            <p-button label="บันทึก" icon="pi pi-save" [loading]="saving()" (onClick)="save()" />
+          </div>
+        </section>
+      }
+
+      <section class="v2-card">
+        <div class="v2-card-head">
+          <h2 class="v2-card-title">รายการ ({{ filtered().length }})</h2>
+          <div class="tools">
+            <app-text-field label="ค้นหารหัส / ชื่อ" [small]="true" [ngModel]="search()" (ngModelChange)="search.set($event ?? '')" />
+            <app-select-field label="สถานะ" [small]="true" [showClear]="true" [options]="statusOptions" optionLabel="label" optionValue="value" [ngModel]="statusFilter() || null" (ngModelChange)="statusFilter.set($event ?? '')" />
+          </div>
+        </div>
+
+        <div class="v2-table-wrap">
+          <div class="v2-table-scroll">
+            <table class="v2-table">
+              <thead>
+                <tr>
+                  <th>รหัส</th>
+                  <th>ชื่อ</th>
+                  @for (f of tableFields(); track f.key) {
+                    <th>{{ f.label }}</th>
+                  }
+                  @if (t.stock) {
+                    <th>คงเหลือ</th>
+                  }
+                  <th>สถานะ</th>
+                  <th>แก้ไขล่าสุด</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of filtered(); track item.itemCode) {
+                  <tr [class.clickable]="canEdit()" [class.active]="mode() === 'edit' && form.itemCode === item.itemCode" (click)="canEdit() && startEdit(item)">
+                    <td class="nowrap code">{{ item.itemCode }}</td>
+                    <td class="name">{{ item.nameTh }} <span class="sub">{{ item.nameEn }}</span></td>
+                    @for (f of tableFields(); track f.key) {
+                      <td class="nowrap">{{ display(item, f) }}</td>
+                    }
+                    @if (t.stock) {
+                      <td class="nowrap strong">{{ remaining(item) | number }}</td>
+                    }
+                    <td>
+                      <app-status-badge [status]="item.isActive ? 'active' : 'inactive'" />
+                    </td>
+                    <td class="nowrap">{{ item.updatedAt | thDate: '–' : true }} <span class="sub">{{ item.updatedBy }}</span></td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td [attr.colspan]="tableFields().length + (t.stock ? 5 : 4)" class="table-empty">
+                      {{ loading() ? 'กำลังโหลด…' : 'ยังไม่มีข้อมูล' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        @if (canEdit()) {
+          <p class="hint">กดที่แถวเพื่อแก้ไข · ไม่มีการลบ ใช้ "ปิดใช้งาน" แทนเพื่อเก็บประวัติ</p>
+        }
+      </section>
+    }
+  </div>
+</div>

@@ -1,0 +1,187 @@
+@if (detail(); as c) {
+  <header class="head">
+    <a class="back" routerLink="/campaign/list" aria-label="กลับไป Campaign list"><i class="pi pi-arrow-circle-left"></i></a>
+    <div class="title">
+      <h1>
+        {{ c.nameTh || '(ยังไม่ตั้งชื่อ)' }}
+        <span class="type"><i [class]="icon[c.typeCode]"></i> {{ typeName() }}</span>
+        <app-status-badge [status]="badge()[0]" [label]="badge()[1] + ' · v' + c.versionNo" />
+      </h1>
+      <p class="meta">
+        {{ c.campaignCode }} · {{ c.packageCodes.join(', ') || '–' }} · {{ channels() || '–' }} ·
+        {{ c.startDate | thDate: '–' }} – {{ c.endDate | thDate: 'ไม่ระบุ' }}
+        @if (c.isMock) {
+          · ข้อมูลจำลอง
+        }
+      </p>
+    </div>
+
+    <div class="buttons">
+      @if (c.status === 'PENDING' && isApprover()) {
+        <p-button label="ตีกลับ" icon="pi pi-times" [outlined]="true" severity="danger" styleClass="hdr-btn" [disabled]="ownWork() || !!busy()" [pTooltip]="ownWork() ? 'ตีกลับงานที่ตัวเองสร้างไม่ได้' : ''" (onClick)="openReject()" />
+        <p-button label="อนุมัติ" icon="pi pi-check" styleClass="hdr-btn" [loading]="busy() === 'approve'" [disabled]="ownWork() || !!busy()" [pTooltip]="ownWork() ? 'อนุมัติงานที่ตัวเองสร้างไม่ได้' : ''" (onClick)="approve()" />
+      }
+      @if (isMaker()) {
+        @if (c.status === 'DRAFT' || c.status === 'REJECTED') {
+          <p-button label="แก้ไข" icon="pi pi-pencil" styleClass="hdr-btn" (onClick)="edit()" />
+        }
+        @if (c.status === 'APPROVED') {
+          <p-button label="Suspend" icon="pi pi-pause" [outlined]="true" severity="secondary" styleClass="hdr-btn" [loading]="busy() === 'suspend'" (onClick)="suspend(true)" />
+        }
+        @if (c.status === 'SUSPENDED') {
+          <p-button label="เปิดใช้อีกครั้ง" icon="pi pi-play" [outlined]="true" styleClass="hdr-btn" [loading]="busy() === 'suspend'" (onClick)="suspend(false)" />
+        }
+        @if (c.status === 'APPROVED' || c.status === 'SUSPENDED') {
+          <p-button label="สร้าง Version ใหม่" icon="pi pi-pencil" [outlined]="true" styleClass="hdr-btn" [disabled]="true" pTooltip="แก้ Campaign ที่อนุมัติแล้วต้องออก Version ใหม่ — ทำในขั้นถัดไป" />
+        }
+      }
+    </div>
+  </header>
+
+  @if (c.status === 'REJECTED' && c.rejectReason) {
+    <p-message severity="error" icon="pi pi-times-circle" styleClass="msg">ตีกลับ: {{ c.rejectReason }}</p-message>
+  }
+  @if (c.status === 'PENDING') {
+    <p-message severity="warn" icon="pi pi-clock" styleClass="msg">
+      รออนุมัติ — {{ isApprover() ? (ownWork() ? 'Campaign นี้คุณเป็นผู้สร้าง จึงอนุมัติเองไม่ได้' : 'ตรวจรายละเอียดด้านล่างแล้วกด "อนุมัติ" หรือ "ตีกลับ"') : 'รอ Campaign Approver ตรวจ' }}
+    </p-message>
+  }
+
+  @if (c.typeCode !== 'REFERRAL') {
+    @if (grants(); as g) {
+      <!-- สรุปสิทธิ์ 6 สถานะ -->
+      <div class="grant-cards">
+        @for (s of grantOrder; track s) {
+          <div class="gcard" [class]="'gcard g-' + grantMeta[s].severity">
+            <span class="lbl">{{ grantMeta[s].label }}</span>
+            <strong>{{ g.stats[s].count }}</strong>
+            <small>{{ s === 'RESERVED' ? 'จองงบ ' + (g.stats[s].value | number) + ' บาท' : grantMeta[s].note }}</small>
+          </div>
+        }
+      </div>
+
+      <section class="card">
+        <h2>งบประมาณ & โควตา</h2>
+        <div class="bars">
+          <div class="bar">
+            <div class="bar-head">
+              <span>งบ: ใช้จริง <b>{{ g.budget.used | number }}</b> · จอง <b>{{ g.budget.reserved | number }}</b></span>
+              <span class="muted">
+                @if (g.budget.total !== null) {
+                  คงเหลือ {{ g.budget.total - g.budget.used - g.budget.reserved | number }} / {{ g.budget.total | number }}
+                } @else {
+                  ไม่จำกัดงบ
+                }
+              </span>
+            </div>
+            <p-progressbar [value]="percent(g.budget.used + g.budget.reserved, g.budget.total)" [showValue]="false" styleClass="pbar" />
+          </div>
+          <div class="bar">
+            <div class="bar-head">
+              <span>สิทธิ์: ใช้ <b>{{ g.quota.used | number }}</b> · จอง <b>{{ g.quota.reserved | number }}</b></span>
+              <span class="muted">
+                @if (g.quota.total !== null) {
+                  คงเหลือ {{ g.quota.total - g.quota.used - g.quota.reserved | number }} / {{ g.quota.total | number }} {{ g.quota.unit }}
+                } @else {
+                  ไม่จำกัดจำนวน
+                }
+              </span>
+            </div>
+            <p-progressbar [value]="percent(g.quota.used + g.quota.reserved, g.quota.total)" [showValue]="false" styleClass="pbar" />
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>รายการสิทธิ์ (Grant)</h2>
+          <p-button label="Export Excel" icon="pi pi-file-excel" [outlined]="true" [disabled]="!g.items.length" (onClick)="exportGrants()" />
+        </div>
+        <div class="v2-table-wrap">
+          <div class="v2-table-scroll">
+            <table class="v2-table">
+              <thead>
+                <tr>
+                  <th>ใบคำขอ</th>
+                  <th>กรมธรรม์</th>
+                  <th>ผู้ขาย</th>
+                  <th class="num">FYP (บาท)</th>
+                  <th class="num">มูลค่าสิทธิ์ (บาท)</th>
+                  <th>สถานะ</th>
+                  <th>Version</th>
+                  <th>วันยื่นใบคำขอ</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (i of g.items; track i.grantId) {
+                  <tr>
+                    <td class="nowrap strong">{{ i.applicationNo }}</td>
+                    <td class="nowrap">{{ i.policyNo ?? '–' }}</td>
+                    <td class="nowrap">{{ i.sellerName ?? (c.channelCodes.includes('CHN01') ? '–' : 'ออนไลน์ (ไม่มีผู้ขาย)') }}</td>
+                    <td class="num">{{ i.fyp | number }}</td>
+                    <td class="num">{{ i.benefitValue | number }}</td>
+                    <td><p-tag [value]="grantMeta[i.status].label" [severity]="grantMeta[i.status].severity" [rounded]="true" /></td>
+                    <td>v{{ i.campaignVersion }}</td>
+                    <td class="nowrap">{{ i.submittedDate | thDate }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="table-empty">ยังไม่มีกรมธรรม์ที่เข้าเงื่อนไข — สิทธิ์จะเกิดอัตโนมัติเมื่อระบบได้รับข้อมูลกรมธรรม์ (CC-03)</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="hint">Prototype: ข้อมูลกรมธรรม์จำลอง — การรับผลพิจารณาจากระบบต้นทางผ่าน API อยู่นอกขอบเขตรอบนี้ (CC-07)</p>
+      </section>
+    }
+  } @else {
+    <p-message severity="info" icon="pi pi-link" styleClass="msg">
+      Referral ไม่มีสิทธิ์ / งบ — ยอดคลิก → ใบคำขอ → กรมธรรม์ ต่อลิงก์ดูได้ที่เมนู Seller › Referral links (BR-CP-009)
+    </p-message>
+  }
+
+  <!-- รายละเอียดทุกขั้น (อ่านอย่างเดียว) -->
+  <h2 class="section-title">รายละเอียด Campaign</h2>
+  @if (lookup.ready() && form(); as f) {
+    <app-step-review [form]="f" [detail]="c" [readonly]="true" />
+  } @else {
+    <p class="hint">กำลังโหลด…</p>
+  }
+
+  <section class="card">
+    <h2>ประวัติการอนุมัติ</h2>
+    <ul class="history">
+      <li>
+        <i class="pi pi-plus-circle"></i>
+        <span><b>สร้าง</b> โดย {{ c.createdByName ?? '–' }}</span>
+      </li>
+      @for (h of history(); track $index) {
+        <li [class]="'act-' + h.action.toLowerCase()">
+          <i [class]="h.action === 'APPROVE' ? 'pi pi-check-circle' : h.action === 'REJECT' ? 'pi pi-times-circle' : 'pi pi-circle'"></i>
+          <span>
+            <b>{{ actionText[h.action] }}</b> (v{{ h.versionNo }}) โดย {{ h.actorName ?? '–' }} · {{ h.createdAt | thDate: '–' : true }}
+            @if (h.reason) {
+              <em>เหตุผล: {{ h.reason }}</em>
+            }
+          </span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <p-dialog header="ตีกลับ Campaign" [modal]="true" [visible]="rejectOpen()" (visibleChange)="rejectOpen.set($event)" [style]="{ width: '560px' }" [draggable]="false">
+    <p class="dlg-note">Campaign จะกลับเป็น Draft ให้ Campaign Maker แก้ไขแล้วส่งอนุมัติใหม่</p>
+    <app-textarea-field label="เหตุผลที่ตีกลับ" [required]="true" [rows]="4" [maxlength]="500" [(ngModel)]="rejectReason" />
+    <ng-template #footer>
+      <p-button label="ยกเลิก" [outlined]="true" severity="secondary" (onClick)="rejectOpen.set(false)" />
+      <p-button label="ตีกลับ" icon="pi pi-times" severity="danger" [loading]="busy() === 'reject'" (onClick)="reject()" />
+    </ng-template>
+  </p-dialog>
+} @else if (error()) {
+  <p-message severity="error" styleClass="msg">{{ error() }}</p-message>
+  <a routerLink="/campaign/list">‹ กลับไป Campaign list</a>
+} @else {
+  <p class="hint">กำลังโหลด…</p>
+}

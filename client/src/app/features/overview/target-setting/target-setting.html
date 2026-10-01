@@ -1,0 +1,132 @@
+<header class="page-head">
+  <div>
+    <h1 class="page-h1">ตั้ง Target</h1>
+    <p class="page-sub">Target ระดับ ช่องทาง / กลุ่ม / ผู้ขาย รายเดือน · ระดับ Package ใช้ sale_Target จาก Package</p>
+  </div>
+  <div class="head-actions">
+    <p-fileupload
+      #uploader
+      mode="basic"
+      [customUpload]="true"
+      [auto]="true"
+      accept=".csv"
+      chooseLabel="Import Excel"
+      chooseIcon="pi pi-upload"
+      [disabled]="!canEdit() || !sheet()"
+      (uploadHandler)="onFile($event, uploader)"
+      styleClass="imp"
+    />
+    <p-button label="Export Excel" icon="pi pi-download" [outlined]="true" severity="secondary" styleClass="head-btn" [disabled]="!sheet()" (onClick)="exportExcel()" />
+    <p-button [label]="dirtyCount() ? 'บันทึก (' + dirtyCount() + ')' : 'บันทึก'" icon="pi pi-save" styleClass="head-btn" [loading]="busy()" [disabled]="!canEdit() || !dirtyCount()" (onClick)="save()" />
+  </div>
+</header>
+
+@if (!canEdit()) {
+  <p-message severity="info" icon="pi pi-eye">Role ปัจจุบันดูได้อย่างเดียว — ตั้ง Target ได้เฉพาะ Executive / Seller Admin</p-message>
+}
+
+<section class="v2-card">
+  <p-selectbutton [options]="levels" optionLabel="label" optionValue="value" [ngModel]="level()" (ngModelChange)="change('level', $event)" [allowEmpty]="false" aria-label="ระดับ Target" />
+
+  <div class="filters">
+    <app-select-field label="Package" [filter]="true" [options]="packageOptions()" optionLabel="label" optionValue="value" [ngModel]="pkg()" (ngModelChange)="change('pkg', $event)" />
+    <app-select-field label="Channel" [options]="channelOptions()" optionLabel="label" optionValue="value" [ngModel]="ch()" (ngModelChange)="change('ch', $event)" />
+    <app-select-field label="ตัวชี้วัด" [options]="metrics" optionLabel="label" optionValue="value" [ngModel]="metric()" (ngModelChange)="change('metric', $event)" />
+    <app-select-field label="ตั้งแต่เดือน" [options]="monthOptions" optionLabel="label" optionValue="value" [ngModel]="from()" (ngModelChange)="change('from', $event)" />
+    <app-select-field label="ถึงเดือน" [options]="toOptions()" optionLabel="label" optionValue="value" [ngModel]="to()" (ngModelChange)="change('to', $event)" />
+  </div>
+
+  @if (error()) {
+    <p-message severity="error" icon="pi pi-times-circle">{{ error() }}</p-message>
+  }
+
+  @if (sheet(); as s) {
+    <p-message [severity]="s.saleTarget === null ? 'warn' : 'info'" icon="pi pi-info-circle" styleClass="note">
+      @if (s.saleTarget === null) {
+        {{ s.packageCode }} ยังไม่มี sale_Target (null) — ระดับ Package แสดง "ยังไม่มี Target" · ตั้ง Target ระดับช่องทาง / กลุ่ม / ผู้ขายได้ตามปกติ
+      } @else {
+        sale_Target ของ {{ s.packageCode }} = {{ full(s.saleTarget) }} บาท (FYP ตลอดอายุ Package) · ผลรวม Target ระดับช่องทางไม่ควรเกินค่านี้
+      }
+      @if (s.level !== 'CHANNEL' && s.parentTarget !== null) {
+        · Target ช่องทาง {{ s.channelCode }} ในช่วงนี้ = {{ full(s.parentTarget) }}
+      }
+    </p-message>
+
+    @for (w of s.warnings; track w) {
+      <p-message severity="warn" icon="pi pi-exclamation-triangle" styleClass="note">{{ w }} (เตือนเท่านั้น — บันทึกได้)</p-message>
+    }
+
+    <div class="v2-table-wrap">
+      <div class="v2-table-scroll" [class.tall]="s.level === 'SELLER'">
+        <table class="v2-table">
+          <thead>
+            <tr>
+              <th class="first">{{ s.level === 'CHANNEL' ? 'ช่องทาง' : s.level === 'GROUP' ? 'กลุ่ม' : 'ผู้ขาย' }}</th>
+              <th>ตัวชี้วัด</th>
+              @for (p of s.periods; track p) {
+                <th class="num">{{ monthLabel(p, true) }}</th>
+              }
+              <th class="num">รวม</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of s.rows; track r.refId) {
+              <tr>
+                <td class="first nowrap">
+                  {{ r.name }}
+                  @if (r.sub) {
+                    <small class="sub">{{ r.sub }}</small>
+                  }
+                </td>
+                <td><p-tag [value]="metricLabel[s.metric]" severity="info" /></td>
+                @for (p of s.periods; track p) {
+                  <td class="cell" [class.dirty]="isDirty(r.refId, p)">
+                    <p-inputnumber
+                      [ngModel]="value(r.refId, p)"
+                      (ngModelChange)="set(r.refId, p, $event)"
+                      [min]="0"
+                      [maxFractionDigits]="0"
+                      [useGrouping]="true"
+                      placeholder="–"
+                      [disabled]="!canEdit()"
+                      [inputStyle]="{ width: '100%', textAlign: 'right' }"
+                      [ariaLabel]="r.name + ' ' + p"
+                    />
+                  </td>
+                }
+                <td class="num"><strong>{{ full(rowTotal(r.refId)) }}</strong></td>
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="s.periods.length + 3" class="table-empty">
+                  {{ s.level === 'GROUP' ? 'Workspace นี้ยังไม่มีกลุ่ม — สร้างกลุ่มที่เมนู Seller › Workspace' : 'ไม่มีรายการ' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+          @if (s.rows.length > 1) {
+            <tfoot>
+              <tr>
+                <td class="first"><strong>รวม</strong></td>
+                <td></td>
+                @for (p of s.periods; track p) {
+                  <td class="num"><strong>{{ full(colTotal(p)) }}</strong></td>
+                }
+                <td class="num"><strong>{{ full(grandTotal()) }}</strong></td>
+              </tr>
+            </tfoot>
+          }
+        </table>
+      </div>
+    </div>
+
+    <div class="foot">
+      <small class="muted">
+        ช่องว่าง = ยังไม่ตั้ง Target · ลบค่าออกแล้วบันทึก = ยกเลิก Target เดือนนั้น · กลุ่มที่ถูกลบแล้ว Target เก็บเป็นประวัติ ไม่แสดงในตาราง
+      </small>
+      @if (dirtyCount()) {
+        <p-button label="ยกเลิกการแก้ไข" [text]="true" severity="secondary" (onClick)="reset()" />
+      }
+    </div>
+  }
+</section>

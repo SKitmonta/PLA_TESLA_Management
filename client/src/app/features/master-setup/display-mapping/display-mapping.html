@@ -1,0 +1,99 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-h1">Mapping ข้อความแสดงผล</h1>
+    <p class="page-sub">
+      แปลงรหัสจาก Package เป็นข้อความบนหน้า Content (Field ที่ติดป้าย <span class="src s-drv">DRV</span>)
+      · แก้ไขล่าสุด {{ updatedAt() | thDate: '–' : true }} {{ updatedBy() ? '(' + updatedBy() + ')' : '' }}
+    </p>
+  </div>
+  @if (canEdit()) {
+    <p-button label="บันทึก" icon="pi pi-save" [loading]="saving()" [disabled]="!dirty()" (onClick)="save()" />
+  }
+</div>
+
+@if (error()) {
+  <div class="alert error">{{ error() }}</div>
+}
+@if (!canEdit()) {
+  <div class="alert info">Role ปัจจุบันดูได้อย่างเดียว — แก้ไขได้เฉพาะ System Admin</div>
+}
+
+<div class="cols">
+  <section class="v2-card">
+    <h2 class="v2-card-title">การพิจารณารับประกัน → "การตรวจสุขภาพ" <span class="sec">OB-09</span></h2>
+    <p class="muted small">ใช้กับทุกช่องทาง</p>
+    <div class="v2-table-wrap">
+      <table class="v2-table">
+        <thead>
+          <tr>
+            <th>type_Of_Underwrite</th>
+            <th>ชื่อจาก Master</th>
+            <th>ข้อความแสดงผล</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of underwrite; track u.code) {
+            <tr>
+              <td class="code">{{ u.code }}</td>
+              <td>{{ u.sourceName }}</td>
+              <td>
+                <app-text-field label="ข้อความแสดงผล" [small]="true" [(ngModel)]="u.displayText" (ngModelChange)="markDirty()" [disabled]="!canEdit()" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="v2-card">
+    <div class="v2-card-head">
+      <h2 class="v2-card-title">ช่องทางชำระเบี้ยที่แสดงบนหน้า Content <span class="sec">OB-09</span></h2>
+      <app-select-field class="channel" label="ช่องทางขาย" [small]="true" [filter]="true" [options]="channelOptions()" optionLabel="label" optionValue="value" [ngModel]="channel()" (ngModelChange)="$event && changeChannel($event)" />
+    </div>
+
+    <div class="v2-table-wrap">
+      <div class="v2-table-scroll">
+        <table class="v2-table">
+          <thead>
+            <tr>
+              <th>รหัส</th>
+              <th>ชื่อจาก Package</th>
+              <th>แสดงบนหน้า</th>
+              <th>ข้อความแสดงผล</th>
+              <th>Icon</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of paymentMethods; track p.code) {
+              <tr [class.off]="!p.isShown">
+                <td class="code">{{ p.code }}</td>
+                <td>{{ p.sourceName }}</td>
+                <td class="nowrap">
+                  <label class="check">
+                    <p-toggleswitch [(ngModel)]="p.isShown" (ngModelChange)="markDirty()" [disabled]="!canEdit()" />
+                    {{ p.isShown ? 'แสดง' : 'ไม่แสดง' }}
+                  </label>
+                </td>
+                <td>
+                  <app-text-field label="ข้อความแสดงผล" [small]="true" [(ngModel)]="p.displayText" (ngModelChange)="markDirty()" [disabled]="!canEdit() || !p.isShown" />
+                </td>
+                <td>
+                  @if (p.isShown) {
+                    <span class="icon-slot" [title]="p.icon ? 'Icon: ' + p.icon : 'ยังไม่มี Icon'">{{ p.icon || 'icon' }}</span>
+                  } @else {
+                    <span class="muted">–</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="muted small">
+      หน้า Content แสดงเฉพาะวิธีที่ Package มี และตั้งค่า "แสดง" ไว้ ({{ shownCount() }} วิธีสำหรับ {{ channel() }})
+      · การอัปโหลด Icon จะเพิ่มใน Sprint 2 พร้อม Content Editor
+    </p>
+  </section>
+</div>

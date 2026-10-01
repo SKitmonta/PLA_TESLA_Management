@@ -1,0 +1,46 @@
+<section class="card">
+  <h2>เลือกประเภท Campaign</h2>
+  <p class="hint">
+    @if (locked()) {
+      เปลี่ยนประเภทไม่ได้หลังบันทึกแล้ว (CP-COM-03) — ถ้าต้องการประเภทอื่นให้สร้าง Campaign ใหม่
+    } @else {
+      เลือกได้ 1 ประเภทต่อ Campaign · ประเภทกำหนด Field ในขั้นสิทธิประโยชน์ และรหัส Campaign (CMP-<b>TYPE</b>-YYMM-Running)
+    }
+  </p>
+
+  <div class="grid" role="radiogroup" aria-label="ประเภท Campaign">
+    @for (t of types(); track t.code) {
+      @let on = form().typeCode === t.code;
+      <button
+        type="button"
+        class="type"
+        role="radio"
+        [attr.aria-checked]="on"
+        [class.on]="on"
+        [disabled]="locked() && !on"
+        (click)="pick(t.code)"
+      >
+        <span class="icon"><i [class]="icon[t.code]"></i></span>
+        <span class="text">
+          <strong>{{ t.nameEn }}</strong>
+          <span class="th">{{ t.nameTh }}</span>
+          @if (t.description) {
+            <span class="desc">{{ t.description }}</span>
+          }
+        </span>
+        <span class="tags">
+          <span class="tag">{{ abbr[t.code] }}</span>
+          @if (t.kind) {
+            <span class="tag kind">{{ t.kind }}</span>
+          }
+          <span class="tag phase" title="เฟสที่เสนอใน doc 06 §6">เฟส {{ phase[t.code] }}</span>
+        </span>
+        @if (on) {
+          <span class="check"><i class="pi pi-check"></i></span>
+        }
+      </button>
+    } @empty {
+      <p class="hint">ไม่มีประเภท Campaign ที่ใช้งานได้ — เพิ่มที่ Master setup › MS-01 Campaign Type</p>
+    }
+  </div>
+</section>

@@ -1,0 +1,22 @@
+<header class="head" [class.clickable]="collapsible()" (click)="toggle()">
+  <span class="sid">{{ sid() }}</span>
+  <h2>{{ heading() }}</h2>
+  @if (badgeText()) {
+    <span class="badge" [class]="'badge b-' + badge()">{{ badgeText() }}</span>
+  }
+  <span class="hint">
+    @if (collapsed()) {
+      {{ collapsedHint() }}
+    } @else {
+      {{ hint() }}
+    }
+  </span>
+  @if (collapsible()) {
+    <span class="chev" [class.open]="!collapsed()" aria-hidden="true"></span>
+  }
+</header>
+@if (!collapsed()) {
+  <div class="body">
+    <ng-content />
+  </div>
+}

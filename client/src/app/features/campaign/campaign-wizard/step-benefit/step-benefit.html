@@ -1,0 +1,101 @@
+@let f = form();
+@let b = f.data.benefit;
+
+<section class="card">
+  <h2>
+    @if (f.typeCode) {
+      <i [class]="icon[f.typeCode]"></i>
+    }
+    สิทธิประโยชน์ — {{ typeName() }}
+  </h2>
+  @if (f.typeCode === 'REFERRAL') {
+    <p class="hint">Referral ไม่ให้สิทธิ์ใดๆ — ผู้ขายทุกคนในกลุ่มที่ผูก Campaign (เมนู Seller) ได้ลิงก์ของตัวเองอัตโนมัติ รูปแบบ {{ '{base_url}/r/{token}' }} (CP-REF-02, 03)</p>
+  } @else {
+    <p class="hint">ช่องที่มี * ต้องกรอกก่อนส่งอนุมัติ · รหัส Field ตาม doc 06 §4</p>
+  }
+
+  <div class="g2">
+    @for (field of fields(); track field.key) {
+      @if (visible(field)) {
+        <div class="fld" [class.span2]="wide(field)">
+          @switch (field.kind) {
+            @case ('text') {
+              <app-text-field [label]="field.label" [required]="!!field.required" [(ngModel)]="b[field.key]" />
+            }
+            @case ('number') {
+              <app-number-field [label]="field.label" [required]="!!field.required" [min]="field.min" [decimals]="field.decimals ?? 0" [suffix]="field.suffix ?? ''" [(ngModel)]="b[field.key]" />
+            }
+            @case ('select') {
+              <app-select-field [label]="field.label" [required]="!!field.required" [filter]="opts(field.source).length > 8" [options]="opts(field.source)" optionLabel="label" optionValue="value" [(ngModel)]="b[field.key]" />
+            }
+            @case ('multiselect') {
+              <app-multiselect-field [label]="field.label" [required]="!!field.required" [options]="opts(field.source)" optionLabel="label" optionValue="value" [(ngModel)]="b[field.key]" />
+            }
+            @case ('date') {
+              <app-date-field [label]="field.label" [required]="!!field.required" [min]="f.endDate" [(ngModel)]="b[field.key]" />
+            }
+            @case ('textarea') {
+              <app-textarea-field [label]="field.label" [required]="!!field.required" [rows]="3" [maxlength]="300" [(ngModel)]="b[field.key]" />
+            }
+            @case ('toggle') {
+              <label class="toggle">
+                <p-toggleswitch [(ngModel)]="b[field.key]" [disabled]="locked()" />
+                {{ field.label }}
+              </label>
+            }
+            @case ('upload') {
+              <app-upload-box [label]="field.label + (field.required ? ' *' : '')" spec=".pdf / .jpg / .png ≤ 10 MB" [accept]="field.accept ?? '.pdf'" [maxMb]="10" [value]="text(b[field.key])" (valueChange)="b[field.key] = $event" />
+            }
+            @case ('table') {
+              <div class="tbl">
+                <div class="tbl-head">
+                  <h3>{{ field.label }}@if (field.required) { <span class="req">*</span> }</h3>
+                  <p-button label="เพิ่มแถว" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="addRow(field)" />
+                </div>
+                @for (row of rows(field.key); track $index; let i = $index) {
+                  <div class="tbl-row" [style.grid-template-columns]="'repeat(' + (field.columns?.length ?? 1) + ', minmax(0, 1fr)) 44px'">
+                    @for (col of field.columns ?? []; track col.key) {
+                      @switch (col.kind) {
+                        @case ('number') {
+                          <app-number-field [label]="col.label" [min]="0" [decimals]="col.decimals ?? 0" [(ngModel)]="row[col.key]" />
+                        }
+                        @case ('select') {
+                          <app-select-field [label]="col.label" [options]="opts(col.source)" optionLabel="label" optionValue="value" [(ngModel)]="row[col.key]" />
+                        }
+                        @default {
+                          <app-text-field [label]="col.label" [(ngModel)]="row[col.key]" />
+                        }
+                      }
+                    }
+                    <p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบแถว" [disabled]="locked()" (onClick)="removeRow(field.key, i)" />
+                  </div>
+                } @empty {
+                  <p class="hint small">ยังไม่มีรายการ — กด "เพิ่มแถว"</p>
+                }
+              </div>
+            }
+          }
+          @if (field.hint) {
+            <p class="hint small">
+              @if (field.id) {
+                <span class="id">{{ field.id }}</span>
+              }
+              {{ field.hint }}
+            </p>
+          } @else if (field.id) {
+            <p class="hint small"><span class="id">{{ field.id }}</span></p>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  @if (stock(); as s) {
+    <p-message [severity]="overStock() ? 'warn' : 'info'" icon="pi pi-box" styleClass="msg">
+      Stock คงเหลือของ "{{ s.name }}" = {{ s.left.toLocaleString('en-US') }}
+      @if (overStock()) {
+        — จำนวนที่จัดสรรเกิน Stock (ส่งอนุมัติไม่ได้)
+      }
+    </p-message>
+  }
+</section>

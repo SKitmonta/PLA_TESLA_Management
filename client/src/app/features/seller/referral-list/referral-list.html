@@ -1,0 +1,53 @@
+<section class="v2-card">
+  <div class="v2-card-head head">
+    <div>
+      <h1 class="page-h1">Referral links</h1>
+      <p class="page-sub">ลิงก์ขายรายผู้ขายของ Campaign ประเภท Referral — ผู้ขายได้ลิงก์เมื่ออยู่ในกลุ่มที่ผูก Campaign นั้น</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <p-message severity="error" icon="pi pi-times-circle">{{ error() }}</p-message>
+  }
+
+  <div class="v2-table-wrap">
+    <div class="v2-table-scroll">
+      <table class="v2-table">
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th>ชื่อ</th>
+            <th>Package × Channel</th>
+            <th>ช่วงวัน</th>
+            <th class="num">กลุ่ม</th>
+            <th class="num">ลิงก์ใช้งาน</th>
+            <th class="num">คลิก</th>
+            <th class="num">ใบคำขอ</th>
+            <th class="num">อนุมัติ</th>
+            <th class="sticky-right"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows(); track r.campaignCode) {
+            <tr>
+              <td class="nowrap code"><a [routerLink]="['/seller/referral', r.campaignCode]">{{ r.campaignCode }}</a></td>
+              <td class="name">{{ r.nameTh }}</td>
+              <td class="nowrap">{{ r.packageCodes.join(', ') }} × {{ r.channelCodes.join(', ') }}</td>
+              <td class="nowrap">{{ r.startDate | thDate: '–' }} – {{ r.endDate | thDate: 'ไม่ระบุ' }}</td>
+              <td class="num">{{ r.groupCount }}</td>
+              <td class="num">{{ r.activeLinks }} / {{ r.totalLinks }}</td>
+              <td class="num">{{ r.clicks | number }}</td>
+              <td class="num">{{ r.applications | number }} <small class="muted">{{ pct(r.applications, r.clicks) }}</small></td>
+              <td class="num">{{ r.approved | number }} <small class="muted">{{ pct(r.approved, r.applications) }}</small></td>
+              <td class="sticky-right"><p-button label="ดูลิงก์" [outlined]="true" styleClass="row-btn" (onClick)="open(r)" /></td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="10" class="table-empty">{{ loading() ? 'กำลังโหลด…' : 'ยังไม่มี Campaign Referral ที่ Approved' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

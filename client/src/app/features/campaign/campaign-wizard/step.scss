@@ -1,0 +1,98 @@
+@use 'tokens' as *;
+
+// การ์ดของแต่ละขั้นใน Add Campaign — รูปแบบเดียวกับ Content Editor (การ์ดขาว · หัวข้อ 18px · ช่องกรอก 14px)
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px;
+  border: 1px solid $border-input;
+  border-radius: 20px;
+  background: #fff;
+
+  h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: $fs-heading;
+    font-weight: 700;
+    color: $primary-9;
+  }
+  h3 {
+    margin: 0;
+    font-size: $fs-subheading;
+    font-weight: 700;
+    color: $text;
+  }
+}
+
+.hint {
+  margin: -6px 0 0;
+  font-size: 14px;
+  color: $text-muted;
+
+  &.small {
+    margin: 6px 0 0;
+    font-size: 12px;
+  }
+  &.err {
+    color: $error;
+  }
+}
+
+.g2,
+.g3 {
+  display: grid;
+  gap: 16px 20px;
+  align-items: start;
+}
+.g2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.g3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.span2 {
+  grid-column: 1 / -1;
+}
+
+.uploads app-upload-box {
+  min-height: 150px;
+}
+
+:host ::ng-deep .msg {
+  width: 100%;
+}
+
+.id {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #eef1f6;
+  font-size: 11px;
+  font-weight: 700;
+  color: $primary-9;
+}
+
+@media (max-width: 1100px) {
+  .g3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .card {
+    padding: 18px 14px;
+  }
+  .g2,
+  .g3 {
+    grid-template-columns: 1fr;
+  }
+}

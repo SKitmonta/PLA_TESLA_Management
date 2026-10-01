@@ -1,0 +1,26 @@
+<ng-template #field>
+  <p-inputnumber
+    [inputId]="id"
+    [ngModel]="value()"
+    (ngModelChange)="change($event)"
+    (onBlur)="touch()"
+    [min]="min()"
+    [max]="max()"
+    [minFractionDigits]="0"
+    [maxFractionDigits]="decimals()"
+    [useGrouping]="grouping()"
+    [suffix]="suffix()"
+    [disabled]="isDisabled()"
+    [placeholder]="label() ? undefined : placeholder() || undefined"
+    [fluid]="true"
+  />
+</ng-template>
+
+@if (label()) {
+  <p-floatlabel variant="in">
+    <ng-container *ngTemplateOutlet="field" />
+    <label [for]="id">{{ label() }}@if (required()) { <span class="req">*</span> }</label>
+  </p-floatlabel>
+} @else {
+  <ng-container *ngTemplateOutlet="field" />
+}

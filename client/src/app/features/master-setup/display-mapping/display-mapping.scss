@@ -1,0 +1,91 @@
+@use 'tokens' as *;
+
+// สไตล์เฉพาะหน้า MS-03 Mapping ข้อความแสดงผล
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.v2-card {
+  gap: 14px;
+}
+
+.sec {
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #f1f3f7;
+  font-size: 11px;
+  color: $text-muted;
+  vertical-align: middle;
+}
+
+.small {
+  margin: 0;
+  font-size: 12px;
+}
+
+.channel {
+  width: 260px;
+}
+
+.code {
+  font-weight: 600 !important;
+  white-space: nowrap;
+}
+
+tr.off td {
+  color: $text-muted;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.icon-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 36px;
+  border: 1.5px dashed #c3cbdb;
+  border-radius: 8px;
+  font-size: 10px;
+  color: $text-muted;
+}
+
+@media (max-width: #{$bp-desktop - 1px}) {
+  .cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .channel {
+    width: 100%;
+  }
+}

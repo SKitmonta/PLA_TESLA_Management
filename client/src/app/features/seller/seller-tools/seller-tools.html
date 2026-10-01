@@ -1,0 +1,191 @@
+<section class="v2-card top">
+  <div class="v2-card-head head">
+    <div>
+      <h1 class="page-h1">เครื่องมือจัดกลุ่ม</h1>
+      <p class="page-sub">คัดลอกกลุ่ม · Import / Export · Audit log</p>
+    </div>
+    <p-button label="Export Excel" icon="pi pi-download" [outlined]="true" severity="secondary" styleClass="head-btn" pTooltip="Export Audit log ตามตัวกรองปัจจุบัน" (onClick)="exportAudit()" />
+  </div>
+  @if (!canEdit()) {
+    <p-message severity="info" icon="pi pi-eye">Role ปัจจุบันดูได้อย่างเดียว — คัดลอกกลุ่ม / Import ได้เฉพาะ Seller Admin</p-message>
+  }
+</section>
+
+<div class="two">
+  <!-- 1) คัดลอกกลุ่ม -->
+  <section class="v2-card" id="copy">
+    <h2 class="v2-card-title">คัดลอกกลุ่มจาก Workspace อื่น</h2>
+    <div class="pair">
+      <app-select-field label="ต้นทาง" [required]="true" [options]="sourceOptions()" optionLabel="label" optionValue="value" [ngModel]="copyFrom()" (ngModelChange)="setCopy('from', $event)" [disabled]="!canEdit()" />
+      <div>
+        <app-select-field label="ปลายทาง" [required]="true" [options]="targetOptions()" optionLabel="label" optionValue="value" [ngModel]="copyTo()" (ngModelChange)="setCopy('to', $event)" [disabled]="!canEdit()" />
+        <small class="muted">เลือกได้เฉพาะ Workspace ที่ยังไม่มีกลุ่ม</small>
+      </div>
+    </div>
+
+    @if (copyPlan(); as plan) {
+      <div class="v2-table-wrap">
+        <div class="v2-table-scroll">
+          <table class="v2-table">
+            <thead>
+              <tr>
+                <th>กลุ่ม</th>
+                <th class="num">สมาชิกต้นทาง</th>
+                <th class="num">คัดลอกได้</th>
+                <th>ข้าม</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of plan; track g.groupName) {
+                <tr>
+                  <td class="nowrap"><span class="gdot" [style.background]="g.color"></span>{{ g.groupName }}</td>
+                  <td class="num">{{ g.sourceCount }}</td>
+                  <td class="num ok">{{ g.copyCount }}</td>
+                  <td>
+                    @if (g.skipNotInTarget) {
+                      {{ g.skipNotInTarget }} (ไม่อยู่ในรายชื่อปลายทาง)
+                    }
+                    @if (g.skipNotReady) {
+                      {{ g.skipNotInTarget ? ' · ' : '' }}{{ g.skipNotReady }} (ไม่พร้อมขาย)
+                    }
+                    @if (!g.skipNotInTarget && !g.skipNotReady) {
+                      –
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    } @else {
+      <p class="muted hint">{{ busy() === 'copy-preview' ? 'กำลังตรวจ…' : 'เลือกต้นทางและปลายทางเพื่อดูผลก่อนคัดลอก' }}</p>
+    }
+
+    <p-message severity="warn" icon="pi pi-exclamation-triangle" styleClass="note">ไม่คัดลอก Campaign ที่ผูก — ต้องผูกใหม่ที่ปลายทาง</p-message>
+    <div class="actions">
+      <p-button label="คัดลอก" icon="pi pi-copy" [loading]="busy() === 'copy'" [disabled]="!canEdit() || !copyPlan() || !!busy()" (onClick)="runCopy(false)" />
+    </div>
+  </section>
+
+  <!-- 2) Import -->
+  <section class="v2-card" id="import">
+    <div class="v2-card-head">
+      <h2 class="v2-card-title">Import รายชื่อเข้ากลุ่ม</h2>
+      <p-button label="ดาวน์โหลด Template" icon="pi pi-file" [text]="true" (onClick)="downloadTemplate()" />
+    </div>
+    <app-select-field label="Workspace" [required]="true" [options]="allOptions()" optionLabel="label" optionValue="value" [ngModel]="importWs()" (ngModelChange)="setImportWs($event)" [disabled]="!canEdit()" />
+
+    <p-fileupload
+      #uploader
+      mode="advanced"
+      [customUpload]="true"
+      [auto]="true"
+      accept=".csv"
+      [maxFileSize]="5242880"
+      [multiple]="false"
+      [showUploadButton]="false"
+      [showCancelButton]="false"
+      chooseLabel="เลือกไฟล์"
+      chooseIcon="pi pi-upload"
+      [disabled]="!canEdit()"
+      (uploadHandler)="onFile($event, uploader)"
+    >
+      <ng-template #empty>
+        <div class="drop">
+          <i class="pi pi-cloud-upload"></i>
+          <strong>ลากไฟล์ .csv มาวาง หรือกด "เลือกไฟล์"</strong>
+          <small class="muted">คอลัมน์ seller_Code, group_Name · ≤ 5 MB · ≤ 10,000 แถว (Excel: บันทึกเป็น CSV UTF-8)</small>
+        </div>
+      </ng-template>
+    </p-fileupload>
+
+    @if (importResult(); as r) {
+      <div class="result-head">
+        <strong>ตรวจสอบก่อนบันทึก · {{ r.rows.length }} แถว</strong>
+        <span class="muted">{{ fileName() }} · ผ่าน {{ r.passed }} · ไม่ผ่าน {{ r.failed }}</span>
+      </div>
+      <div class="v2-table-wrap">
+        <div class="v2-table-scroll tall">
+          <table class="v2-table">
+            <thead>
+              <tr>
+                <th class="num">แถว</th>
+                <th>seller_Code</th>
+                <th>group_Name</th>
+                <th>ผล</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of r.rows; track row.row) {
+                <tr>
+                  <td class="num">{{ row.row }}</td>
+                  <td class="nowrap">{{ row.sellerCode || '–' }}</td>
+                  <td class="nowrap">{{ row.groupName || '–' }}{{ row.newGroup ? ' (สร้างอัตโนมัติ)' : '' }}</td>
+                  <td class="nowrap"><p-tag [value]="row.message" [severity]="row.ok ? (row.message === 'ผ่าน' ? 'success' : 'info') : 'danger'" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="actions">
+        <p-button label="ยกเลิก" [text]="true" severity="secondary" (onClick)="cancelImport()" />
+        <p-button [label]="'บันทึก ' + r.passed + ' แถวที่ผ่าน'" icon="pi pi-check" [loading]="busy() === 'import'" [disabled]="!canEdit() || !r.passed || !!busy()" (onClick)="runImport(true)" />
+      </div>
+    }
+  </section>
+</div>
+
+<!-- 3) Audit log -->
+<section class="v2-card" id="audit">
+  <div class="v2-card-head">
+    <h2 class="v2-card-title">Audit log</h2>
+    <span class="muted small">แก้ไขหรือลบ Log ไม่ได้ · {{ logs().length }} รายการ</span>
+  </div>
+  <div class="audit-filters">
+    <app-select-field label="Workspace" [showClear]="true" [options]="allOptions()" optionLabel="label" optionValue="value" [ngModel]="auditWs()" (ngModelChange)="setAudit({ ws: $event })" />
+    <app-text-field label="ผู้ขาย / กลุ่ม / Campaign" [ngModel]="auditQ()" (ngModelChange)="setAudit({ q: $event ?? '' })" />
+    <app-date-field label="ตั้งแต่วันที่" [ngModel]="auditFrom()" (ngModelChange)="setAudit({ from: $event || '' })" />
+    <app-date-field label="ถึงวันที่" [min]="auditFrom() || null" [ngModel]="auditTo()" (ngModelChange)="setAudit({ to: $event || '' })" />
+  </div>
+  <div class="v2-table-wrap">
+    <div class="v2-table-scroll tall">
+      <table class="v2-table">
+        <thead>
+          <tr>
+            <th>วันเวลา</th>
+            <th>การกระทำ</th>
+            <th>Workspace / กลุ่ม</th>
+            <th>รายละเอียด</th>
+            <th>ผู้ทำ</th>
+            <th>ที่มา</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of logs(); track l.logId) {
+            <tr>
+              <td class="nowrap">{{ dateTime(l.createdAt) }}</td>
+              <td class="nowrap">{{ actionLabel[l.action] ?? l.action }}</td>
+              <td class="nowrap">
+                @if (l.groupId && l.action !== 'DELETE_GROUP') {
+                  <a [routerLink]="['/seller/group', l.groupId]">{{ l.groupName }}</a>
+                } @else {
+                  {{ l.groupName ?? l.packageCode + ' × ' + l.channelCode }}
+                }
+                <small class="muted block">{{ l.packageCode }} × {{ l.channelCode }}</small>
+              </td>
+              <td>{{ l.detail }}</td>
+              <td class="nowrap">{{ l.actorName }}</td>
+              <td class="nowrap"><p-tag [value]="sourceLabel[l.source] ?? l.source" severity="secondary" /></td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="table-empty">ไม่พบประวัติตามเงื่อนไข</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

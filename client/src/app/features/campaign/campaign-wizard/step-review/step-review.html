@@ -1,0 +1,132 @@
+@let f = form();
+@let d = f.data;
+
+@if (readonly()) {
+} @else if (totalGaps()) {
+  <p-message severity="warn" icon="pi pi-exclamation-triangle" styleClass="msg">
+    ยังกรอกไม่ครบ {{ totalGaps() }} รายการ — ส่งอนุมัติไม่ได้จนกว่าจะครบ (กด "ไปแก้ไข" ในแต่ละส่วน)
+  </p-message>
+} @else {
+  <p-message severity="success" icon="pi pi-check-circle" styleClass="msg">
+    กรอกครบแล้ว — กด "ส่งอนุมัติ" เพื่อส่งให้ Campaign Approver (ระบบตรวจช่วงวันทับซ้อน / Stock อีกครั้งตอนส่ง)
+  </p-message>
+}
+
+<div class="review">
+  <div class="col">
+    <!-- ขั้น 1–2 -->
+    <section class="card">
+      <div class="sec-head">
+        <h2>ข้อมูลทั่วไป</h2>
+        @if (!readonly()) { <button type="button" class="edit" (click)="jump.emit(2)"><i class="pi pi-pencil"></i> ไปแก้ไข</button> }
+      </div>
+      @if (!readonly() && gaps(2).length) {
+        <p class="gaps"><i class="pi pi-exclamation-circle"></i> ยังไม่ครบ: {{ gaps(2).join(', ') }}</p>
+      }
+      <dl>
+        <dt>Campaign Code</dt><dd>{{ detail()?.campaignCode ?? 'สร้างเมื่อบันทึกครั้งแรก' }}</dd>
+        <dt>ประเภท</dt><dd>{{ typeName() }}</dd>
+        <dt>ชื่อ (TH / EN)</dt><dd>{{ f.nameTh || '–' }}<br />{{ f.nameEn || '–' }}</dd>
+        <dt>วัตถุประสงค์</dt><dd>{{ master('MS-02', d.objective) }}</dd>
+        <dt>รายละเอียด</dt><dd>{{ d.description || '–' }}</dd>
+        <dt>Package</dt><dd class="pre">{{ packages() }}</dd>
+        <dt>ช่วงวัน</dt><dd>{{ f.startDate | thDate: '–' }} – {{ f.endDate | thDate: '–' }}</dd>
+        <dt>ช่องทางขาย</dt><dd>{{ channels() }}</dd>
+        @if (!referral()) {
+          <dt>งบประมาณรวม</dt><dd>{{ money(d.budget) }}</dd>
+          <dt>จำนวนสิทธิ์</dt><dd>รวม {{ count(d.quotaTotal) }} · ต่อกรมธรรม์ {{ count(d.quotaPerPolicy) }}</dd>
+          <dt>จังหวะให้สิทธิ์</dt><dd>{{ master('MS-03', d.rewardTiming) }}</dd>
+          <dt>Clawback</dt><dd>{{ master('MS-04', d.clawback) }}</dd>
+          <dt>Promo code</dt><dd>{{ d.promoCode || 'ไม่มี (ให้อัตโนมัติ)' }}</dd>
+        }
+        <dt>ข้อกำหนด (TH)</dt><dd class="pre">{{ d.tncTh || '–' }}</dd>
+        <dt>Cost center</dt><dd>{{ master('MS-06', d.costCenter) }}</dd>
+        <dt>รูป</dt><dd>{{ d.bannerDesktop || '–' }} · {{ d.bannerMobile || '–' }} · {{ d.thumbnail || '–' }}</dd>
+        <dt>เอกสารแนบ</dt><dd>{{ d.attachment || '–' }}</dd>
+      </dl>
+    </section>
+
+    <!-- ขั้น 3 -->
+    <section class="card">
+      <div class="sec-head">
+        <h2>สิทธิประโยชน์</h2>
+        @if (!readonly()) { <button type="button" class="edit" (click)="jump.emit(3)"><i class="pi pi-pencil"></i> ไปแก้ไข</button> }
+      </div>
+      @if (!readonly() && gaps(3).length) {
+        <p class="gaps"><i class="pi pi-exclamation-circle"></i> ยังไม่ครบ: {{ gaps(3).join(', ') }}</p>
+      }
+      <dl>
+        @for (r of benefitRows(); track r.field.key) {
+          <dt>{{ r.field.label }}</dt><dd class="pre">{{ r.text }}</dd>
+        }
+      </dl>
+    </section>
+
+    <!-- ขั้น 4 -->
+    <section class="card">
+      <div class="sec-head">
+        <h2>เงื่อนไขผู้มีสิทธิ์</h2>
+        @if (!referral() && !readonly()) {
+          <button type="button" class="edit" (click)="jump.emit(4)"><i class="pi pi-pencil"></i> ไปแก้ไข</button>
+        }
+      </div>
+      @if (referral()) {
+        <p class="hint">ไม่มี — Referral ใช้ติดตามยอดขายผ่านลิงก์อย่างเดียว (CC-10)</p>
+      } @else {
+        @if (!readonly() && gaps(4).length) {
+          <p class="gaps"><i class="pi pi-exclamation-circle"></i> ยังไม่ครบ: {{ gaps(4).join(', ') }}</p>
+        }
+        <ol class="rules">
+          @for (r of d.rules; track $index) {
+            <li>{{ ruleText(r) }}</li>
+          } @empty {
+            <li class="none">ไม่มีเงื่อนไขเพิ่มเติม — ทุกกรมธรรม์ที่ผ่านเงื่อนไขระบบได้สิทธิ์</li>
+          }
+        </ol>
+      }
+    </section>
+  </div>
+
+  <!-- ตัวอย่างการ์ดโปรโมชัน (Carousel OB-08) -->
+  <aside class="col side">
+    <section class="card">
+      <h2>ตัวอย่างการ์ดโปรโมชัน</h2>
+      <div class="promo">
+        <div class="img">
+          @if (f.typeCode) {
+            <i [class]="icon[f.typeCode]"></i>
+          }
+          <span>{{ d.thumbnail || 'Thumbnail 800×600' }}</span>
+        </div>
+        <div class="body">
+          <span class="type">{{ typeName().split(' · ')[0] }}</span>
+          <strong>{{ headline() }}</strong>
+          <p>{{ f.nameTh || 'ชื่อ Campaign' }}</p>
+          <small><i class="pi pi-calendar"></i> {{ f.startDate | thDate: '–' }} – {{ f.endDate | thDate: '–' }}</small>
+          @if (d.promoCode) {
+            <span class="code">โค้ด {{ d.promoCode }}</span>
+          }
+        </div>
+      </div>
+      <p class="hint small">ภาพจริงแสดงใน Carousel โปรโมชันของหน้า Content ที่ Package ตรงกัน</p>
+    </section>
+
+    @if (!readonly()) {
+    <section class="card">
+      <h2>ความครบถ้วน</h2>
+      <ul class="check">
+        @for (s of steps; track s.no) {
+          @let g = gaps(s.no);
+          <li [class.ok]="!g.length">
+            <i [class]="g.length ? 'pi pi-circle' : 'pi pi-check-circle'"></i>
+            {{ s.no }}. {{ s.title }}
+            @if (g.length) {
+              <small>ขาด {{ g.length }} รายการ</small>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+    }
+  </aside>
+</div>

@@ -1,0 +1,184 @@
+@use 'tokens' as *;
+
+// ค่าจาก Figma Bar / Topbar (1:391)
+.topbar {
+  height: $topbar-height;
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid $border-divider;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+.burger {
+  justify-self: start;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  line-height: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  @include gradient-text;
+}
+
+.right {
+  justify-self: end;
+  position: relative;
+  width: 350px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bell {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  img {
+    display: block;
+  }
+}
+
+.bell-badge {
+  position: absolute;
+  left: 13px;
+  top: -2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 45px;
+  border: 2px solid #fff;
+  background: $primary;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 10px;
+  text-align: center;
+}
+
+.role-badge {
+  height: 24px;
+  min-width: 139px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: $primary-light;
+  color: $primary-9;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover,
+  &[aria-expanded='true'] {
+    border-color: $primary-9;
+  }
+}
+
+.user {
+  width: 97px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  @include gradient-text;
+}
+
+.user-pos {
+  font-size: 10px;
+  line-height: 13.2px;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+// รูปโปรไฟล์: ใช้ตัวอักษรแรกของชื่อจนกว่าจะมีรูปจริงของผู้ใช้
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff 0%, #a1c6f9 100%);
+  border: 0.8px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 9px 11px 19px rgba(0, 0, 0, 0.05);
+  color: #0c4da2;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.caret {
+  display: block;
+}
+
+// ---------- Responsive ----------
+@media (max-width: #{$bp-desktop - 1px}) {
+  .right {
+    width: auto;
+    gap: 16px;
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .topbar {
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    padding: 12px;
+  }
+  .title {
+    font-size: 14px;
+    text-align: left;
+  }
+  .user,
+  .role-badge {
+    display: none;
+  }
+  .right {
+    gap: 12px;
+  }
+}

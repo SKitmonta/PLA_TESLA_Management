@@ -1,0 +1,78 @@
+@if (layout.overlayOpen() && layout.screen() !== 'desktop') {
+  <div class="backdrop" (click)="layout.closeOverlay()"></div>
+}
+
+<aside
+  class="sidebar"
+  [class.collapsed]="layout.collapsed()"
+  [class.hidden]="layout.hidden()"
+  [class.floating]="layout.screen() !== 'desktop'"
+  aria-label="เมนูหลัก"
+>
+  <div class="brand">
+    @if (layout.collapsed()) {
+      <span class="brand-mark">P</span>
+    } @else {
+      <img [src]="asset + 'logo.svg'" width="107.554" height="40.0002" alt="PhillipLife ให้ชีวิตไปได้ไกลขึ้น" />
+    }
+  </div>
+
+  <nav class="nav">
+    @for (m of menu(); track m.key) {
+      <div class="menu-item" [class.selected]="isSelected(m)">
+        <a class="menu-link" [routerLink]="m.path" (click)="onNavigate()" [attr.title]="layout.collapsed() ? m.label : null">
+          <img [src]="icon(m, isSelected(m))" width="18" height="18" alt="" />
+          @if (!layout.collapsed()) {
+            <span>{{ m.label }}</span>
+          }
+        </a>
+        @if (!layout.collapsed()) {
+          <button
+            type="button"
+            class="chevron"
+            [class.open]="isOpen(m.key) && hasSubmenu(m)"
+            [attr.aria-label]="'เปิด/ปิดเมนูย่อย ' + m.label"
+            [attr.aria-expanded]="isOpen(m.key)"
+            (click)="toggle(m.key)"
+          >
+            <img [src]="asset + (isSelected(m) ? 'chevron-down-active.svg' : 'chevron-down.svg')" width="18" height="18" alt="" />
+          </button>
+        }
+      </div>
+
+      @if (!layout.collapsed() && hasSubmenu(m) && isOpen(m.key)) {
+        @for (c of m.children; track c.path) {
+          <a
+            class="menu-item sub"
+            [routerLink]="c.path"
+            routerLinkActive="selected"
+            #rla="routerLinkActive"
+            (click)="onNavigate()"
+          >
+            <span class="menu-link">
+              @if (c.icon === 'add') {
+                <svg class="sub-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                  <path d="M4.5 9H13.5M9 13.5V4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+                </svg>
+              } @else {
+                <img [src]="icon(m, rla.isActive)" width="18" height="18" alt="" />
+              }
+              <span>{{ c.label }}</span>
+            </span>
+          </a>
+        }
+      }
+    }
+  </nav>
+
+  @if (!layout.collapsed()) {
+    <div class="system-card">
+      <p class="system-version">System v{{ info.version }}</p>
+      <div class="system-date">
+        <img [src]="asset + 'clock.svg'" width="12" height="12" alt="" />
+        <span>{{ info.releaseDate }}</span>
+      </div>
+      <p class="system-copy">{{ info.copyright }}</p>
+    </div>
+  }
+</aside>

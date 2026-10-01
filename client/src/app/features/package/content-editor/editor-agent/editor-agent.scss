@@ -1,0 +1,117 @@
+@use 'tokens' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+// AG-01 ตัวอย่างการ์ดตัวแทน
+.agent-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid #e9eaeb;
+  border-radius: 12px;
+
+  .avatar {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: $primary-light;
+    font-size: $fs-body;
+    font-weight: 700;
+    color: $brand-navy;
+  }
+  .who {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    strong {
+      font-size: $fs-subheading;
+      color: $brand-navy;
+    }
+    span {
+      font-size: $fs-small;
+      color: $text-muted;
+    }
+  }
+  .btns {
+    display: flex;
+    gap: 8px;
+  }
+  .pv-btn {
+    padding: 8px 14px;
+    border: 1px solid $brand-navy;
+    border-radius: 8px;
+    font-size: $fs-body;
+    font-weight: 600;
+    color: $brand-navy;
+
+    &.dark {
+      background: $brand-navy;
+      color: #fff;
+    }
+  }
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  min-height: 40px;
+
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $fs-body;
+  }
+  input {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+td.file {
+  font-size: $fs-body;
+  white-space: nowrap;
+}
+
+label.add {
+  cursor: pointer;
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .agent-preview {
+    flex-wrap: wrap;
+  }
+}
+
+// PrimeNG — ช่องเพิ่ม Tag / Checkbox ช่องทางติดต่อ
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.tag-in {
+  width: 220px;
+}
+.checks label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 16px;
+  cursor: pointer;
+}

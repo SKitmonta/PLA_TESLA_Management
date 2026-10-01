@@ -1,0 +1,265 @@
+@use 'tokens' as *;
+
+// P-03 รายละเอียดกลุ่ม & ผูก Campaign (Figma 17:224)
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.head {
+  --c: #2854a7;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: -24px -40px 0;
+  padding: 20px 40px;
+  background: #fff;
+  border-bottom: 1px solid $border-divider;
+}
+
+:host-context(.tablet) .head {
+  margin: -20px -24px 0;
+  padding: 16px 24px;
+}
+
+:host-context(.mobile) .head {
+  margin: -16px -12px 0;
+  padding: 14px 12px;
+}
+
+.back {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 20px;
+  color: $text;
+}
+
+.title {
+  flex: 1;
+  min-width: 240px;
+
+  h1 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: $fs-heading;
+    font-weight: 700;
+    color: $brand-navy;
+  }
+  .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--c);
+  }
+  .count {
+    font-size: 14px;
+    font-weight: 500;
+    color: $text-muted;
+  }
+  .meta {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: $text-muted;
+
+    a {
+      color: $primary-9;
+      font-weight: 600;
+      text-decoration: none;
+    }
+  }
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+}
+
+:host ::ng-deep .hdr-btn {
+  min-width: 130px;
+  height: 44px;
+  font-weight: 600;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 440px;
+  gap: 20px;
+  align-items: start;
+}
+
+:host-context(.tablet) .layout,
+:host-context(.mobile) .layout {
+  grid-template-columns: 1fr;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.v2-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.v2-card-head {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.small {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.search {
+  width: 260px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  align-items: center;
+
+  .span2 {
+    grid-column: 1 / -1;
+  }
+}
+
+:host-context(.mobile) .info-grid {
+  grid-template-columns: 1fr;
+}
+
+.colors {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .lbl {
+    font-size: 13px;
+    color: $text-muted;
+    margin-right: 4px;
+  }
+}
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px $border-divider;
+  cursor: pointer;
+
+  &.on {
+    box-shadow: 0 0 0 2px $brand-navy;
+  }
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.tall {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+tr.off td {
+  color: #9aa1ad;
+}
+
+.side {
+  position: sticky;
+  top: 12px;
+}
+
+:host-context(.tablet) .side,
+:host-context(.mobile) .side {
+  position: static;
+}
+
+.camps,
+.cands {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.camps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid $border-divider;
+  border-radius: 8px;
+
+  .c-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    a {
+      color: $primary-9;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .c-name {
+      font-size: 13px;
+    }
+    small {
+      font-size: 12px;
+    }
+  }
+
+  &.empty {
+    justify-content: center;
+    color: $text-muted;
+    font-size: 13px;
+    border-style: dashed;
+  }
+}
+
+.add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+:host ::ng-deep .bind-btn {
+  height: 53px;
+}
+
+.cands li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+
+  &.off span {
+    color: #9aa1ad;
+  }
+}
+
+:host ::ng-deep .note {
+  font-size: 12px;
+}
+
+.confirm {
+  margin: 0;
+  line-height: 1.6;
+}

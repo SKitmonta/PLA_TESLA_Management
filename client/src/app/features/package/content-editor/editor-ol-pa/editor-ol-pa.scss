@@ -1,0 +1,25 @@
+@use 'tokens' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+// PA-07 ตารางกลุ่ม/รายการ
+table.cov {
+  td.item {
+    padding-left: 28px;
+  }
+  tr.group td {
+    background: #fbfcfe;
+  }
+  .num {
+    width: 150px;
+    text-align: right;
+  }
+  .in.strong {
+    font-weight: 700;
+  }
+}

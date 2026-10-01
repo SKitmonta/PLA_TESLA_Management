@@ -1,0 +1,41 @@
+<span class="summary">Showing {{ from() }} to {{ to() }} of {{ total() }} entries</span>
+
+<div class="controls">
+  <nav class="pages" aria-label="เปลี่ยนหน้า">
+    <button type="button" class="ctrl mirror" [disabled]="page() <= 1" (click)="go(page() - 1)" aria-label="หน้าก่อนหน้า">
+      <img src="assets/figma/page-prev.svg" width="20" height="20" alt="" />
+    </button>
+    <button type="button" class="ctrl mirror" [disabled]="page() <= 1" (click)="go(1)" aria-label="หน้าแรก">
+      <img src="assets/figma/page-first.svg" width="20" height="20" alt="" />
+    </button>
+
+    @for (p of pages(); track $index) {
+      @if (p === 'gap') {
+        <span class="page gap">…</span>
+      } @else {
+        <button type="button" class="page" [class.current]="p === page()" [attr.aria-current]="p === page() ? 'page' : null" (click)="go(p)">
+          {{ p }}
+        </button>
+      }
+    }
+
+    <button type="button" class="ctrl" [disabled]="page() >= pageCount()" (click)="go(page() + 1)" aria-label="หน้าถัดไป">
+      <img src="assets/figma/page-next.svg" width="20" height="20" alt="" />
+    </button>
+    <button type="button" class="ctrl" [disabled]="page() >= pageCount()" (click)="go(pageCount())" aria-label="หน้าสุดท้าย">
+      <img src="assets/figma/page-last.svg" width="20" height="20" alt="" />
+    </button>
+  </nav>
+
+  <p-floatlabel variant="in" class="size">
+    <p-select
+      inputId="page-size"
+      [options]="pageSizeOptions()"
+      [ngModel]="pageSize()"
+      (ngModelChange)="changeSize($event)"
+      appendTo="body"
+      [fluid]="true"
+    />
+    <label for="page-size">แถว/หน้า</label>
+  </p-floatlabel>
+</div>

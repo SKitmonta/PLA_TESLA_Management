@@ -1,0 +1,15 @@
+<nav class="navbar" aria-label="Breadcrumb">
+  <a routerLink="/overview" class="home" aria-label="หน้าแรก">
+    <img src="assets/figma/home-trend-up.svg" width="20" height="20" alt="" />
+  </a>
+  @if (menu(); as m) {
+    <span class="sep">/</span>
+    @if (title()) {
+      <a [routerLink]="m.path" class="crumb">{{ m.label }}</a>
+      <span class="sep">/</span>
+      <span class="current">{{ title() }}</span>
+    } @else {
+      <span class="current">{{ m.label }}</span>
+    }
+  }
+</nav>

@@ -1,0 +1,12 @@
+@let f = form();
+<div class="body">
+  <app-text-field label="Header" [(ngModel)]="f.promotion.header" />
+  <div class="info">
+    <span class="i">i</span>
+    @if (isAgent()) {
+      <span>Carousel แสดงเฉพาะ Campaign ที่ผูกกับ <strong>กลุ่มของตัวแทนเจ้าของลิงก์</strong> <span class="src s-cmp">CMP</span> (CC-04) · ตัวแทนคนละกลุ่มเห็นโปรโมชันต่างกัน</span>
+    } @else {
+      <span>Carousel ดึง Campaign ที่ Active และผูกกับ Package นี้ <span class="src s-cmp">CMP</span> · ไม่มี Campaign → ซ่อน Section อัตโนมัติ</span>
+    }
+  </div>
+</div>

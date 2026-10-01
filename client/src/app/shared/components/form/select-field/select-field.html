@@ -1,0 +1,28 @@
+<ng-template #field>
+  <p-select
+    [inputId]="id"
+    [options]="options()"
+    [optionLabel]="optionLabel()"
+    [optionValue]="optionValue()"
+    [optionDisabled]="optionDisabled()"
+    [ngModel]="value()"
+    (ngModelChange)="change($event)"
+    (onBlur)="touch()"
+    [filter]="filter()"
+    [showClear]="showClear()"
+    [disabled]="isDisabled()"
+    [placeholder]="label() ? undefined : placeholder() || undefined"
+    [fluid]="true"
+    appendTo="body"
+    emptyMessage="ไม่มีตัวเลือก"
+  />
+</ng-template>
+
+@if (label()) {
+  <p-floatlabel variant="in">
+    <ng-container *ngTemplateOutlet="field" />
+    <label [for]="id">{{ label() }}@if (required()) { <span class="req">*</span> }</label>
+  </p-floatlabel>
+} @else {
+  <ng-container *ngTemplateOutlet="field" />
+}

@@ -1,0 +1,164 @@
+@let f = form();
+@let c = content();
+
+<app-editor-section sid="OB-01" heading="ตั้งค่าหน้า" badge="diff" badgeText="ต่างจาก OL_OB" hint="เข้าได้ผ่าน Referral link ของตัวแทน · ไม่มี SEO">
+  <app-sec-page-settings [form]="f" [content]="c" />
+</app-editor-section>
+<app-editor-section sid="OB-02" heading="Hero Banner" [collapsible]="true"><app-sec-hero-banner [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-03" heading="Key Features" [collapsible]="true"><app-sec-key-features [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-04" heading="Sticky bar" badge="diff" badgeText="ต่างจาก OL_OB" hint='ปุ่ม "ซื้อเลย" → "ให้ตัวแทนติดต่อกลับ"'>
+  <app-sec-sticky-bar [form]="f" [content]="c" />
+</app-editor-section>
+
+<app-editor-section sid="AG-01" heading="การ์ดตัวแทน (ดึงจากเจ้าของลิงก์)" badge="new" badgeText="ใหม่ · แสดงบนหน้าลูกค้า" hint="ตัวแทนแก้เองไม่ได้">
+  <div class="body">
+    <div class="agent-preview">
+      <span class="avatar">[รูป]</span>
+      <div class="who">
+        <strong>[ชื่อ-นามสกุลตัวแทน]</strong>
+        <span>ตัวแทนประกันชีวิต · ใบอนุญาตเลขที่ [เลขที่ใบอนุญาต] [สาขา / สังกัด]</span>
+      </div>
+      <div class="btns">
+        @if (f.agentCard.showPhone) { <span class="pv-btn">โทร</span> }
+        @if (f.agentCard.showLine) { <span class="pv-btn dark">LINE</span> }
+        @if (f.agentCard.showEmail) { <span class="pv-btn">อีเมล</span> }
+      </div>
+    </div>
+    <div class="g3">
+      <app-text-field label="ข้อมูลตัวแทน (DRV)" [readonly]="true" [ngModel]="'ชื่อ, ใบอนุญาต, สาขา (จากฐานข้อมูลผู้ขาย)'" />
+      <div class="fld">
+        <span class="lbl">ช่องทางติดต่อที่แสดง <span class="src s-cms">CMS</span></span>
+        <div class="checks">
+          <label><p-checkbox [binary]="true" inputId="ag-phone" [(ngModel)]="f.agentCard.showPhone" [disabled]="locked()" /> โทร</label>
+          <label><p-checkbox [binary]="true" inputId="ag-line" [(ngModel)]="f.agentCard.showLine" [disabled]="locked()" /> LINE</label>
+          <label><p-checkbox [binary]="true" inputId="ag-email" [(ngModel)]="f.agentCard.showEmail" [disabled]="locked()" /> อีเมล</label>
+        </div>
+      </div>
+      <app-select-field label="ตำแหน่งบนหน้า" [options]="positions" [(ngModel)]="f.agentCard.position" />
+    </div>
+    <div class="info gray">
+      <span class="i" style="color: #44506a">i</span>
+      <span>แสดงเฉพาะเมื่อตัวแทน "พร้อมขาย" (Active + ใบอนุญาตไม่หมดอายุ) · ถ้าไม่พร้อมขาย ลิงก์หยุดนับยอดและซ่อนการ์ด (PM-02)</span>
+    </div>
+  </div>
+</app-editor-section>
+
+<app-editor-section sid="OB-05" heading="Premium Calculator" [collapsible]="true"><app-sec-premium-calculator [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-06" heading="จุดเด่นของแผน" [collapsible]="true"><app-sec-highlights [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-07" heading="ผลประโยชน์และความคุ้มครอง" [collapsible]="true"><app-sec-benefits [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-08" heading="โปรโมชัน" badge="diff" badgeText="ต่างจาก OL_OB" hint="โปรโมชันตามกลุ่มผู้ขาย">
+  <app-sec-promotion [form]="f" [content]="c" />
+</app-editor-section>
+<app-editor-section sid="OB-09" heading="ข้อมูลสำคัญอื่นๆ" [collapsible]="true"><app-sec-important-info [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-10" heading="สรุปสาระสำคัญ / เงื่อนไขทั่วไป" [collapsible]="true"><app-sec-summary [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-11" heading="ประกันอื่นที่น่าสนใจ" [collapsible]="true" collapsedHint="Field เหมือน OL_OB · เลือกได้เฉพาะ Content AGENT"><app-sec-recommend [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-12" heading="การ์ดสินค้า" [collapsible]="true"><app-sec-product-card [form]="f" [content]="c" /></app-editor-section>
+
+<app-editor-section sid="AG-02" heading="จุดขาย & กลุ่มลูกค้าเป้าหมาย" badge="agent" badgeText="เฉพาะตัวแทน · ไม่แสดงต่อลูกค้า" hint="แสดงในหน้า Referral links ของตัวแทน">
+  <div class="body">
+    <div class="fld">
+      <span class="lbl">กลุ่มลูกค้าเป้าหมาย <span class="src s-cms">CMS</span></span>
+      <div class="chips">
+        @for (t of f.sellingPoints.tags; track t; let i = $index) {
+          <p-chip [label]="t" [removable]="!locked()" (onRemove)="removeTag(i)" />
+        }
+        <app-text-field class="tag-in" label="กลุ่มเป้าหมายใหม่" [ngModel]="newTag()" (ngModelChange)="newTag.set($event)" (keydown.enter)="addTag()" />
+        <p-button label="เพิ่ม Tag" icon="pi pi-plus" [outlined]="true" [disabled]="locked() || !newTag().trim()" (onClick)="addTag()" />
+      </div>
+    </div>
+
+    <span class="lbl">จุดขายหลัก <span class="src s-cms">CMS</span></span>
+    <div class="rows">
+      <div class="rows-scroll">
+        <table>
+          <thead><tr><th class="handle"></th><th>จุดขาย</th><th>วิธีนำเสนอ</th><th class="act"></th></tr></thead>
+          <tbody>
+            @for (r of f.sellingPoints.points; track $index; let i = $index) {
+              <tr [attr.draggable]="pointDrag.armed === i" (dragstart)="pointDrag.start(i)" (dragover)="pointDrag.over(i, $event)" (drop)="pointDrag.drop(f.sellingPoints.points)" (dragend)="pointDrag.end()" [class.dragging]="pointDrag.from === i" [class.drop-target]="pointDrag.isTarget(i)">
+                <td class="handle"><span class="grip" (mousedown)="pointDrag.arm(i)"></span></td>
+                <td><app-text-field [label]="'จุดขายข้อ ' + (i + 1)" [(ngModel)]="r.point" /></td>
+                <td><app-text-field label="วิธีนำเสนอ" [(ngModel)]="r.how" /></td>
+                <td class="act"><p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบ" [disabled]="locked()" (onClick)="removePoint(i)" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p-button label="เพิ่มจุดขาย" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="addPoint()" />
+
+    <span class="lbl">คำถามที่พบบ่อย / การตอบข้อโต้แย้ง <span class="src s-cms">CMS</span></span>
+    <div class="rows">
+      <div class="rows-scroll">
+        <table>
+          <thead><tr><th class="handle"></th><th>คำถาม</th><th>คำตอบแนะนำ</th><th class="act"></th></tr></thead>
+          <tbody>
+            @for (r of f.sellingPoints.faqs; track $index; let i = $index) {
+              <tr [attr.draggable]="faqDrag.armed === i" (dragstart)="faqDrag.start(i)" (dragover)="faqDrag.over(i, $event)" (drop)="faqDrag.drop(f.sellingPoints.faqs)" (dragend)="faqDrag.end()" [class.dragging]="faqDrag.from === i" [class.drop-target]="faqDrag.isTarget(i)">
+                <td class="handle"><span class="grip" (mousedown)="faqDrag.arm(i)"></span></td>
+                <td><app-text-field label="คำถาม" [(ngModel)]="r.q" /></td>
+                <td><app-text-field label="คำตอบแนะนำ" [(ngModel)]="r.a" /></td>
+                <td class="act"><p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบ" [disabled]="locked()" (onClick)="removeFaq(i)" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p-button label="เพิ่มคำถาม" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="addFaq()" />
+  </div>
+</app-editor-section>
+
+<app-editor-section sid="AG-03" heading="Sales kit (เอกสารช่วยขาย)" badge="agent" badgeText="เฉพาะตัวแทน · ไม่แสดงต่อลูกค้า" hint="ตัวแทนดาวน์โหลดได้">
+  <div class="body">
+    <div class="rows">
+      <div class="rows-scroll">
+        <table>
+          <thead><tr><th class="handle"></th><th>ชื่อเอกสาร</th><th>ไฟล์</th><th>ส่งต่อให้ลูกค้าได้</th><th class="act"></th></tr></thead>
+          <tbody>
+            @for (k of f.salesKit; track $index; let i = $index) {
+              <tr [attr.draggable]="kitDrag.armed === i" (dragstart)="kitDrag.start(i)" (dragover)="kitDrag.over(i, $event)" (drop)="kitDrag.drop(f.salesKit)" (dragend)="kitDrag.end()" [class.dragging]="kitDrag.from === i" [class.drop-target]="kitDrag.isTarget(i)">
+                <td class="handle"><span class="grip" (mousedown)="kitDrag.arm(i)"></span></td>
+                <td><app-text-field label="ชื่อเอกสาร" [(ngModel)]="k.name" /></td>
+                <td class="file"><p-tag [value]="fileType(k.file)" severity="secondary" /> {{ k.file }}</td>
+                <td style="width: 170px">
+                  <app-select-field label="ส่งต่อได้" [options]="shareOptions" optionLabel="label" optionValue="value" [(ngModel)]="k.shareable" />
+                </td>
+                <td class="act"><p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบเอกสาร" [disabled]="locked()" (onClick)="removeKit(i)" /></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="help" style="text-align: center; padding: 16px">ยังไม่มีเอกสาร</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="actions">
+      <p-button label="อัปโหลดเอกสาร" icon="pi pi-upload" [outlined]="true" [disabled]="locked()" (onClick)="kitFile.click()" />
+      <input #kitFile type="file" hidden multiple accept=".pdf,.jpg,.jpeg,.png" (change)="uploadKit($event)" />
+      <span class="help">.pdf / .jpg / .png ≤ 10 MB ต่อไฟล์ · เอกสารที่ "ส่งต่อได้" จะมีปุ่มแชร์ในหน้าตัวแทน</span>
+    </div>
+    @if (kitError) { <p class="help err">{{ kitError }}</p> }
+  </div>
+</app-editor-section>
+
+<app-editor-section sid="AG-04" heading="ชุดแชร์โซเชียล" badge="agent" badgeText="เฉพาะตัวแทน · ไม่แสดงต่อลูกค้า" hint="ใช้คู่กับ Referral link">
+  <div class="body">
+    <div class="g3">
+      <app-upload-box label="รูปแชร์ 1:1" spec="1080×1080 px · Facebook / LINE" [(value)]="f.social.img11" />
+      <app-upload-box label="รูปแชร์ 9:16" spec="1080×1920 px · Story" [(value)]="f.social.img916" />
+      <app-upload-box label="รูปแชร์ 1.91:1" spec="1200×628 px · Link preview" [(value)]="f.social.img191" />
+    </div>
+    <div class="fld">
+      <app-textarea-field label="ข้อความสำเร็จรูป (TH)" [(ngModel)]="f.social.message" />
+      <p class="help">ตัวแปรที่ใช้ได้: {{ '{ชื่อตัวแทน} {เบอร์โทร} {ลิงก์}' }} — ระบบแทนค่าจากเจ้าของ Referral link</p>
+    </div>
+    <div class="g2">
+      <app-text-field label="Hashtag" placeholder="#ฟิลลิปประกันชีวิต" [(ngModel)]="f.social.hashtag" />
+      <div class="fld">
+        <app-text-field label="Preview ลิงก์ (OG title)" [readonly]="true" [ngModel]="f.hero.displayName" />
+        <p class="help">จากชื่อแสดงผลใน OB-02</p>
+      </div>
+    </div>
+  </div>
+</app-editor-section>

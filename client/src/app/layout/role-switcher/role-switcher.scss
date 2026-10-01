@@ -1,0 +1,116 @@
+@use 'tokens' as *;
+
+:host {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 300;
+}
+
+.panel {
+  width: 460px;
+  max-width: calc(100vw - 24px);
+  padding: 14px;
+  border-radius: 16px;
+}
+
+.panel-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: $primary;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid $border-divider;
+
+  div {
+    display: flex;
+    flex-direction: column;
+  }
+  span {
+    font-size: 12px;
+  }
+}
+
+.empty {
+  margin: 4px 0;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.users {
+  border-right: 1px solid $border-divider;
+  padding-right: 12px;
+}
+
+li button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: $text-nav;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: $bg-subtle;
+  }
+  &.on {
+    background: $primary-light;
+    color: $primary;
+    font-weight: 700;
+  }
+}
+
+.users button {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.u-pos {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  :host {
+    position: fixed;
+    top: $topbar-height;
+    left: 12px;
+    right: 12px;
+  }
+  .panel {
+    width: 100%;
+    max-width: none;
+  }
+  .cols {
+    grid-template-columns: 1fr;
+  }
+  .users {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid $border-divider;
+    padding-bottom: 10px;
+  }
+}

@@ -1,0 +1,29 @@
+@let f = form();
+<div class="body">
+  <div class="g3">
+    <app-text-field [label]="'URL slug · ' + prefix()" [required]="true" [(ngModel)]="f.page.slug" />
+    <app-select-field label="หมวดสินค้า" [required]="true" [options]="categories" optionLabel="name" optionValue="name" [(ngModel)]="f.page.category" />
+    @if (isAgent()) {
+      <app-text-field label="การแสดงบน Search engine" [readonly]="true" [ngModel]="'ไม่แสดง (noindex) · เข้าผ่านลิงก์ตัวแทนเท่านั้น'" />
+    } @else {
+      <app-number-field label="ลำดับแสดงผล" [min]="1" [grouping]="false" [(ngModel)]="f.page.order" />
+    }
+  </div>
+  <p class="help">{{ isAgent() ? 'ลิงก์จริงของตัวแทน = URL นี้ + Referral token' : 'URL slug ใช้ a-z, 0-9, ขีด · ห้ามซ้ำ' }}</p>
+
+  @if (!isAgent()) {
+    <div class="g3">
+      <app-text-field label="SEO title" [maxlength]="70" [(ngModel)]="f.page.seoTitle" />
+      <app-text-field class="span2" label="SEO description (≤ 160 ตัวอักษร)" [maxlength]="160" [(ngModel)]="f.page.seoDescription" />
+    </div>
+  }
+
+  <div class="g3">
+    <app-date-field label="ช่วงแสดงผล Start Date" [required]="true" [min]="minStart()" [max]="maxEnd()" [(ngModel)]="f.display.startDate" />
+    <app-date-field label="End Date" [min]="f.display.startDate || minStart()" [max]="maxEnd()" [(ngModel)]="f.display.endDate" />
+    <p class="help" style="align-self: center">
+      เริ่มได้ตั้งแต่ {{ minStart().split('-').reverse().join('/') }} · สิ้นสุดได้ถึง
+      {{ maxEnd() ? maxEnd().split('-').reverse().join('/') : 'ไม่จำกัด (Package ไม่ระบุวันสิ้นสุด)' }} (FD-09)
+    </p>
+  </div>
+</div>

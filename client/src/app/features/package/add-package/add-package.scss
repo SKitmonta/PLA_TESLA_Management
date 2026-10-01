@@ -1,0 +1,43 @@
+@use 'tokens' as *;
+
+// สไตล์เฉพาะหน้า Package › Add Package (Package management)
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+:host ::ng-deep .add-btn {
+  min-width: 170px;
+  height: 44px;
+}
+
+.code {
+  font-weight: 500;
+}
+
+.mock {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #fff3e2;
+  color: #a64b00;
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.name {
+  min-width: 280px;
+}
+
+// แถวกรองในหัวตาราง — PrimeNG (Float label ขนาดเล็ก)
+.filters td {
+  min-width: 150px;
+}
+.rejected {
+  display: inline-block !important;
+  margin-left: 6px;
+  color: $status-rej-fg !important;
+  font-size: 12px !important;
+}

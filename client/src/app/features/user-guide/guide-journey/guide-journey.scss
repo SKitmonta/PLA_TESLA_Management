@@ -1,0 +1,74 @@
+@use 'tokens' as *;
+
+// User guide › User journey
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .page-h1 {
+    margin: 0;
+  }
+  .page-sub {
+    margin: 6px 0 0;
+  }
+}
+
+:host ::ng-deep .head-btn {
+  height: 40px;
+}
+
+.v2-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: $primary-9;
+  color: #fff;
+  font-weight: 700;
+}
+
+:host ::ng-deep .journey .p-timeline-event-opposite {
+  display: none;
+}
+
+.stage {
+  padding: 4px 0 22px;
+
+  .s-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: $brand-navy;
+    }
+  }
+  .s-meta {
+    margin: 6px 0 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    font-size: 13px;
+    color: $text-muted;
+  }
+}

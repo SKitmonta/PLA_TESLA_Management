@@ -1,0 +1,57 @@
+// ค่าจาก Figma Status (4:2957)
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.4;
+  overflow: hidden;
+
+  &.active {
+    background: #e4fff8;
+    border-color: #9fe3d2;
+    color: #14c496;
+  }
+  &.inactive {
+    background: #ffb4b6;
+    border-color: #ff383c;
+    color: #ff383c;
+  }
+  &.pending {
+    background: #ffe4cc;
+    border-color: #ff8d28;
+    color: #ff8d28;
+  }
+  &.draft {
+    background: #e5e5ea;
+    border-color: #8e8e93;
+    color: #8e8e93;
+  }
+}
+
+img {
+  display: block;
+}
+
+.mark {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+
+  .check {
+    position: absolute;
+    left: 4.2px;
+    top: 4.9px;
+  }
+  .x {
+    position: absolute;
+    left: 2.76px;
+    top: 2.76px;
+  }
+}

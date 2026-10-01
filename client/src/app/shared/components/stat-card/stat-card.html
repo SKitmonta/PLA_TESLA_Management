@@ -1,0 +1,12 @@
+<div class="inner">
+  <div class="text">
+    <span class="label">{{ label() }}</span>
+    <span class="value">{{ value() }}</span>
+  </div>
+  <span class="icon">
+    <img [src]="'assets/figma/stat-' + icon() + '.svg'" width="48" height="48" alt="" />
+    @if (icon() === 'pending') {
+      <img class="overlay" src="assets/figma/stat-pending-overlay.svg" width="12" height="12" alt="" />
+    }
+  </span>
+</div>

@@ -1,0 +1,21 @@
+@switch (status()) {
+  @case ('active') {
+    <span class="mark">
+      <img src="assets/figma/status-active-circle.svg" width="14" height="14" alt="" />
+      <img class="check" src="assets/figma/status-active-check.svg" width="6.63453" height="5.50762" alt="" />
+    </span>
+  }
+  @case ('inactive') {
+    <span class="mark">
+      <img src="assets/figma/status-inactive-circle.svg" width="14" height="14" alt="" />
+      <img class="x" src="assets/figma/status-inactive-x.svg" width="8.48528" height="8.48528" alt="" />
+    </span>
+  }
+  @case ('pending') {
+    <img src="assets/figma/status-pending.svg" width="16" height="16" alt="" />
+  }
+  @case ('draft') {
+    <img src="assets/figma/status-draft.svg" width="16" height="16" alt="" />
+  }
+}
+<span class="text">{{ text() }}</span>

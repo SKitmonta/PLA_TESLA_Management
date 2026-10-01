@@ -1,0 +1,171 @@
+@use 'tokens' as *;
+
+// Popup Add Package — ค่าจาก Figma 5:3902 (กว้าง 750 · หัว 22px · Dropdown/ปุ่ม 16px · หัว Package 18px)
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 401;
+  width: min(750px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 30px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 25, 75, 0.2);
+  animation: pop 0.18s ease;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: $primary-9;
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  margin: -4px;
+  padding: 4px;
+}
+
+
+.package-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px;
+  border: 1px solid $border-input;
+  border-radius: 20px;
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: $fs-heading;
+    font-weight: 700;
+    color: $primary-9;
+  }
+}
+
+// การ์ดรายละเอียด Package (ป้ายช่องทางมุมขวาบน)
+.pkg-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 34px 20px 20px;
+  border: 1px solid $border-input;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #e8f0ff 0%, #ffffff 70%);
+  overflow: hidden;
+}
+
+.ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 5px 20px;
+  border-bottom-left-radius: 12px;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: $fs-body;
+  font-weight: 600;
+}
+
+.code-tag {
+  margin-bottom: 10px;
+  padding: 4px 9px;
+  border: 1px solid #9aa3b5;
+  border-radius: 6px;
+  background: #eef1f6;
+  font-size: $fs-body;
+  color: $primary-9;
+}
+
+.name-en {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: $primary-9;
+}
+
+.name-th {
+  margin: 0;
+  font-size: $fs-body;
+  color: $text-muted;
+}
+
+.sale {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+  font-size: $fs-small;
+  color: $text-muted;
+}
+
+.empty-note {
+  margin: 0;
+  font-size: $fs-body;
+  color: $text-muted;
+}
+
+.foot {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+:host ::ng-deep .foot-btn {
+  width: 150px;
+  height: 50px;
+  font-weight: 600;
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .dialog {
+    gap: 20px;
+    padding: 20px 16px;
+  }
+  .head h2 {
+    font-size: 20px;
+  }
+  .package-box {
+    padding: 16px;
+  }
+  .pkg-card {
+    padding-top: 40px;
+  }
+  .foot p-button {
+    flex: 1;
+  }
+  :host ::ng-deep .foot-btn {
+    width: 100%;
+  }
+}

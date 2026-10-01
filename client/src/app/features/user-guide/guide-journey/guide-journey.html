@@ -1,0 +1,61 @@
+<header class="page-head">
+  <div>
+    <h1 class="page-h1">User journey</h1>
+    <p class="page-sub">ลำดับงานตั้งแต่เตรียมข้อมูลจนติดตามยอดขาย — แต่ละขั้นทำโดย Role ต่างกัน กด "ดูขั้นตอน" เพื่อเปิดคู่มือทีละขั้น</p>
+  </div>
+  <p-button label="คู่มือการใช้งาน" icon="pi pi-book" routerLink="/guide/manual" styleClass="head-btn" />
+</header>
+
+<section class="v2-card">
+  <p-timeline [value]="stages" align="left" styleClass="journey">
+    <ng-template #marker let-s>
+      <span class="mark">{{ s.code }}</span>
+    </ng-template>
+    <ng-template #content let-s>
+      <div class="stage">
+        <div class="s-head">
+          <h3>{{ s.title }}</h3>
+          <p-tag [value]="s.role" [severity]="s.role === 'ระบบ' ? 'secondary' : 'info'" />
+        </div>
+        <p class="s-meta"><span>เมนู: <strong>{{ s.menu }}</strong></span><span>ผลลัพธ์: {{ s.output }}</span></p>
+        @if (s.role !== 'ระบบ') {
+          <p-button label="ดูขั้นตอน" icon="pi pi-arrow-right" iconPos="right" [text]="true" size="small" routerLink="/guide/manual" [queryParams]="{ ch: s.chapter }" />
+        }
+      </div>
+    </ng-template>
+  </p-timeline>
+</section>
+
+<section class="v2-card">
+  <div class="v2-card-head">
+    <h2 class="v2-card-title">ผลการตรวจสอบระบบตาม Journey</h2>
+    <p-tag [value]="'ผ่าน ' + passed + ' / ' + checks.length" [severity]="passed === checks.length ? 'success' : 'warn'" />
+  </div>
+  <div class="v2-table-wrap">
+    <div class="v2-table-scroll">
+      <table class="v2-table">
+        <thead>
+          <tr>
+            <th>ขั้น</th>
+            <th>สิ่งที่ตรวจ</th>
+            <th>Role ที่ใช้</th>
+            <th>ผลที่คาด</th>
+            <th>ผล</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of checks; track $index) {
+            <tr>
+              <td class="nowrap"><strong>{{ c.stage }}</strong></td>
+              <td>{{ c.check }}</td>
+              <td class="nowrap">{{ c.role }}</td>
+              <td>{{ c.expected }}</td>
+              <td class="nowrap"><p-tag [value]="c.result" [severity]="c.result === 'ผ่าน' ? 'success' : 'danger'" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <small class="muted">ตรวจบน localhost ที่ 1920px ด้วยข้อมูลตั้งต้น (Reset data) · รายละเอียดใน docs/11-user-journey.md</small>
+</section>

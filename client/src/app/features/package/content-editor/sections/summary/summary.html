@@ -1,0 +1,10 @@
+@let f = form();
+<div class="body">
+  <p-message severity="secondary" icon="pi pi-lock">
+    <strong>ข้อความ Legal</strong>&nbsp;ความสมบูรณ์ของสัญญา · กรณีไม่คุ้มครอง · หมายเหตุ · คำเตือน — จัดการโดย Legal/Compliance
+  </p-message>
+  <div class="g2">
+    <app-text-field label="จำนวนวัน Free look ในหมายเหตุ" [readonly]="true" [ngModel]="(content().package.freeLookPeriod ?? '–') + ' วัน'" />
+    <app-upload-box label='เอกสารแนบ "ดูเอกสารเพิ่มเติม"' spec=".pdf ≤ 10 MB" accept=".pdf" [maxMb]="10" [(value)]="f.summary.attachment" />
+  </div>
+</div>

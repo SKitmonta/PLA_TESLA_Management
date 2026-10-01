@@ -1,0 +1,177 @@
+@if (review(); as r) {
+  @let c = r.content;
+  <div class="title-row">
+    <a class="back" routerLink="/package/add" aria-label="กลับไป Package management"><i class="pi pi-arrow-circle-left"></i></a>
+    <h1>ตรวจสอบ Content · {{ c.nameTh }}</h1>
+    <span class="tpl" [class]="'tpl t-' + c.template.toLowerCase()">{{ c.template }}</span>
+    <app-status-badge [status]="status()[0]" [label]="status()[1] + ' · v' + c.versionNo" />
+  </div>
+
+  <div class="layout">
+    <div class="col">
+      <!-- สิ่งที่เปลี่ยน -->
+      <section class="card">
+        <div class="card-head">
+          <h2>{{ r.previous ? 'สิ่งที่เปลี่ยนจาก v' + r.previous.versionNo + ' (ใช้งานอยู่)' : 'Version แรก — ยังไม่มี Version ที่ใช้งานอยู่' }}</h2>
+          @if (r.previous) {
+            <span class="muted">{{ diff().length }} รายการ</span>
+          }
+        </div>
+        @if (!r.previous) {
+          <p class="first-ver">
+            <i class="pi pi-info-circle"></i>
+            Content นี้ยังไม่เคยได้รับอนุมัติ จึงไม่มี Version เดิมให้เทียบ — ตรวจเนื้อหาทั้งหน้าจาก Preview ด้านล่าง
+          </p>
+        } @else {
+        <div class="v2-table-wrap">
+          <div class="v2-table-scroll">
+            <table class="v2-table diff">
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Field</th>
+                  <th>{{ r.previous ? 'v' + r.previous.versionNo : 'เดิม' }}</th>
+                  <th>v{{ c.versionNo }} (ใหม่)</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (d of diff(); track $index) {
+                  <tr>
+                    <td><span class="sec">{{ d.section }}</span></td>
+                    <td class="strong">{{ d.field }}</td>
+                    <td class="old">{{ d.before }}</td>
+                    <td class="new">{{ d.after }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="table-empty">ไม่มีการเปลี่ยนแปลงเนื้อหา</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        }
+      </section>
+
+      <!-- Preview -->
+      <section class="card">
+        <div class="card-head">
+          <h2>Preview หน้าเว็บ</h2>
+          <p-selectbutton [options]="devices" optionLabel="label" optionValue="value" [ngModel]="device()" (ngModelChange)="device.set($event)" [allowEmpty]="false" />
+        </div>
+        @let h = hero();
+        <div class="preview" [class.mobile]="device() === 'mobile'">
+          <div class="hero">
+            @if (h.label) {
+              <span class="chip">{{ h.label }}</span>
+            }
+            <strong>{{ h.title }}</strong>
+            <p>{{ h.headline }}{{ h.sub ? ' · ' + h.sub : '' }}</p>
+            <small>[รูป Hero {{ device() === 'desktop' ? 'Desktop 1920×640' : 'Mobile 750×750' }}{{ h.bg ? ' · ' + h.bg : '' }}]</small>
+          </div>
+          @if (features().length) {
+            <div class="features">
+              @for (f of features(); track $index) {
+                <div class="feat">
+                  @if (f.topic) {
+                    <span>{{ f.topic }}</span>
+                  }
+                  <b>{{ f.value }}</b>
+                </div>
+              }
+            </div>
+          }
+          <div class="sticky">
+            <strong>{{ h.title }}</strong>
+            <span class="price">
+              @if (premium() !== null) {
+                เบี้ยเริ่มต้น <b>{{ premium() | number }}</b> บาท
+              }
+              <span class="buy">{{ c.template === 'AGENT' ? 'ให้ตัวแทนติดต่อกลับ' : 'ซื้อเลย' }}</span>
+            </span>
+          </div>
+        </div>
+        <p class="hint">ตัวอย่างสรุปจากเนื้อหาใน Editor — ไม่ใช่หน้าเว็บจริง</p>
+      </section>
+    </div>
+
+    <aside class="col side">
+      <section class="card">
+        <h2>ข้อมูลคำขอ</h2>
+        <dl>
+          <dt>Content</dt><dd>{{ c.contentCode }} · v{{ c.versionNo }}</dd>
+          <dt>Package</dt><dd>{{ c.packageCode }} · {{ c.channelCode }}</dd>
+          <dt>Maker</dt><dd>{{ c.createdByName ?? '–' }}</dd>
+          <dt>ส่งเมื่อ</dt><dd>{{ r.submittedAt | thDate: '–' : true }}</dd>
+          <dt>ช่วงแสดงผล</dt><dd>{{ c.startDate | thDate: '–' }} – {{ c.endDate | thDate: 'ไม่ระบุ' }}</dd>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2>ผลการพิจารณา</h2>
+        @if (canDecide()) {
+          <div class="checks">
+            @for (label of checks; track $index; let i = $index) {
+              <label>
+                <p-checkbox [binary]="true" [inputId]="'chk' + i" [(ngModel)]="checked[i]" />
+                {{ label }}
+              </label>
+            }
+          </div>
+          <div class="decide">
+            <span class="lbl">ผลการพิจารณา <span class="req">*</span></span>
+            <div class="radios">
+              <label class="radio ok" [class.on]="decision === 'APPROVE'">
+                <p-radiobutton name="decision" value="APPROVE" [(ngModel)]="decision" inputId="d-ok" /> อนุมัติ
+              </label>
+              <label class="radio no" [class.on]="decision === 'REJECT'">
+                <p-radiobutton name="decision" value="REJECT" [(ngModel)]="decision" inputId="d-no" /> ตีกลับ
+              </label>
+            </div>
+          </div>
+          <app-textarea-field label="หมายเหตุ / เหตุผล (บังคับเมื่อตีกลับ)" [required]="decision === 'REJECT'" [rows]="3" [maxlength]="500" [(ngModel)]="remark" />
+          <p-message severity="secondary" icon="pi pi-info-circle" styleClass="msg">
+            อนุมัติแล้ว v{{ c.versionNo }} จะแทน{{ r.previous ? ' v' + r.previous.versionNo : '' }}บนหน้าเว็บทันที · ผู้สร้างอนุมัติงานตัวเองไม่ได้
+            @if (decision === 'APPROVE' && !allChecked()) {
+              · ติ๊กรายการตรวจให้ครบก่อนอนุมัติ
+            }
+          </p-message>
+          <p-button label="ยืนยันผลการพิจารณา" styleClass="confirm" [loading]="busy()" [disabled]="!canConfirm()" (onClick)="confirm()" />
+        } @else {
+          <p-message severity="info" icon="pi pi-info-circle" styleClass="msg">
+            @if (c.status !== 'PENDING') {
+              Content นี้ไม่ได้อยู่ในสถานะรออนุมัติ (ตอนนี้: {{ status()[1] }})
+            } @else if (!isApprover()) {
+              รอ Content Approver พิจารณา — Role ปัจจุบันดูได้อย่างเดียว
+            } @else {
+              Content นี้คุณเป็นผู้สร้าง จึงอนุมัติ / ตีกลับเองไม่ได้ (D-06)
+            }
+          </p-message>
+        }
+      </section>
+
+      <section class="card">
+        <h2>ประวัติ</h2>
+        <ul class="timeline">
+          @for (h of r.history; track $index) {
+            <li [class]="'a-' + h.action.toLowerCase()">
+              <span class="dot"></span>
+              <div>
+                <b>v{{ h.versionNo }} {{ action[h.action] }}{{ h.reason ? ' — "' + h.reason + '"' : '' }}</b>
+                <small>{{ h.actorName ?? '–' }} · {{ h.createdAt | thDate: '–' : true }}</small>
+              </div>
+            </li>
+          } @empty {
+            <li class="none">ยังไม่มีประวัติ</li>
+          }
+        </ul>
+      </section>
+    </aside>
+  </div>
+} @else if (error()) {
+  <p-message severity="error" styleClass="msg">{{ error() }}</p-message>
+  <a routerLink="/package/add">‹ กลับไป Package management</a>
+} @else {
+  <p class="hint">กำลังโหลด…</p>
+}

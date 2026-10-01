@@ -1,6 +1,23 @@
+# Dependencies
 node_modules/
-dist/
-.angular/
-.env
+
+# Angular build / cache
+client/dist/
+client/.angular/
+client/out-tsc/
+
+# SQLite database (สร้างใหม่อัตโนมัติจาก schema + seed)
+server/data/
+
+# Logs / OS / Editor
 *.log
+npm-debug.log*
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# สคริปต์ช่วยจับภาพ User guide (ใช้ตอนพัฒนาเท่านั้น)
+client/public/dev/

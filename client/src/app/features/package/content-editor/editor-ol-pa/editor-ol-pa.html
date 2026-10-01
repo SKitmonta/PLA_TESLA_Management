@@ -1,0 +1,125 @@
+@let f = form();
+@let c = content();
+
+<app-editor-section sid="PA-00" heading="แผนใน Package (1 Package มีหลายแผน)" hint="แผนมาจากระบบต้นทาง (FD-08)">
+  <div class="body">
+    <div class="rows">
+      <div class="rows-scroll">
+        <table>
+          <thead>
+            <tr><th style="width: 60px">ลำดับ</th><th>ชื่อแผนแสดงผล <span class="src s-cms">CMS</span></th><th>แผน <span class="src s-pkg">PKG</span></th><th>เบี้ย/ปี (บาท) <span class="src s-cms">CMS</span></th></tr>
+          </thead>
+          <tbody>
+            @for (p of f.plans; track p.planCode; let i = $index) {
+              <tr>
+                <td style="font-weight: 600">{{ i + 1 }}</td>
+                <td><app-text-field label="ชื่อแผนแสดงผล" [(ngModel)]="p.displayName" /></td>
+                <td><span class="chip gray">{{ p.planCode }} · {{ c.plans[i]?.planName }}</span></td>
+                <td><app-number-field label="เบี้ยต่อปี" [min]="0" [(ngModel)]="p.premium" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="help">คอลัมน์ในตาราง PA-07 = แผนเหล่านี้ · ปุ่ม "เลือกแผนนี้" บนเว็บลิงก์ไปซื้อแผนนั้น · เพิ่ม/ลดแผนทำที่ระบบต้นทางแล้ว Sync</p>
+  </div>
+</app-editor-section>
+
+<app-editor-section sid="PA-03" heading="Hero — Quick facts & Coverage highlights" hint="หัวข้อ Quick facts ตายตัว 4 ช่อง">
+  <div class="body">
+    <div class="g4">
+      <app-number-field label="เบี้ยประกันเริ่มต้น" [required]="true" [min]="0" [(ngModel)]="f.quickFacts.premium" />
+      <app-text-field label="การชำระเบี้ย" [readonly]="true" [ngModel]="paymentModes()" />
+      <app-text-field label="ระยะเวลาคุ้มครอง" [required]="true" [(ngModel)]="f.quickFacts.coveragePeriod" />
+      <app-text-field label="ลดหย่อนภาษี" [readonly]="true" [ngModel]="c.package.derived.taxDisplay" />
+    </div>
+
+    <span class="lbl">Coverage highlights <span class="src s-cms">CMS</span></span>
+    <div class="rows">
+      <div class="rows-scroll">
+        <table>
+          <thead><tr><th class="handle"></th><th>Topic</th><th>จำนวนเงิน</th><th>หน่วย</th><th class="act"></th></tr></thead>
+          <tbody>
+            @for (r of f.coverage; track $index; let i = $index) {
+              <tr [attr.draggable]="coverageDrag.armed === i" (dragstart)="coverageDrag.start(i)" (dragover)="coverageDrag.over(i, $event)" (drop)="coverageDrag.drop(f.coverage)" (dragend)="coverageDrag.end()" [class.dragging]="coverageDrag.from === i" [class.drop-target]="coverageDrag.isTarget(i)">
+                <td class="handle"><span class="grip" (mousedown)="coverageDrag.arm(i)" title="ลากเพื่อเรียงลำดับ"></span></td>
+                <td><app-text-field label="Topic" [(ngModel)]="r.topic" /></td>
+                <td><app-number-field label="จำนวนเงิน" [min]="0" [(ngModel)]="r.amount" /></td>
+                <td style="width: 110px"><app-text-field label="หน่วย" [(ngModel)]="r.unit" /></td>
+                <td class="act"><p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบรายการ" [disabled]="locked()" (onClick)="removeCoverage(i)" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p-button label="เพิ่มรายการ" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="addCoverage()" />
+  </div>
+</app-editor-section>
+
+<app-editor-section sid="PA-05" heading="Premium Calculator">
+  <div class="body">
+    <div class="g3">
+      <app-text-field label="เพศที่คำนวณได้" [readonly]="true" [ngModel]="genders()" />
+      <app-text-field label="ข้อความช่วงอายุ" [readonly]="true" [ngModel]="'อายุผู้เอาประกันภัยต้องอยู่ระหว่าง ' + c.package.derived.ageDisplay" />
+      <app-text-field label="ช่องกรอกเบี้ย" [readonly]="true" [ngModel]="'ไม่มี (PA คำนวณตามแผน)'" />
+    </div>
+  </div>
+</app-editor-section>
+
+<app-editor-section sid="PA-06" heading="จุดเด่นของแผน" hint="การ์ด 1–N">
+  <app-sec-highlights [form]="f" [content]="c" valueLabel="จำนวนเงิน" />
+</app-editor-section>
+
+<app-editor-section sid="PA-07" heading="ผลประโยชน์ — ตารางเปรียบเทียบความคุ้มครอง">
+  <div class="body">
+    <app-text-field label="Header" [(ngModel)]="f.coverageTable.header" />
+    <div class="rows">
+      <div class="rows-scroll">
+        <table class="cov">
+          <thead>
+            <tr>
+              <th>ความคุ้มครอง (บาท)</th>
+              @for (p of f.plans; track p.planCode) {
+                <th class="num">{{ p.displayName }}{{ p.premium ? ' · ' + p.premium.toLocaleString('en-US') + '/ปี' : '' }}</th>
+              }
+              <th class="act"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of f.coverageTable.groups; track $index; let gi = $index) {
+              <tr class="group">
+                <td [attr.colspan]="f.plans.length + 1"><app-text-field label="ชื่อกลุ่ม" [(ngModel)]="g.name" /></td>
+                <td class="act"><p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบกลุ่ม" [disabled]="locked()" (onClick)="removeGroup(gi)" /></td>
+              </tr>
+              @for (r of g.rows; track $index; let ri = $index) {
+                <tr>
+                  <td class="item"><app-text-field label="รายการย่อย" [(ngModel)]="r.name" /></td>
+                  @for (p of f.plans; track p.planCode) {
+                    <td class="num"><app-number-field [label]="p.displayName" [min]="0" [(ngModel)]="r.amounts[p.planCode]" /></td>
+                  }
+                  <td class="act"><p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบรายการ" [disabled]="locked()" (onClick)="removeRow(gi, ri)" /></td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="actions">
+      <p-button label="เพิ่มกลุ่ม" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="addGroup()" />
+      <p-button label="เพิ่มรายการ" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="addRow()" />
+    </div>
+    <p class="help">คอลัมน์แผนมาจาก PA-00 อัตโนมัติ · ปุ่ม "เลือกแผนนี้" บนเว็บลิงก์ไปซื้อ Package ของแผนนั้น · "+ เพิ่มรายการ" เพิ่มในกลุ่มล่างสุด</p>
+  </div>
+</app-editor-section>
+
+<app-editor-section sid="OB-01" heading="ตั้งค่าหน้า" [collapsible]="true"><app-sec-page-settings [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-02" heading="Hero Banner" [collapsible]="true"><app-sec-hero-banner [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-04" heading="Sticky bar" [collapsible]="true"><app-sec-sticky-bar [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-08" heading="โปรโมชัน" [collapsible]="true"><app-sec-promotion [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-09" heading="ข้อมูลสำคัญอื่นๆ" [collapsible]="true"><app-sec-important-info [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-10" heading="สรุปสาระสำคัญ" [collapsible]="true"><app-sec-summary [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-11" heading="ประกันอื่นที่น่าสนใจ" [collapsible]="true" collapsedHint="Field เหมือน OL_OB · แนะนำข้ามประเภทได้ · กดเพื่อขยาย"><app-sec-recommend [form]="f" [content]="c" /></app-editor-section>
+<app-editor-section sid="OB-12" heading="การ์ดสินค้า" [collapsible]="true"><app-sec-product-card [form]="f" [content]="c" /></app-editor-section>

@@ -1,0 +1,230 @@
+@use 'tokens' as *;
+
+// P-04 Referral links ของ 1 Campaign (Figma 17:496)
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: -24px -40px 0;
+  padding: 20px 40px;
+  background: #fff;
+  border-bottom: 1px solid $border-divider;
+}
+
+:host-context(.tablet) .head {
+  margin: -20px -24px 0;
+  padding: 16px 24px;
+}
+
+:host-context(.mobile) .head {
+  margin: -16px -12px 0;
+  padding: 14px 12px;
+}
+
+.back {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 20px;
+  color: $text;
+}
+
+.title {
+  flex: 1;
+  min-width: 240px;
+
+  h1 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: $fs-heading;
+    font-weight: 700;
+    color: $brand-navy;
+  }
+  .meta {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: $text-muted;
+
+    a {
+      color: $primary-9;
+      font-weight: 600;
+      text-decoration: none;
+    }
+  }
+}
+
+:host ::ng-deep .hdr-btn {
+  min-width: 140px;
+  height: 44px;
+  font-weight: 600;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+:host-context(.mobile) .stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid $border-divider;
+  border-radius: 12px;
+
+  .lbl {
+    font-size: 13px;
+    color: $text-muted;
+  }
+  strong {
+    font-size: 26px;
+    font-weight: 700;
+    color: $brand-navy;
+  }
+  small {
+    font-size: 12px;
+    color: $text-muted;
+  }
+  &.ok strong {
+    color: #0f8a5f;
+  }
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
+  align-items: start;
+}
+
+:host-context(.tablet) .layout,
+:host-context(.mobile) .layout {
+  grid-template-columns: 1fr;
+}
+
+.v2-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.v2-card-head {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 240px 200px;
+  gap: 8px;
+}
+
+:host-context(.mobile) .filters {
+  grid-template-columns: 1fr;
+  width: 100%;
+}
+
+.num {
+  text-align: right;
+}
+
+.mono {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+}
+
+.gdot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+tr.off td {
+  color: #9aa1ad;
+}
+
+.foot {
+  margin: 0;
+  font-size: 12px;
+}
+
+.agent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #fff7ec;
+    border: 1px solid #fde3bf;
+
+    strong {
+      font-size: 13px;
+    }
+    small {
+      font-size: 12px;
+      color: $text-muted;
+    }
+  }
+}
+
+.small {
+  margin: 0;
+  font-size: 12px;
+
+  a {
+    color: $primary-9;
+  }
+}
+
+.qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+
+  .qr-box {
+    width: 180px;
+    height: 180px;
+    display: grid;
+    place-items: center;
+    border: 1px dashed $border-divider;
+    border-radius: 12px;
+
+    i {
+      font-size: 96px;
+      color: $brand-navy;
+    }
+  }
+  code {
+    word-break: break-all;
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,14 @@
+<p-floatlabel variant="in">
+  <textarea
+    pTextarea
+    [id]="id"
+    [rows]="rows()"
+    [autoResize]="true"
+    [attr.maxlength]="maxlength() ?? null"
+    [ngModel]="value()"
+    (ngModelChange)="change($event)"
+    (blur)="touch()"
+    [disabled]="isDisabled()"
+    ></textarea>
+  <label [for]="id">{{ label() }}@if (required()) { <span class="req">*</span> }</label>
+</p-floatlabel>

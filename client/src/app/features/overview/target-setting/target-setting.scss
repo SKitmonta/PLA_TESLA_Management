@@ -1,0 +1,105 @@
+@use 'tokens' as *;
+
+// OV-10 ตั้ง Target (Figma 17:1022)
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .page-h1 {
+    margin: 0;
+  }
+  .page-sub {
+    margin: 6px 0 0;
+  }
+}
+
+.head-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+:host ::ng-deep .head-btn,
+:host ::ng-deep .imp .p-button,
+:host ::ng-deep .p-fileupload-basic .p-button {
+  height: 40px;
+}
+
+.v2-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1fr;
+  gap: 12px;
+}
+
+:host-context(.tablet) .filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:host-context(.mobile) .filters {
+  grid-template-columns: 1fr;
+}
+
+:host ::ng-deep .note {
+  font-size: 13px;
+}
+
+.first {
+  min-width: 220px;
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 1;
+}
+
+.sub {
+  display: block;
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cell {
+  min-width: 150px;
+
+  &.dirty ::ng-deep input {
+    background: #fff7e6;
+    border-color: #c77700;
+  }
+}
+
+.tall {
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+tfoot td {
+  background: $bg-subtle;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}

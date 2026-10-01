@@ -1,0 +1,363 @@
+@use 'tokens' as *;
+
+// Editor OL_OB — Figma V2 (27 ก.ย.): การ์ด Section · หัวข้อ 20px · ช่องกรอกสูง 50 ตัวอักษร 16px
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 30px;
+  border: 1px solid $border-input;
+  border-radius: 20px;
+  background: #fff;
+  scroll-margin-top: 16px;
+
+  h2 {
+    margin: 0 0 2px;
+    font-size: 20px;
+    font-weight: 700;
+    color: $primary-9;
+  }
+}
+
+.g2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  align-items: start;
+}
+
+.span2 {
+  grid-column: 1 / -1;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+// หัวข้อย่อยมีไอคอน (Desktop / Mobile / Icon Asset / Key Features)
+.sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: $fs-subheading;
+  font-weight: 700;
+  color: $text;
+}
+
+.hint {
+  margin: 0;
+  font-size: $fs-small;
+  color: $text-muted;
+
+  &.err {
+    color: $error;
+  }
+}
+
+// ---------- Thumbnail: รูปซ้าย + ข้อความ 3 ช่องขวา
+.thumb app-upload-box {
+  min-height: 170px;
+}
+
+// ---------- Key Features
+.kf {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  gap: 30px;
+  align-items: start;
+}
+
+.icon-asset {
+  height: 236px;
+}
+
+.kf-row {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) minmax(0, 1fr) 44px 44px;
+  gap: 10px;
+  align-items: center;
+}
+
+.icon-gap {
+  width: 44px;
+}
+
+// แถวที่ Package ไม่มีข้อมูล: ค่า null + สวิตช์ Active ในช่อง
+.null-box {
+  position: relative;
+  min-width: 0;
+
+  .toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: $fs-body;
+    color: $text;
+  }
+}
+
+// ---------- Key Advantages: การ์ด 4 ใบต่อแถว + การ์ดเพิ่ม
+.ka {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.ka-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid $border-input;
+  border-radius: 12px;
+
+  app-upload-box {
+    height: 240px;
+  }
+}
+
+.ka-card > p-button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 1;
+}
+
+.ka-add {
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px dashed #b0b0b0;
+  border-radius: 12px;
+  background: #e6e6ea;
+  font-family: inherit;
+  font-size: $fs-body;
+  color: $text;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #dcdce2;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+// ---------- Package recommend
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.result,
+.picked {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid $border-input;
+  border-radius: 10px;
+  background: #fff;
+  font-family: inherit;
+  text-align: left;
+
+  .code {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #eef1f6;
+    font-size: $fs-small;
+    font-weight: 700;
+    color: $primary-9;
+  }
+  .name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    font-size: $fs-body;
+    font-weight: 600;
+    color: $text;
+
+    small {
+      font-size: $fs-small;
+      font-weight: 400;
+      color: $text-muted;
+    }
+  }
+}
+
+.result {
+  cursor: pointer;
+
+  .plus {
+    font-size: 20px;
+    color: $primary-9;
+  }
+  &:hover {
+    border-color: $primary-9;
+    background: #f5f9ff;
+  }
+}
+
+.picked {
+  position: relative;
+
+}
+
+.display {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 12px;
+  background: $bg-subtle;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: $primary-9;
+  }
+  .empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: $fs-subheading;
+    color: $text;
+  }
+}
+
+// ---------- Document General Terms & Conditions
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 24px;
+  border: 2px dashed $primary-9;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+
+  &.over,
+  &:hover {
+    background: #f5f9ff;
+  }
+  svg {
+    margin-bottom: 8px;
+  }
+  .big {
+    font-size: 18px;
+    color: $text;
+
+    u {
+      color: $primary-9;
+      font-weight: 600;
+    }
+  }
+  .small {
+    font-size: $fs-small;
+    color: $text-muted;
+
+    strong {
+      color: $text;
+    }
+  }
+}
+
+.docs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid $border-input;
+    border-radius: 10px;
+  }
+  .pdf {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #fdebee;
+    font-size: 11px;
+    font-weight: 700;
+    color: #b4162f;
+  }
+  .dname {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: $fs-body;
+  }
+  .dsize {
+    font-size: $fs-small;
+    color: $text-muted;
+  }
+}
+
+// ---------- Responsive
+@media (max-width: 1100px) {
+  .kf {
+    grid-template-columns: 1fr;
+  }
+  .icon-asset {
+    height: 160px;
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .card {
+    padding: 18px 14px;
+  }
+  .g2 {
+    grid-template-columns: 1fr;
+  }
+  // มือถือ: ไอคอน + หัวข้อ + ปุ่ม อยู่แถวบน · Value เต็มแถวล่าง
+  .kf-row {
+    grid-template-columns: 50px minmax(0, 1fr) 44px 44px;
+
+    > :nth-child(3) {
+      grid-column: 1 / -1;
+      order: 5;
+    }
+  }
+  .ka-add {
+    min-height: 120px;
+  }
+}

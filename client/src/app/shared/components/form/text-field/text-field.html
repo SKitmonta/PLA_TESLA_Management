@@ -1,0 +1,27 @@
+<ng-template #field>
+  <p-autocomplete
+    [inputId]="id"
+    [ngModel]="value()"
+    (ngModelChange)="change($event)"
+    (onBlur)="touch()"
+    [suggestions]="items()"
+    (completeMethod)="search($event)"
+    [showEmptyMessage]="false"
+    [forceSelection]="false"
+    [readonly]="readonly()"
+    [disabled]="isDisabled()"
+    [maxlength]="maxlength() ?? null"
+    [placeholder]="label() ? undefined : placeholder() || undefined"
+    [fluid]="true"
+    appendTo="body"
+  />
+</ng-template>
+
+@if (label()) {
+  <p-floatlabel variant="in">
+    <ng-container *ngTemplateOutlet="field" />
+    <label [for]="id">{{ label() }}@if (required()) { <span class="req">*</span> }</label>
+  </p-floatlabel>
+} @else {
+  <ng-container *ngTemplateOutlet="field" />
+}

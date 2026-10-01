@@ -1,0 +1,99 @@
+<div class="guide-top"></div>
+<header class="page-head">
+  <div>
+    <h1 class="page-h1">คู่มือการใช้งาน</h1>
+    <p class="page-sub">ทำตามขั้นตอน 1 → 2 → 3 · กรอบสีแดงพร้อมหมายเลขในรูป = จุดที่ต้องกดหรือกรอก · กดรูปเพื่อขยาย</p>
+  </div>
+  <p-button label="ดู User journey ภาพรวม" icon="pi pi-sitemap" [outlined]="true" routerLink="/guide/journey" styleClass="head-btn" />
+</header>
+
+<div class="layout">
+  <!-- สารบัญ -->
+  <nav class="toc v2-card" aria-label="สารบัญคู่มือ">
+    <app-select-field class="toc-select" label="เลือกบท" [options]="options" optionLabel="label" optionValue="value" [ngModel]="current()" (ngModelChange)="go($event)" />
+    <ul>
+      @for (c of chapters; track c.id) {
+        <li>
+          <button type="button" [class.on]="c.id === chapter().id" (click)="go(c.id)">
+            <span class="no">{{ c.no }}</span>
+            <span class="t">
+              {{ c.title }}
+              <small>{{ c.menu }} · {{ c.steps.length }} ขั้นตอน</small>
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <!-- เนื้อหาบท -->
+  <article class="content">
+    <section class="v2-card chapter-head">
+      <span class="chip">บทที่ {{ chapter().no }}</span>
+      <h2>{{ chapter().title }}</h2>
+      <p>{{ chapter().summary }}</p>
+      <div class="meta">
+        <span class="muted">เมนู: <strong>{{ chapter().menu }}</strong></span>
+        <span class="muted">Role:</span>
+        @for (r of chapter().roles; track r) {
+          <p-tag [value]="roleLabel[r]" [severity]="r === session.role() ? 'success' : 'secondary'" />
+        }
+      </div>
+      @if (!forMe()) {
+        <p-message severity="info" icon="pi pi-info-circle" styleClass="note">
+          Role ปัจจุบัน ({{ session.roleLabel() }}) อาจไม่มีสิทธิ์ทำขั้นตอนในบทนี้ — สลับ Role ที่ปุ่มผู้ใช้มุมขวาบน
+        </p-message>
+      }
+    </section>
+
+    @for (s of chapter().steps; track s.title; let i = $index) {
+      <section class="v2-card step">
+        <div class="step-head">
+          <span class="step-no">{{ i + 1 }}</span>
+          <h3>{{ s.title }}</h3>
+          @if (s.link) {
+            <p-button label="ไปที่หน้านี้" icon="pi pi-external-link" [text]="true" size="small" [routerLink]="s.link" />
+          }
+        </div>
+        <div class="step-body">
+          <div class="text">
+            @for (p of s.body; track $index) {
+              <p>{{ p }}</p>
+            }
+            @if (s.tips?.length) {
+              <div class="tips">
+                <strong><i class="pi pi-lightbulb"></i> ข้อควรรู้</strong>
+                <ul>
+                  @for (t of s.tips; track $index) {
+                    <li>{{ t }}</li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+          <figure>
+            @if (missing().has(s.image)) {
+              <div class="no-img"><i class="pi pi-image"></i> ยังไม่มีรูป ({{ s.image }})</div>
+            } @else {
+              <p-image [src]="img(s.image)" [alt]="s.title" [preview]="true" imageClass="shot" (onImageError)="onMissing(s.image)" />
+            }
+            @if (s.caption) {
+              <figcaption>{{ s.caption }}</figcaption>
+            }
+          </figure>
+        </div>
+      </section>
+    }
+
+    <div class="pager">
+      @if (prev(); as p) {
+        <p-button [label]="'← บทที่ ' + p.no + ' ' + p.title" [outlined]="true" severity="secondary" (onClick)="go(p.id)" />
+      } @else {
+        <span></span>
+      }
+      @if (next(); as n) {
+        <p-button [label]="'บทที่ ' + n.no + ' ' + n.title + ' →'" (onClick)="go(n.id)" />
+      }
+    </div>
+  </article>
+</div>

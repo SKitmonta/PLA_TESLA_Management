@@ -1,0 +1,54 @@
+@let f = form();
+
+<section class="card">
+  <h2>เงื่อนไขผู้มีสิทธิ์</h2>
+  <p class="hint">กรมธรรม์ต้องเข้าเงื่อนไข <b>ทุกข้อ</b> (AND) จึงได้สิทธิ์ · ไม่เพิ่มเงื่อนไข = ทุกกรมธรรม์ที่ผ่านเงื่อนไขระบบได้สิทธิ์ · ประเมินครั้งเดียว ณ วันที่ยื่นใบคำขอ (CC-08)</p>
+
+  <div class="rules">
+    @for (r of rules(); track $index; let i = $index) {
+      @let a = attr(r);
+      <div class="rule">
+        <span class="no">{{ i + 1 }}</span>
+        <app-select-field label="เงื่อนไข (Attribute)" [required]="true" [options]="attributeOpts" optionLabel="label" optionValue="value" [ngModel]="r.attribute" (ngModelChange)="setAttribute(r, $event)" />
+        <app-select-field label="Operator" [required]="true" [options]="operatorOpts(r)" optionLabel="label" optionValue="value" [disabled]="!a" [(ngModel)]="r.operator" />
+        <div class="value" [class.two]="r.operator === 'BETWEEN'">
+          @if (a?.kind === 'code') {
+            <app-multiselect-field label="ค่า" [required]="true" [options]="valueOpts(r)" optionLabel="label" optionValue="value" [(ngModel)]="r.value" />
+          } @else {
+            <app-number-field [label]="r.operator === 'BETWEEN' ? 'ตั้งแต่' : 'ค่า'" [required]="true" [min]="0" [suffix]="a?.suffix ?? ''" [disabled]="!a" [(ngModel)]="r.value" />
+            @if (r.operator === 'BETWEEN') {
+              <app-number-field label="ถึง" [required]="true" [min]="0" [suffix]="a?.suffix ?? ''" [(ngModel)]="r.value2" />
+            }
+          }
+        </div>
+        <p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบเงื่อนไข" [disabled]="locked()" (onClick)="remove(i)" />
+      </div>
+      @if (i < rules().length - 1) {
+        <span class="and">AND</span>
+      }
+    } @empty {
+      <p class="empty">ยังไม่มีเงื่อนไข — กรมธรรม์ทุกฉบับของ Package / ช่วงวัน / ช่องทางที่เลือกได้สิทธิ์</p>
+    }
+  </div>
+
+  <div>
+    <p-button label="เพิ่มเงื่อนไข" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="add()" />
+  </div>
+
+  @if (usedPromo()) {
+    <p-message severity="info" icon="pi pi-tag" styleClass="msg">
+      มี Promo code "{{ f.data.promoCode }}" — ลูกค้าต้องกรอกโค้ดตรงจึงได้สิทธิ์ (CP-ELG-11 ใช้อัตโนมัติ · ไม่แยกตัวพิมพ์เล็ก/ใหญ่)
+    </p-message>
+  }
+</section>
+
+<section class="card">
+  <h2>เงื่อนไขระบบ (ไม่ต้องตั้งค่า)</h2>
+  <ul class="sys">
+    <li><i class="pi pi-check-circle"></i> Package ของกรมธรรม์อยู่ใน Package ที่เลือก ({{ f.packageCodes.join(', ') || '–' }})</li>
+    <li><i class="pi pi-check-circle"></i> วันที่ยื่นใบคำขออยู่ในช่วง Campaign</li>
+    <li><i class="pi pi-check-circle"></i> ช่องทางขายอยู่ในช่องทางที่เลือก ({{ f.channelCodes.join(', ') || '–' }})</li>
+    <li><i class="pi pi-check-circle"></i> ช่องทาง Agent: ผู้ขายต้องอยู่ในกลุ่มที่ผูก Campaign นี้ในเมนู Seller (CC-04)</li>
+    <li><i class="pi pi-check-circle"></i> งบประมาณ / จำนวนสิทธิ์ยังเหลือ (CC-06)</li>
+  </ul>
+</section>

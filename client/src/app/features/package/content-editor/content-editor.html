@@ -1,0 +1,116 @@
+@if (content(); as c) {
+  <!-- Header (Figma V2): ย้อนกลับ · ชื่อ EN / TH · แผน · Eff / Exp Date · Preview / Save / Submit -->
+  <header class="head">
+    <a class="back" routerLink="/package/add" aria-label="กลับไป Package management">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.3" /><path d="M11.5 6.5 8 10l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </a>
+    <div class="title">
+      <h1>
+        {{ c.nameEn ?? c.nameTh }}
+        <span class="tpl" [class]="'tpl t-' + c.template.toLowerCase()">{{ c.template }}</span>
+        <span class="pill" [class]="'pill p-' + c.status.toLowerCase()">{{ statusText() }} · v{{ c.versionNo }}</span>
+      </h1>
+      <p class="name-th">{{ c.nameTh }}</p>
+      <p class="meta">
+        <span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 13.5 3.5v4c0 3.3-2.3 5.9-5.5 7-3.2-1.1-5.5-3.7-5.5-7v-4L8 1.5Z" stroke="#00317a" stroke-width="1.2" stroke-linejoin="round" /></svg>
+          {{ planCode() }}
+        </span>
+        <span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="#00317a" stroke-width="1.2" /><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="#00317a" stroke-width="1.2" stroke-linecap="round" /></svg>
+          Eff Date : {{ c.saleStartDate | thDate: '–' }}
+        </span>
+        <span class="sep">Exp Date : {{ c.saleEndDate | thDate: 'ไม่ระบุ' }}</span>
+        <span class="sep">{{ c.contentCode }} · {{ c.channelCode }} {{ c.channelName }}</span>
+      </p>
+    </div>
+    <div class="buttons">
+      <p-button label="Preview" icon="pi pi-eye" [outlined]="true" styleClass="hdr-btn" [disabled]="true" pTooltip="Preview หน้าเว็บจะทำในขั้นถัดไป" />
+      @if (canNewVersion()) {
+        <p-button label="สร้าง Version ใหม่" icon="pi pi-clone" [outlined]="true" styleClass="hdr-btn" [loading]="busy() === 'version'" [disabled]="!!busy()" (onClick)="newVersion()" />
+      }
+      <p-button label="Save" icon="pi pi-save" [outlined]="true" styleClass="hdr-btn" [loading]="busy() === 'save'" [disabled]="!editable() || !!busy()" (onClick)="save()" />
+      <p-button label="Submit" styleClass="hdr-btn" [loading]="busy() === 'submit'" [disabled]="!editable() || !!busy()" (onClick)="submit()" />
+    </div>
+  </header>
+
+  @if (c.template !== 'OL_OB') {
+  <div class="legend">
+    <span class="muted">ที่มาข้อมูล:</span>
+    <span><span class="src s-pkg">PKG</span> จาก Package (อ่านอย่างเดียว)</span>
+    <span><span class="src s-drv">DRV</span> ระบบแปลงจาก Package</span>
+    <span><span class="src s-cms">CMS</span> กรอกเอง</span>
+    <span><span class="src s-glb">GLB</span> เนื้อหากลาง (Legal)</span>
+    <span><span class="src s-cmp">CMP</span> มาจาก Campaign</span>
+    @if (c.template === 'AGENT') {
+      <span class="tag-diff">ต่างจาก OL_OB / ใหม่บนหน้าลูกค้า</span>
+      <span class="tag-agent">เฉพาะตัวแทน · ไม่แสดงต่อลูกค้า</span>
+    }
+  </div>
+  }
+
+  @if (c.status === 'REJECTED' && c.rejectReason) {
+    <div class="alert error">ตีกลับ: {{ c.rejectReason }} — แก้ไขแล้วกด "ส่งอนุมัติ" อีกครั้ง</div>
+  }
+  @if (!editable()) {
+    <div class="alert info">
+      @if (!session.canEdit('package')) {
+        Role ปัจจุบันดูได้อย่างเดียว — แก้ไขได้เฉพาะ Content Maker
+      } @else {
+        Content สถานะ "{{ statusText() }}" แก้ไขไม่ได้{{ canNewVersion() ? ' — กด "สร้าง Version ใหม่" เพื่อแก้ไข (Version เดิมยังแสดงผลจนกว่า Version ใหม่อนุมัติ)' : '' }}
+      }
+    </div>
+  }
+  @if (error()) {
+    <div class="alert error">{{ error() }}</div>
+  }
+
+  <div class="layout">
+    <!-- รายการ Section (กว้าง 350px) — กดเพื่อไปที่ Section · ไฮไลต์ตามตำแหน่งที่เลื่อนอยู่ -->
+    <nav class="sec-nav" aria-label="Section">
+      <h2>List content</h2>
+      @for (n of nav(); track n.id) {
+        <button type="button" [class.on]="active() === n.id" [attr.aria-current]="active() === n.id ? 'step' : null" (click)="goTo(n.id)">
+          @if (showIds()) {
+            <span class="nid">{{ n.id }}</span>
+          }
+          <span class="ntitle">{{ n.title }}</span>
+          @if (done(n.id)) {
+            <span class="check" title="กรอกครบแล้ว">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 6.2 5 8.5l4.5-5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </span>
+          }
+        </button>
+      }
+    </nav>
+
+    <p-floatlabel variant="in" class="sec-pick">
+      <p-select
+        inputId="sec-pick"
+        [options]="navOptions()"
+        optionLabel="label"
+        optionValue="id"
+        [ngModel]="active()"
+        (ngModelChange)="goTo($event)"
+        appendTo="body"
+        [fluid]="true"
+      />
+      <label for="sec-pick">ไปที่ Section</label>
+    </p-floatlabel>
+
+    <fieldset class="main" [class.plain]="c.template === 'OL_OB'" [disabled]="!editable()">
+      @if (form(); as f) {
+        @switch (c.template) {
+          @case ('OL_OB') { <app-editor-ol-ob [form]="f" [content]="c" /> }
+          @case ('OL_PA') { <app-editor-ol-pa [form]="f" [content]="c" /> }
+          @case ('AGENT') { <app-editor-agent [form]="f" [content]="c" /> }
+        }
+      }
+    </fieldset>
+  </div>
+} @else if (error()) {
+  <div class="alert error">{{ error() }}</div>
+  <a routerLink="/package/add">‹ กลับไป Package management</a>
+} @else {
+  <p class="loading">กำลังโหลด…</p>
+}

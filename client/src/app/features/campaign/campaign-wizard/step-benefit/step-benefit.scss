@@ -1,0 +1,50 @@
+@use 'tokens' as *;
+
+.fld {
+  min-width: 0;
+}
+
+.req {
+  color: $error;
+}
+
+// สวิตช์เปิด/ปิด (Boolean)
+.toggle {
+  min-height: 53px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: $text;
+  cursor: pointer;
+}
+
+// ตาราง (Tier / เบี้ยขั้นต่ำ / รางวัล)
+.tbl {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid $border-input;
+  border-radius: 12px;
+  background: $bg-subtle;
+}
+
+.tbl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tbl-row {
+  display: grid;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .tbl-row {
+    grid-template-columns: 1fr !important;
+  }
+}

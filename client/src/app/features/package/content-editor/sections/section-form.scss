@@ -1,0 +1,366 @@
+@use 'tokens' as *;
+
+// สไตล์ฟอร์มที่ใช้ร่วมกันทุก Section ใน Content Editor (อ้างอิง Figma Content · Editor)
+:host {
+  display: block;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+// ตาราง Field 2 / 3 / 4 คอลัมน์
+.g2,
+.g3,
+.g4 {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+.g2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.g3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.g4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.span2 {
+  grid-column: span 2;
+}
+
+// Field: ป้าย (ชื่อ + * + ที่มา) → ช่องกรอก → คำอธิบาย
+.fld {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lbl {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $brand-navy;
+
+  .req {
+    color: $error;
+  }
+}
+
+.in {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid $border-input;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  font-size: $fs-body;
+  color: $text;
+
+  &::placeholder {
+    color: #9aa3b5;
+  }
+  &:focus {
+    outline: 2px solid $primary-light;
+    border-color: $primary-9;
+  }
+  &[readonly],
+  &.ro {
+    background: $bg-subtle;
+    color: $text-slate;
+  }
+  &:disabled {
+    background: $bg-subtle;
+    cursor: not-allowed;
+  }
+}
+
+select.in {
+  padding-right: 32px;
+  @include select-arrow(12px);
+  cursor: pointer;
+}
+
+textarea.in {
+  height: auto;
+  min-height: 96px;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+// ช่อง URL: ส่วนนำหน้า + ช่องกรอก
+.prefix {
+  display: flex;
+  min-width: 0;
+
+  span {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid $border-input;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    background: $bg-subtle;
+    font-size: $fs-body;
+    color: $text-slate;
+    white-space: nowrap;
+  }
+  .in {
+    border-radius: 0 8px 8px 0;
+  }
+}
+
+.help {
+  margin: 0;
+  font-size: $fs-small;
+  color: $text-muted;
+}
+
+.help.err {
+  color: $error;
+}
+
+// ตารางแถวแบบ Dynamic (ลากเพื่อเรียงลำดับ)
+.rows {
+  border: 1px solid #e9eaeb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rows-scroll {
+  overflow-x: auto;
+}
+
+.rows table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    height: 44px;
+    padding: 0 8px;
+    background: $bg-subtle;
+    font-size: $fs-body;
+    font-weight: 600;
+    color: $brand-navy;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td {
+    padding: 8px;
+    border-top: 1px solid #f0f1f3;
+    vertical-align: middle;
+  }
+  th.handle,
+  td.handle {
+    width: 28px;
+    padding-right: 0;
+  }
+  th.act,
+  td.act {
+    width: 52px;
+    text-align: center;
+  }
+  tr.dragging td {
+    opacity: 0.4;
+  }
+  tr.drop-target td {
+    border-top: 2px solid $primary-9;
+  }
+}
+
+.grip {
+  display: inline-block;
+  width: 10px;
+  height: 16px;
+  background-image: radial-gradient(circle, #9aa3b5 1.2px, transparent 1.3px);
+  background-size: 5px 5px;
+  cursor: grab;
+}
+
+.del {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $border-input;
+  border-radius: 8px;
+  background: #fff;
+  color: $text;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: $error;
+    color: $error;
+  }
+}
+
+// ปุ่ม "+ เพิ่มแถว"
+.add {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid $primary-9;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $brand-navy;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: $primary-light;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+// ป้ายรายการ (เช่น ช่องทางชำระเบี้ย, Content ที่เลือก, Tag)
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: $primary-light;
+  font-size: $fs-body;
+  font-weight: 600;
+  color: $primary-9;
+
+  button {
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 16px;
+    line-height: 1;
+    color: inherit;
+    cursor: pointer;
+  }
+  &.gray {
+    background: #eef1f6;
+    color: $text-slate;
+    font-weight: 400;
+  }
+}
+
+// กล่องข้อมูล (ส้ม = มาจาก Campaign / เทา = เนื้อหากลาง)
+.info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid #f7d9bd;
+  background: #fff7ef;
+  font-size: $fs-body;
+  color: $text;
+
+  &.gray {
+    border-color: $border-input;
+    background: $bg-subtle;
+  }
+  .i {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    border: 1.3px solid currentColor;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 13px;
+    text-align: center;
+    color: #a64b00;
+  }
+}
+
+// การ์ดย่อย (จุดเด่นของแผน)
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.mini-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e9eaeb;
+  border-radius: 12px;
+
+  app-upload-box {
+    height: 100px;
+  }
+  .x {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 1;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    line-height: 1;
+    color: $text-muted;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .g2,
+  .g3,
+  .g4 {
+    grid-template-columns: 1fr;
+  }
+  .span2 {
+    grid-column: auto;
+  }
+}
+
+// OB-12 รูปการ์ดซ้าย + Field ขวา
+.card-grid {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}

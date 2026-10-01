@@ -1,15 +1,24 @@
 {
   "name": "tesla-management",
+  "version": "0.1.0",
   "private": true,
+  "description": "TESLA Management (PLA) — Content selling tools, Campaign setup, People management, Overview, Master setup",
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
-    "setup": "npm install && npm --prefix backend install && npm --prefix frontend install",
-    "db": "docker compose up -d db",
-    "seed": "npm --prefix backend run seed",
-    "dev": "concurrently -k -n api,web -c blue,magenta \"npm --prefix backend run dev\" \"npm --prefix frontend start\"",
-    "dev:api": "npm --prefix backend run dev",
-    "dev:web": "npm --prefix frontend start"
+    "start": "concurrently -k -n server,client -c blue,green \"npm run dev -w server\" \"npm run start -w client\"",
+    "server": "npm run dev -w server",
+    "client": "npm run start -w client",
+    "db:reset": "npm run db:reset -w server",
+    "build": "npm run build -w client",
+    "typecheck": "npm run typecheck -w server"
   },
   "devDependencies": {
-    "concurrently": "^10.0.5"
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=24.15.0"
   }
 }

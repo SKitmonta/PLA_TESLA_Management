@@ -1,0 +1,56 @@
+@use 'tokens' as *;
+
+// ค่าจาก Figma Bar / Navigate (1:6365)
+.navbar {
+  height: $navbar-height;
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid #e8eaee;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px 20px 46px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.home {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.sep {
+  font-size: 20px;
+  font-weight: 500;
+  color: #dbdbdb;
+}
+
+.crumb {
+  font-size: 18px;
+  font-weight: 500;
+  color: $text-muted;
+  text-decoration: none;
+
+  &:hover {
+    color: $brand-navy;
+  }
+}
+
+.current {
+  font-size: 18px;
+  font-weight: 700;
+  color: $brand-navy;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .navbar {
+    height: 52px;
+    padding: 12px 16px;
+  }
+  .crumb,
+  .current {
+    font-size: 15px;
+  }
+}

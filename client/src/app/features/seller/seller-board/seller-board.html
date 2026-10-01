@@ -1,0 +1,182 @@
+@if (error()) {
+  <p-message severity="error" icon="pi pi-times-circle">{{ error() }}</p-message>
+}
+
+@if (board(); as b) {
+  <header class="head">
+    <a class="back" routerLink="/seller/workspace" aria-label="กลับไป Workspace"><i class="pi pi-arrow-circle-left"></i></a>
+    <div class="title">
+      <h1>จัดกลุ่มผู้ขาย · {{ b.workspace.nameTh }}</h1>
+      <p class="meta">
+        <span class="code">{{ b.workspace.packageCode }}</span>
+        <p-tag [value]="b.workspace.channelCode + ' ' + (b.workspace.channelName ?? '')" severity="info" />
+        <p-tag [value]="b.workspace.mode" [severity]="b.workspace.mode === 'ALL' ? 'secondary' : 'warn'" />
+        <span>ผู้ขาย {{ b.sellers.length }} คน · {{ b.groups.length }} กลุ่ม</span>
+      </p>
+    </div>
+    <div class="buttons">
+      <p-button label="Import Excel" icon="pi pi-upload" [outlined]="true" severity="secondary" styleClass="hdr-btn" [disabled]="!canEdit()" (onClick)="importExcel()" />
+      <p-button label="Export Excel" icon="pi pi-download" [outlined]="true" severity="secondary" styleClass="hdr-btn" (onClick)="exportExcel()" />
+      <p-button label="สร้างกลุ่ม" icon="pi pi-plus" styleClass="hdr-btn" [disabled]="!canEdit()" [pTooltip]="canEdit() ? '' : 'จัดกลุ่มได้เฉพาะ Seller Admin'" (onClick)="openCreate()" />
+    </div>
+  </header>
+
+  @if (!canEdit()) {
+    <p-message severity="info" icon="pi pi-eye">Role ปัจจุบันดูได้อย่างเดียว — จัดกลุ่มได้เฉพาะ Seller Admin</p-message>
+  }
+
+  <div class="board">
+    <!-- ซ้าย: ยังไม่มีกลุ่ม (วางที่นี่ = นำออกจากกลุ่ม) -->
+    <section
+      class="pool"
+      pDroppable="seller"
+      [class.hover]="dropHover() === 'none'"
+      (onDragEnter)="dropHover.set('none')"
+      (onDragLeave)="dropHover.set(null)"
+      (onDrop)="drop(null)"
+    >
+      <div class="pool-head">
+        <h2>ยังไม่มีกลุ่ม</h2>
+        <span class="count">{{ ungrouped().length }} คน</span>
+      </div>
+
+      <app-text-field label="ค้นหารหัส / ชื่อ" [ngModel]="search()" (ngModelChange)="search.set($event ?? '')" />
+      <div class="pool-filters">
+        <app-select-field label="สาขา" [showClear]="true" [options]="branches()" optionLabel="label" optionValue="value" [ngModel]="branch()" (ngModelChange)="branch.set($event)" />
+        <app-select-field label="ระดับ" [showClear]="true" [options]="levels()" optionLabel="label" optionValue="value" [ngModel]="level()" (ngModelChange)="level.set($event)" />
+        <app-select-field label="สถานะ" [showClear]="true" [options]="statusOptions" optionLabel="label" optionValue="value" [ngModel]="status()" (ngModelChange)="status.set($event)" />
+      </div>
+
+      <div class="select-bar">
+        <label class="check">
+          <p-checkbox [binary]="true" inputId="sel-all" [ngModel]="allSelected()" (ngModelChange)="toggleAll($event)" [disabled]="!canEdit() || !selectable().length" />
+          <span>เลือกทั้งหมดที่กรอง ({{ selectable().length }})</span>
+        </label>
+        @if (selected().size) {
+          <button type="button" class="link" (click)="clearSelection()">เลือกแล้ว {{ selected().size }} · ล้าง</button>
+        }
+      </div>
+
+      <ul class="sellers">
+        @for (s of filtered(); track s.sellerCode) {
+          <li
+            class="seller"
+            [class.off]="!s.ready"
+            [class.on]="isSelected(s.sellerCode)"
+            pDraggable="seller"
+            [pDraggableDisabled]="!s.ready || !canEdit()"
+            (onDragStart)="dragStart(s, null)"
+            (onDragEnd)="dragEnd()"
+          >
+            <p-checkbox [binary]="true" [ngModel]="isSelected(s.sellerCode)" (ngModelChange)="toggle(s, $event)" [disabled]="!s.ready || !canEdit()" [ariaLabel]="'เลือก ' + s.sellerCode" />
+            <div class="who">
+              <strong>{{ s.sellerCode }} · {{ s.sellerName }}</strong>
+              <small>{{ subline(s) }}</small>
+            </div>
+            @if (!s.ready) {
+              <p-tag [value]="s.reason ?? 'ไม่พร้อมขาย'" severity="secondary" />
+            } @else if (s.licenseWarning) {
+              <p-tag value="ใบอนุญาตใกล้หมด" severity="warn" />
+            } @else if (canEdit()) {
+              <i class="pi pi-bars grip" aria-hidden="true"></i>
+            }
+          </li>
+        } @empty {
+          <li class="empty">ไม่มีผู้ขายตามเงื่อนไข</li>
+        }
+      </ul>
+
+      <div class="move-bar">
+        <app-select-field label="ย้ายคนที่เลือกไปกลุ่ม…" [options]="groupOptions()" optionLabel="label" optionValue="value" [ngModel]="target()" (ngModelChange)="target.set($event)" [disabled]="!canEdit() || !b.groups.length" />
+        <p-button [label]="'ย้าย ' + selected().size + ' คน'" icon="pi pi-arrow-right" [disabled]="!canEdit() || !selected().size || target() === null || busy()" (onClick)="moveSelected()" styleClass="move-btn" />
+      </div>
+    </section>
+
+    <!-- ขวา: การ์ดกลุ่ม -->
+    <section class="groups">
+      @for (g of b.groups; track g.groupId) {
+        <article
+          class="group"
+          [style.--c]="g.color"
+          pDroppable="seller"
+          [class.hover]="dropHover() === g.groupId"
+          (onDragEnter)="dropHover.set(g.groupId)"
+          (onDragLeave)="dropHover.set(null)"
+          (onDrop)="drop(g.groupId)"
+        >
+          <div class="g-head">
+            <span class="dot"></span>
+            <a class="g-name" [routerLink]="['/seller/group', g.groupId]">{{ g.groupName }}</a>
+            <span class="g-count">{{ g.memberCount }} คน</span>
+            <p-button icon="pi pi-external-link" [text]="true" [rounded]="true" severity="secondary" size="small" ariaLabel="รายละเอียดกลุ่ม" pTooltip="รายละเอียดกลุ่ม / ผูก Campaign" (onClick)="openGroup(g)" />
+          </div>
+          <div class="g-camps">
+            @for (c of g.campaigns; track c.campaignCode) {
+              <p-tag [value]="c.campaignCode" [severity]="c.typeCode === 'REFERRAL' ? 'success' : 'info'" [pTooltip]="c.nameTh" />
+            } @empty {
+              <span class="muted small">ยังไม่ผูก Campaign</span>
+            }
+          </div>
+          @if (g.notReadyCount) {
+            <p class="warn-line"><i class="pi pi-exclamation-triangle"></i> ไม่พร้อมขาย {{ g.notReadyCount }} คน — ไม่ได้รับสิทธิ์ Campaign จนกว่าจะกลับมาพร้อมขาย</p>
+          }
+          <ul class="members">
+            @for (m of (membersOf().get(g.groupId) ?? []).slice(0, preview); track m.sellerCode) {
+              <li
+                [class.off]="!m.ready"
+                pDraggable="seller"
+                [pDraggableDisabled]="!canEdit()"
+                (onDragStart)="dragStart(m, g.groupId)"
+                (onDragEnd)="dragEnd()"
+                [pTooltip]="readiness(m).text"
+              >
+                <span class="mc">{{ m.sellerCode }}</span>
+                <span class="mn">{{ m.sellerName }}</span>
+                @if (!m.ready || m.licenseWarning) {
+                  <i class="pi pi-exclamation-circle" [class.bad]="!m.ready"></i>
+                }
+              </li>
+            }
+          </ul>
+          @if (g.memberCount > preview) {
+            <a class="more" [routerLink]="['/seller/group', g.groupId]">+ อีก {{ g.memberCount - preview }} คน</a>
+          }
+          @if (canEdit() && selected().size) {
+            <button type="button" class="drop-zone" (click)="dropSelectedOn(g)">วาง {{ selected().size }} คนที่เลือกที่นี่</button>
+          }
+        </article>
+      } @empty {
+        <div class="no-group">
+          <i class="pi pi-users"></i>
+          <p>ยังไม่มีกลุ่มใน Workspace นี้ — กด "สร้างกลุ่ม" หรือคัดลอกกลุ่มจาก Workspace อื่น</p>
+          <p-button label="คัดลอกกลุ่ม" icon="pi pi-copy" [outlined]="true" routerLink="/seller/tools" [queryParams]="{ toPkg: b.workspace.packageCode, toCh: b.workspace.channelCode }" [disabled]="!canEdit()" />
+        </div>
+      }
+    </section>
+  </div>
+
+  <p-message severity="secondary" icon="pi pi-info-circle" styleClass="note">
+    ลาก = ย้าย (1 คนอยู่ได้ 1 กลุ่มต่อ Workspace) · เลือกหลายคนแล้วลากได้ · ลากสมาชิกกลับมาช่อง "ยังไม่มีกลุ่ม" = นำออกจากกลุ่ม ·
+    สีเทา = ไม่พร้อมขาย ลากเข้ากลุ่มไม่ได้ · ทุกการเปลี่ยนแปลงบันทึกทันทีและเก็บใน Audit log
+  </p-message>
+} @else if (!error()) {
+  <p class="muted">กำลังโหลด…</p>
+}
+
+<p-dialog header="สร้างกลุ่ม" [visible]="dialogOpen()" (visibleChange)="dialogOpen.set($event)" [modal]="true" [style]="{ width: '520px' }" [breakpoints]="{ '640px': '94vw' }" [draggable]="false">
+  <div class="dlg">
+    <app-text-field label="ชื่อกลุ่ม" [required]="true" [maxlength]="100" [(ngModel)]="newGroup.groupName" />
+    <app-textarea-field label="คำอธิบาย" [rows]="3" [maxlength]="500" [(ngModel)]="newGroup.description" />
+    <div class="colors">
+      <span class="lbl">สีกลุ่ม</span>
+      @for (c of colors; track c) {
+        <button type="button" class="swatch" [style.background]="c" [class.on]="newGroup.color === c" (click)="newGroup.color = c" [attr.aria-label]="'สี ' + c"></button>
+      }
+    </div>
+    <small class="muted">ชื่อกลุ่มห้ามซ้ำใน Workspace (ไม่เกิน 100 ตัวอักษร)</small>
+  </div>
+  <ng-template #footer>
+    <p-button label="ยกเลิก" [text]="true" severity="secondary" (onClick)="dialogOpen.set(false)" />
+    <p-button label="สร้างกลุ่ม" icon="pi pi-check" [loading]="busy()" (onClick)="createGroup()" />
+  </ng-template>
+</p-dialog>

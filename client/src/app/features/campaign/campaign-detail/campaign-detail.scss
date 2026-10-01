@@ -1,0 +1,278 @@
+@use 'tokens' as *;
+
+// เมนู Campaign › รายละเอียด Campaign (CP-07)
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: -24px -40px 0;
+  padding: 20px 40px;
+  background: #fff;
+  border-bottom: 1px solid $border-divider;
+}
+
+:host-context(.tablet) .head {
+  margin: -20px -24px 0;
+  padding: 16px 24px;
+}
+
+:host-context(.mobile) .head {
+  margin: -16px -12px 0;
+  padding: 14px 12px;
+}
+
+.back {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 20px;
+  color: $text;
+
+  &:hover {
+    color: $primary-9;
+  }
+}
+
+.title {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  h1 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: $fs-heading;
+    font-weight: 700;
+    color: $brand-navy;
+  }
+  .meta {
+    margin: 0;
+    font-size: 13px;
+    color: $text-muted;
+  }
+}
+
+.type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: $primary-light;
+  font-size: 12px;
+  font-weight: 600;
+  color: $primary-9;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+:host ::ng-deep .hdr-btn {
+  min-width: 150px;
+  height: 50px;
+  font-weight: 600;
+}
+
+:host ::ng-deep .msg {
+  width: 100%;
+}
+
+// ---------- การ์ดสรุปสิทธิ์ 6 สถานะ
+.grant-cards {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gcard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid $border-input;
+  border-radius: 16px;
+  background: #fff;
+
+  .lbl {
+    font-size: 13px;
+    color: $text-muted;
+  }
+  strong {
+    font-size: 26px;
+    line-height: 1.2;
+    color: $brand-navy;
+  }
+  small {
+    font-size: 12px;
+    color: $text-muted;
+  }
+  &.g-warn strong {
+    color: #c2410c;
+  }
+  &.g-success strong {
+    color: #15803d;
+  }
+  &.g-danger strong {
+    color: $status-rej-fg;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px;
+  border: 1px solid $border-input;
+  border-radius: 20px;
+  background: #fff;
+
+  h2 {
+    margin: 0;
+    font-size: $fs-heading;
+    font-weight: 700;
+    color: $primary-9;
+  }
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section-title {
+  margin: 8px 0 -4px;
+  font-size: $fs-heading;
+  font-weight: 700;
+  color: $brand-navy;
+}
+
+// ---------- งบ & โควตา
+.bars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bar-head {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+  color: $text;
+
+  .muted {
+    color: $text-muted;
+  }
+}
+
+:host ::ng-deep .pbar {
+  height: 8px;
+}
+
+.num {
+  text-align: right !important;
+}
+
+.strong {
+  font-weight: 600 !important;
+  color: $primary-9 !important;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+// ---------- ประวัติ
+.history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+
+  li {
+    display: flex;
+    gap: 10px;
+    color: $text;
+
+    i {
+      margin-top: 3px;
+      color: #9aa3b5;
+    }
+    em {
+      display: block;
+      font-style: normal;
+      color: $status-rej-fg;
+    }
+  }
+  .act-approve i {
+    color: #16a34a;
+  }
+  .act-reject i {
+    color: $status-rej-fg;
+  }
+}
+
+.dlg-note {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: $text-muted;
+}
+
+@media (max-width: 1100px) {
+  .grant-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .grant-cards,
+  .bars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .bars {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 18px 14px;
+  }
+  .buttons {
+    width: 100%;
+
+    p-button {
+      flex: 1;
+    }
+    ::ng-deep .hdr-btn {
+      width: 100%;
+      min-width: 0;
+      height: 44px;
+    }
+  }
+}

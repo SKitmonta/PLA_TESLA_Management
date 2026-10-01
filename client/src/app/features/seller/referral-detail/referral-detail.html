@@ -1,0 +1,153 @@
+@if (error()) {
+  <p-message severity="error" icon="pi pi-times-circle">{{ error() }}</p-message>
+}
+
+@if (data(); as d) {
+  <header class="head">
+    <a class="back" routerLink="/seller/referral" aria-label="กลับไป Referral links"><i class="pi pi-arrow-circle-left"></i></a>
+    <div class="title">
+      <h1>
+        Referral links · {{ d.nameTh }}
+        <p-tag value="Referral" severity="success" />
+        <p-tag [value]="status()[0]" [severity]="status()[1]" />
+      </h1>
+      <p class="meta">
+        <a [routerLink]="['/campaign', d.campaignCode]">{{ d.campaignCode }}</a> · {{ d.packageCodes.join(', ') }} × {{ d.channelCodes.join(', ') }} ·
+        {{ d.startDate | thDate: '–' }} – {{ d.endDate | thDate: 'ไม่ระบุ' }}
+      </p>
+    </div>
+    <div class="buttons">
+      <p-button label="Export Excel" icon="pi pi-download" [outlined]="true" severity="secondary" styleClass="hdr-btn" [disabled]="!d.links.length" (onClick)="exportExcel()" />
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="lbl">ลิงก์ที่ใช้งาน</span>
+      <strong>{{ d.stats.activeLinks }}</strong>
+      <small>จาก {{ d.stats.totalLinks }} ผู้ขายใน {{ d.stats.groupCount }} กลุ่ม</small>
+    </div>
+    <div class="stat">
+      <span class="lbl">คลิก</span>
+      <strong>{{ d.stats.clicks | number }}</strong>
+      <small>รวมทุกลิงก์</small>
+    </div>
+    <div class="stat">
+      <span class="lbl">ใบคำขอ</span>
+      <strong>{{ d.stats.applications | number }}</strong>
+      <small>{{ pct(d.stats.applications, d.stats.clicks) }} ของคลิก</small>
+    </div>
+    <div class="stat ok">
+      <span class="lbl">กรมธรรม์อนุมัติ</span>
+      <strong>{{ d.stats.approved | number }}</strong>
+      <small>{{ pct(d.stats.approved, d.stats.applications) }} ของใบคำขอ</small>
+    </div>
+  </div>
+
+  <div class="layout">
+    <section class="v2-card">
+      <div class="v2-card-head">
+        <h2 class="v2-card-title">ลิงก์รายผู้ขาย</h2>
+        <div class="filters">
+          <app-text-field label="ค้นหาผู้ขาย" [ngModel]="search()" (ngModelChange)="search.set($event ?? '')" />
+          <app-select-field label="กลุ่ม" [showClear]="true" [options]="groups()" optionLabel="label" optionValue="value" [ngModel]="groupFilter()" (ngModelChange)="groupFilter.set($event)" />
+        </div>
+      </div>
+      <div class="v2-table-wrap">
+        <div class="v2-table-scroll">
+          <table class="v2-table">
+            <thead>
+              <tr>
+                <th>รหัส</th>
+                <th>ชื่อ</th>
+                <th>กลุ่ม</th>
+                <th>ลิงก์</th>
+                <th class="num">คลิก</th>
+                <th class="num">ใบคำขอ</th>
+                <th class="num">อนุมัติ</th>
+                <th>สถานะ</th>
+                <th class="sticky-right"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of links(); track l.sellerCode) {
+                <tr [class.off]="!l.active">
+                  <td class="nowrap">{{ l.sellerCode }}</td>
+                  <td class="nowrap">{{ l.sellerName }}</td>
+                  <td class="nowrap"><span class="gdot" [style.background]="l.groupColor"></span>{{ l.groupName }}</td>
+                  <td class="nowrap mono" [pTooltip]="l.url">{{ short(l.url) }}</td>
+                  <td class="num">{{ l.clicks | number }}</td>
+                  <td class="num">{{ l.applications | number }}</td>
+                  <td class="num">{{ l.approved | number }}</td>
+                  <td class="nowrap">
+                    @if (l.active) {
+                      <p-tag value="Active" severity="success" />
+                    } @else {
+                      <p-tag [value]="'หยุดนับ · ' + (l.reason ?? 'ไม่พร้อมขาย')" severity="secondary" />
+                    }
+                  </td>
+                  <td class="sticky-right nowrap">
+                    <p-button label="คัดลอก" icon="pi pi-copy" [text]="true" size="small" (onClick)="copy(l)" />
+                    <p-button label="QR" icon="pi pi-qrcode" [text]="true" size="small" (onClick)="qr.set(l)" />
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="9" class="table-empty">ยังไม่มีลิงก์ — ผูก Campaign นี้กับกลุ่มผู้ขายที่เมนู Seller › Workspace</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="muted foot">นับผลแบบ Last click ภายใน {{ d.attributionDays }} วันหลังคลิก · ผู้ขายไม่พร้อมขาย ลิงก์หยุดนับยอดใหม่จนกว่าจะกลับมาพร้อมขาย</p>
+    </section>
+
+    <aside class="v2-card side">
+      <div class="v2-card-head">
+        <h2 class="v2-card-title">สิ่งที่ตัวแทนเห็น</h2>
+        <p-tag value="เฉพาะตัวแทน" severity="warn" />
+      </div>
+      <ul class="agent">
+        <li>
+          <strong>AG-02 จุดขาย &amp; กลุ่มเป้าหมาย</strong>
+          <small>จุดขาย 3 ข้อ · FAQ 2 ข้อ</small>
+        </li>
+        <li>
+          <strong>AG-03 Sales kit</strong>
+          <small>โบรชัวร์ (ส่งต่อได้) · ตารางเบี้ย · คู่มือการขาย</small>
+        </li>
+        <li>
+          <strong>AG-04 ชุดแชร์โซเชียล</strong>
+          <small>รูป 3 ขนาด + ข้อความพร้อมลิงก์ของตัวแทน</small>
+        </li>
+      </ul>
+      <p class="muted small">
+        @if (d.agentContentCode) {
+          มาจาก Content AGENT ที่ Approved ของ {{ d.packageCodes[0] }} (<a [routerLink]="['/package/add', d.agentContentCode]">{{ d.agentContentCode }}</a>)
+        } @else {
+          ยังไม่มี Content AGENT ที่ Approved ของ {{ d.packageCodes[0] }}
+        }
+      </p>
+    </aside>
+  </div>
+
+  <p-dialog header="QR ลิงก์ของผู้ขาย" [visible]="!!qr()" (visibleChange)="$event || qr.set(null)" [modal]="true" [style]="{ width: '420px' }" [breakpoints]="{ '640px': '94vw' }" [draggable]="false">
+    @if (qr(); as l) {
+      <div class="qr">
+        <div class="qr-box"><i class="pi pi-qrcode"></i></div>
+        <strong>{{ l.sellerCode }} · {{ l.sellerName }}</strong>
+        <code>{{ l.url }}</code>
+        <small class="muted">Prototype: ระบบจริงสร้างรูป QR จากลิงก์นี้ให้ดาวน์โหลด (.png) — ตอนนี้คัดลอกลิงก์ไปใช้ได้</small>
+      </div>
+    }
+    <ng-template #footer>
+      <p-button label="ปิด" [text]="true" severity="secondary" (onClick)="qr.set(null)" />
+      @if (qr(); as l) {
+        <p-button label="คัดลอกลิงก์" icon="pi pi-copy" (onClick)="copy(l)" />
+      }
+    </ng-template>
+  </p-dialog>
+} @else if (!error()) {
+  <p class="muted">กำลังโหลด…</p>
+}

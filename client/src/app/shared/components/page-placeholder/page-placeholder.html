@@ -1,0 +1,46 @@
+<section class="card page">
+  <header class="page-head">
+    <div>
+      <span class="screen-id">{{ screenId() }}</span>
+      <h1 class="page-title">{{ heading() }}</h1>
+      @if (description()) {
+        <p class="muted desc">{{ description() }}</p>
+      }
+    </div>
+    <span class="pill info">Sprint {{ sprint() }}</span>
+  </header>
+
+  <div class="notice">
+    <app-icon name="info" [size]="20" />
+    <div>
+      <strong>หน้านี้จะพัฒนาใน Sprint {{ sprint() }}</strong>
+      <p class="muted">โครง Folder, Route และสิทธิ์ตาม Role พร้อมแล้ว — ไฟล์ของหน้านี้อยู่ใน <code>client/src/app/features/</code></p>
+    </div>
+  </div>
+
+  <dl class="meta">
+    @if (specRefs().length) {
+      <div>
+        <dt>เอกสารอ้างอิง</dt>
+        <dd>{{ specRefs().join(' · ') }}</dd>
+      </div>
+    }
+    @if (figmaNode()) {
+      <div>
+        <dt>Figma frame</dt>
+        <dd><code>{{ figmaNode() }}</code></dd>
+      </div>
+    }
+  </dl>
+
+  @if (scope().length) {
+    <div class="scope">
+      <h3>ขอบเขตที่จะทำ</h3>
+      <ul>
+        @for (item of scope(); track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    </div>
+  }
+</section>

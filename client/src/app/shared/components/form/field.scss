@@ -1,0 +1,22 @@
+@use 'tokens' as *;
+
+// ช่องกรอก PrimeNG ทุกแบบ — เต็มความกว้าง · ตัวอักษร 14px (ตาม html) · ดาวสีแดงเมื่อบังคับ
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.req {
+  color: $error;
+}
+
+// อ่านอย่างเดียว (ค่าจาก Package) — พื้นเทาตาม Figma
+:host(.ro) ::ng-deep .p-inputtext {
+  background: #e6e6e6;
+  border-color: #e6e6e6;
+  color: $text;
+}
+
+:host ::ng-deep textarea.p-textarea {
+  width: 100%;
+}

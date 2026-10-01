@@ -1,0 +1,12 @@
+@let f = form();
+<div class="body">
+  <div class="g4">
+    <app-text-field label="เพศที่คำนวณได้" [readonly]="true" [ngModel]="genders()" />
+    <app-text-field label="ช่วงอายุ" [readonly]="true" [ngModel]="content().package.derived.ageDisplay" />
+    <app-number-field label="เบี้ยต่ำสุด (บาท)" [required]="true" [min]="0" [(ngModel)]="f.calculator.minPremium" />
+    <app-number-field label="เบี้ยสูงสุด (บาท)" [required]="true" [min]="0" [(ngModel)]="f.calculator.maxPremium" />
+  </div>
+  @if (f.calculator.minPremium !== null && f.calculator.maxPremium !== null && f.calculator.minPremium >= f.calculator.maxPremium) {
+    <p class="help err">เบี้ยต่ำสุดต้องน้อยกว่าเบี้ยสูงสุด</p>
+  }
+</div>

@@ -1,0 +1,34 @@
+@let f = form();
+@let r = rates();
+<div class="body">
+  <div class="rows">
+    <div class="rows-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>% ต่อทุนประกัน</th>
+            @for (v of r; track $index; let i = $index) {
+              <th style="text-align: center">ปีที่ {{ i + 1 }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight: 600; white-space: nowrap">เงินคืน</td>
+            @for (v of r; track $index; let i = $index) {
+              <td style="min-width: 110px"><app-number-field [label]="'ปีที่ ' + (i + 1) + ' (%)'" [decimals]="2" [min]="0" [(ngModel)]="r[i]" /></td>
+            }
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="g3">
+    <app-number-field label="เบี้ยตัวอย่างสำหรับกราฟ (บาท/ปี)" [required]="true" [min]="0" [(ngModel)]="f.benefits.samplePremium" />
+    <div>
+      <app-text-field label="ผลประโยชน์รวมตลอดสัญญา" [readonly]="true" [ngModel]="total() === null ? '–' : (total() | number: '1.2-2') + ' บาท'" />
+      <p class="help">คำนวณจาก % × เบี้ยตัวอย่าง</p>
+    </div>
+    <app-text-field label="หมายเหตุใต้กราฟ" [(ngModel)]="f.benefits.note" />
+  </div>
+</div>

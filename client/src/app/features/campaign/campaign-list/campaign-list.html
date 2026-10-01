@@ -1,0 +1,129 @@
+<h1 class="page-h1">Campaign management</h1>
+
+<div class="stat-row">
+  @for (s of stats; track s.label) {
+    <app-stat-card
+      [label]="s.label"
+      [value]="count(s.key)"
+      [icon]="s.icon"
+      [selected]="(query().status ?? '') === s.status"
+      (click)="setFilter({ status: s.status })"
+      (keydown.enter)="setFilter({ status: s.status })"
+    />
+  }
+</div>
+
+@if (error()) {
+  <div class="alert error">{{ error() }}</div>
+}
+
+<section class="v2-card">
+  <div class="v2-card-head">
+    <h2 class="v2-card-title">Campaign List</h2>
+    <p-button
+      label="Add"
+      icon="pi pi-plus"
+      styleClass="add-btn"
+      [disabled]="!canAdd()"
+      [pTooltip]="canAdd() ? '' : 'เพิ่ม Campaign ได้เฉพาะ Role Campaign Maker'"
+      tooltipPosition="left"
+      (onClick)="add()"
+    />
+  </div>
+
+  <div class="v2-table-wrap">
+    <div class="v2-table-scroll">
+      <table class="v2-table">
+        <thead>
+          <tr>
+            @for (h of cols; track h.label) {
+              <th>
+                @if (h.sort) {
+                  <button type="button" class="th-sort" [class.on]="isSorted(h.sort)" (click)="sortBy(h.sort)">
+                    {{ h.label }} <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+                  </button>
+                } @else {
+                  {{ h.label }}
+                }
+              </th>
+            }
+            <th class="sticky-right">Action</th>
+          </tr>
+          <tr class="filters">
+            <td><app-text-field label="Search" [ngModel]="query().code ?? ''" (ngModelChange)="typeFilter({ code: $event ?? '' })" /></td>
+            <td><app-text-field label="Search" [ngModel]="query().name ?? ''" (ngModelChange)="typeFilter({ name: $event ?? '' })" /></td>
+            <td>
+              <app-select-field label="Select Type" [showClear]="true" [options]="types()" optionLabel="label" optionValue="value" [ngModel]="query().type || null" (ngModelChange)="setFilter({ type: $event ?? '' })" />
+            </td>
+            <td></td>
+            <td><app-date-field label="Start Date" [ngModel]="query().startDate ?? ''" (ngModelChange)="setFilter({ startDate: $event || '' })" /></td>
+            <td><app-date-field label="End Date" [ngModel]="query().endDate ?? ''" (ngModelChange)="setFilter({ endDate: $event || '' })" /></td>
+            <td>
+              <app-select-field label="Select Channel" [showClear]="true" [options]="channels()" optionLabel="label" optionValue="value" [ngModel]="query().channel || null" (ngModelChange)="setFilter({ channel: $event ?? '' })" />
+            </td>
+            <td>
+              <app-select-field label="Select Status" [showClear]="true" [options]="statuses" optionLabel="label" optionValue="value" [ngModel]="query().status || null" (ngModelChange)="setFilter({ status: $event ?? '' })" />
+            </td>
+            <td></td>
+            <td></td>
+            <td><app-text-field label="Search" [ngModel]="query().approvedBy ?? ''" (ngModelChange)="typeFilter({ approvedBy: $event ?? '' })" /></td>
+            <td><app-text-field label="Search" [ngModel]="query().createdBy ?? ''" (ngModelChange)="typeFilter({ createdBy: $event ?? '' })" /></td>
+            <td class="sticky-right"></td>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of data()?.items ?? []; track row.campaignCode) {
+            <tr>
+              <td class="nowrap code">
+                <a [routerLink]="['/campaign', row.campaignCode]">{{ row.campaignCode }}</a>
+                @if (row.isMock) {
+                  <span class="mock" title="ข้อมูลจำลอง">Mock</span>
+                }
+              </td>
+              <td class="name">
+                {{ row.nameTh || '(ยังไม่ตั้งชื่อ)' }}
+                @if (row.nameEn) {
+                  <span class="sub">{{ row.nameEn }}</span>
+                }
+              </td>
+              <td class="nowrap">
+                <span class="type"><i [class]="typeIcon[row.typeCode]"></i> {{ row.typeNameEn ?? row.typeCode }}</span>
+              </td>
+              <td class="nowrap">{{ row.packageCodes.join(', ') || '–' }}</td>
+              <td class="nowrap">{{ row.startDate | thDate: '–' }}</td>
+              <td class="nowrap">{{ row.endDate | thDate: '–' }}</td>
+              <td class="nowrap">{{ channelText(row) }}</td>
+              <td class="nowrap">
+                <app-status-badge [status]="badge(row)" [label]="badgeLabel(row)" />
+                @if (row.status === 'REJECTED') {
+                  <span class="sub rejected" [attr.title]="row.rejectReason">ตีกลับ</span>
+                }
+              </td>
+              <td class="nowrap num">{{ row.typeCode === 'REFERRAL' ? 'ไม่มีงบ' : row.budgetUsed.toLocaleString('en-US') + ' / ' + money(row.budget) }}</td>
+              <td class="nowrap num">{{ row.typeCode === 'REFERRAL' ? '–' : row.quotaUsed + ' / ' + money(row.quotaTotal) }}</td>
+              <td class="nowrap">{{ row.approvedByName ?? '–' }}</td>
+              <td class="nowrap">{{ row.createdByName ?? '–' }}</td>
+              <td class="sticky-right">
+                <p-button icon="pi pi-ellipsis-v" [text]="true" [rounded]="true" severity="secondary" ariaLabel="เมนูจัดการ" (onClick)="openMenu(row, $event)" />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="13" class="table-empty">{{ loading() ? 'กำลังโหลด…' : 'ไม่พบข้อมูลตามเงื่อนไข' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination
+      class="v2-table-foot"
+      [total]="data()?.total ?? 0"
+      [page]="query().page ?? 1"
+      [pageSize]="query().pageSize ?? 10"
+      (pageChange)="goPage($event)"
+      (pageSizeChange)="setPageSize($event)"
+    />
+  </div>
+</section>
+
+<p-menu #rowMenu [model]="menuItems()" [popup]="true" appendTo="body" />

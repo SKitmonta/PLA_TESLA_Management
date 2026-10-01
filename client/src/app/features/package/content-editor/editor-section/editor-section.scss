@@ -1,0 +1,105 @@
+@use 'tokens' as *;
+
+:host {
+  display: block;
+  padding: 24px;
+  border: 1px solid $border-card;
+  border-radius: 16px;
+  background: #fff;
+  scroll-margin-top: 16px;
+
+  &.diff {
+    border-color: #b9ccf3;
+  }
+  &.agent-only {
+    border-color: #f5c99b;
+    background: #fffdf9;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+
+  &.clickable {
+    cursor: pointer;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: $fs-heading;
+    font-weight: 700;
+    color: $brand-navy;
+  }
+}
+
+.sid {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #eef1f6;
+  font-size: $fs-small;
+  font-weight: 700;
+  color: $text-slate;
+
+  :host(.agent-only) & {
+    background: #fff0e5;
+    color: #a64b00;
+  }
+}
+
+.badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: $fs-small;
+  font-weight: 600;
+
+  &.b-diff,
+  &.b-new {
+    background: $primary-light;
+    color: $primary-9;
+  }
+  &.b-agent {
+    background: #fff0e5;
+    color: #a64b00;
+  }
+}
+
+.hint {
+  margin-left: auto;
+  font-size: $fs-small;
+  color: $text-muted;
+  text-align: right;
+}
+
+.chev {
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid $text-muted;
+  border-bottom: 1.5px solid $text-muted;
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+
+  &.open {
+    transform: rotate(-135deg);
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  :host {
+    padding: 16px;
+  }
+  .hint {
+    margin-left: 0;
+    width: 100%;
+    text-align: left;
+  }
+}

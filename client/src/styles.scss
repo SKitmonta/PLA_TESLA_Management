@@ -1,0 +1,637 @@
+// ============================================================
+// Global styles — class กลางที่ทุกเมนูใช้ร่วมกัน (ตาม Mockup Baseline v1.0)
+// สี/ขนาดอยู่ที่ styles/_tokens.scss
+// ============================================================
+@use 'tokens' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: $font-family;
+  font-size: $font-size-base;
+  color: $text;
+  background: $bg-page;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: $primary-9;
+  &:hover { color: $primary; }
+}
+
+h1, h2, h3, h4 { color: $primary; margin: 0; }
+
+.muted { color: $text-muted; }
+
+// ---------- Card ----------
+.card {
+  background: $bg-card;
+  border: 1px solid $border-card;
+  border-radius: $radius-card;
+  box-shadow: $shadow-card;
+}
+
+.page-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: $primary;
+  margin: 0;
+}
+
+// ---------- Buttons ----------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: $radius-btn;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid $primary;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s, background 0.15s;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn-primary { background: $primary; color: #fff; &:hover:not(:disabled) { filter: brightness(1.25); } }
+.btn-outline { background: #fff; color: $primary; &:hover:not(:disabled) { background: $primary-light; } }
+.btn-ghost { background: #fff; color: $text-slate; border-color: #dfe3ea; &:hover:not(:disabled) { background: $bg-subtle; } }
+.btn-sm { height: 32px; padding: 0 12px; font-size: 13px; border-radius: 9px; }
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-input;
+  border: 1px solid $border-input;
+  background: #fff;
+  color: $text-slate;
+  cursor: pointer;
+  padding: 0;
+  &:hover { background: $bg-subtle; }
+  &.borderless { border: none; }
+}
+
+// ---------- Form ----------
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $primary;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 0 0 4px;
+}
+
+.input {
+  height: 38px;
+  border: 1px solid $border-input;
+  border-radius: $radius-input;
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: $font-size-base;
+  color: $primary;
+  background: #fff;
+  width: 100%;
+
+  &:focus { outline: 2px solid $primary-light; border-color: $primary-9; }
+  &.readonly, &[readonly] { background: $bg-subtle; color: $text-slate; }
+}
+textarea.input { height: auto; padding: 10px 12px; line-height: 1.5; resize: vertical; }
+
+// ---------- Table ----------
+.table-wrap {
+  border: 1px solid $border-card;
+  border-radius: $radius-card;
+  overflow: auto;
+}
+table.dt {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: $font-size-base;
+
+  th {
+    background: $bg-subtle;
+    color: $primary;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px;
+    border-bottom: 1px solid #eef0f4;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+}
+
+// ---------- Pill (สถานะ) ----------
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.dot::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  &.ok { background: $status-ok-bg; color: $status-ok-fg; }
+  &.wait { background: $status-wait-bg; color: $status-wait-fg; }
+  &.draft { background: $status-draft-bg; color: $status-draft-fg; }
+  &.rej { background: $status-rej-bg; color: $status-rej-fg; }
+  &.off { background: $status-off-bg; color: $status-off-fg; }
+  &.info { background: $primary-light; color: $primary-9; }
+}
+
+// ---------- Tag (Template / Channel) ----------
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  &.t-ob { background: $tag-ob-bg; color: $tag-ob-fg; }
+  &.t-pa { background: $tag-pa-bg; color: $tag-pa-fg; }
+  &.t-ag { background: $tag-ag-bg; color: $tag-ag-fg; }
+  &.t-ch { background: #f1f3f7; color: $text-nav; }
+}
+
+// ---------- Source tag (PKG / DRV / CMS / GLB / CMP) ----------
+.src {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+
+  &.s-pkg { background: #eef1f6; color: #44506a; }
+  &.s-drv { background: #efe7fd; color: #5b21b6; }
+  &.s-cms { background: #e2edff; color: #00317a; }
+  &.s-glb { background: #f1f1f1; color: #5d5d5d; }
+  &.s-cmp { background: #fff0e5; color: #a64b00; }
+}
+
+// ---------- Responsive ----------
+@media (max-width: 767px) {
+  .page-title {
+    font-size: 24px;
+    line-height: 1.3;
+  }
+}
+
+// ============================================================
+// V2 (Figma 1920px) — ใช้กับหน้าใหม่ทุกหน้า
+// ============================================================
+
+// หัวข้อหน้า เช่น "Package management"
+.page-h1 {
+  margin: 0;
+  font-size: $fs-page-title;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $brand-navy;
+}
+
+.page-sub {
+  margin: -6px 0 0;
+  font-size: 14px;
+  color: $text-muted;
+}
+
+// แถวการ์ดสรุป (app-stat-card)
+.stat-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+// กล่องเนื้อหาหลัก (เช่น "Package List")
+.v2-card {
+  background: #fff;
+  border: 1px solid $border-card;
+  border-radius: $radius-card;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.v2-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.v2-card-title {
+  margin: 0;
+  font-size: $fs-heading;
+  font-weight: 700;
+  line-height: 1.2;
+  color: $primary-9;
+}
+
+// ปุ่มหลัก (Figma step_active: ไล่สี, สูง 50, มุม 10)
+.btn-v2 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 120px;
+  height: 50px;
+  padding: 0 24px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: $gradient-primary;
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.12);
+  }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  img {
+    display: block;
+  }
+}
+
+.btn-v2-outline {
+  @extend .btn-v2;
+  background: #fff;
+  border-color: $brand-navy;
+  color: $brand-navy;
+
+  &:hover:not(:disabled) {
+    filter: none;
+    background: $primary-light;
+  }
+}
+
+.btn-v2-ghost {
+  @extend .btn-v2;
+  background: #fff;
+  border-color: #dfe3ea;
+  color: $text-slate;
+
+  &:hover:not(:disabled) {
+    filter: none;
+    background: $bg-subtle;
+  }
+}
+
+.btn-v2-sm {
+  height: 38px;
+  min-width: 0;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+// ช่องค้นหา / Dropdown (สูง 34 มุม 8 ตาม Figma)
+.v2-input,
+.v2-select {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid $border-input;
+  border-radius: 8px;
+  background-color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  color: $text;
+
+  &::placeholder {
+    color: #757575;
+  }
+  &:focus {
+    outline: 2px solid $primary-light;
+    border-color: $primary-9;
+  }
+  &:disabled,
+  &[readonly] {
+    background-color: $bg-subtle;
+    color: $text-slate;
+  }
+}
+
+.v2-select {
+  padding-right: 30px;
+  @include select-arrow(12px);
+  cursor: pointer;
+}
+
+.v2-input.lg,
+.v2-select.lg {
+  height: 44px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+textarea.v2-input {
+  height: auto;
+  min-height: 90px;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.v2-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  > label,
+  > .v2-label {
+    font-size: $fs-body;
+    font-weight: 600;
+    color: $brand-navy;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .req {
+    color: $error;
+  }
+}
+
+.v2-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px 20px;
+}
+
+// ตาราง (Figma Package List)
+.v2-table-wrap {
+  border: 1px solid #e9eaeb;
+  border-radius: $radius-card;
+  overflow: hidden;
+  background: #fff;
+}
+
+.v2-table-scroll {
+  overflow-x: auto;
+}
+
+table.v2-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  th {
+    height: 48px;
+    padding: 0 24px;
+    background: $bg-subtle;
+    border-bottom: 1px solid #e9eaeb;
+    font-size: $fs-subheading;
+    font-weight: 700;
+    line-height: 18px;
+    color: $primary;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .th-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+
+    img {
+      display: block;
+      opacity: 0.55;
+    }
+    &.on img {
+      opacity: 1;
+    }
+  }
+
+  tr.filters td {
+    height: 48px;
+    padding: 0 12px;
+    background: #fff;
+    border-bottom: 1px solid #e9eaeb;
+
+    .v2-input,
+    .v2-select {
+      font-size: $fs-small;
+    }
+  }
+
+  td {
+    height: 48px;
+    padding: 8px 24px;
+    font-size: $fs-body;
+    font-weight: 400;
+    line-height: 1.4;
+    color: $text;
+    border-bottom: 1px solid #f0f1f3;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr.clickable {
+    cursor: pointer;
+  }
+  tbody tr:hover td,
+  tbody tr.active td {
+    background: #f5f8fe;
+  }
+
+  .sub {
+    display: block;
+    font-size: 13px;
+    color: $text-muted;
+  }
+
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  // คอลัมน์ Action ติดขวาเมื่อเลื่อนตารางแนวนอน
+  .sticky-right {
+    position: sticky;
+    right: 0;
+    background: #fff;
+    border-left: 1px solid #eaeaea;
+    text-align: center;
+    padding: 0 12px;
+  }
+  th.sticky-right {
+    background: $bg-subtle;
+  }
+}
+
+.v2-table-foot {
+  border-top: 1px solid #e9eaeb;
+}
+
+.table-empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: $text-muted;
+}
+
+.icon-action {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: $primary-light;
+  }
+  img {
+    display: block;
+  }
+}
+
+// ข้อความแจ้ง
+.alert {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+
+  &.error {
+    background: #fdebee;
+    color: #b4162f;
+  }
+  &.success {
+    background: #e6f6ee;
+    color: #12784a;
+  }
+  &.info {
+    background: $primary-light;
+    color: $primary-9;
+  }
+}
+
+@media (max-width: 767px) {
+  .v2-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .page-h1 {
+    font-size: 20px;
+  }
+  table.v2-table th,
+  table.v2-table td {
+    padding-left: 14px;
+    padding-right: 14px;
+    font-size: 14px;
+  }
+}
+
+// ============================================================
+// PrimeNG v21 (ธีม: app/core/theme/tesla-preset.ts)
+// ขนาดตัวอักษรมาตรฐาน 14px — PrimeNG ใช้หน่วย rem จึงตั้งที่ html
+// ============================================================
+html {
+  font-size: 14px;
+}
+
+.p-component,
+.p-inputtext,
+.p-select-label,
+.p-button,
+.p-datepicker,
+.p-toast,
+.p-floatlabel label {
+  font-family: inherit;
+}
+
+// Toast แจ้งผล (NotifyService) — อยู่ใต้ Header · ข้อความ 14px
+.p-toast.p-toast-top-right {
+  top: 80px;
+}
+.p-toast .p-toast-summary {
+  font-size: 14px;
+}
+.p-toast .p-toast-detail {
+  font-size: 14px;
+}
+
+// ช่อง PrimeNG เต็มความกว้างของคอลัมน์
+p-floatlabel,
+p-autocomplete,
+p-select,
+p-multiselect,
+p-datepicker,
+p-inputnumber {
+  display: block;
+  width: 100%;
+}
+
+// ทุกช่องใช้ Float Label แบบ In ขนาดปกติ 14px — Dropdown ใช้ line-height เดียวกับช่องข้อความ (สูงเท่ากัน · สระภาษาไทยไม่ถูกตัด)
+.p-select-label,
+.p-multiselect-label {
+  line-height: normal;
+}
+
+// ป้ายลอยในช่อง (FloatLabel variant="in") — ไม่ตัดคำยาว
+.p-floatlabel-in label {
+  max-width: calc(100% - 2.5rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ปุ่มไอคอนสี่เหลี่ยมในแถวตาราง (ลบ / เพิ่ม)
+.p-button.icon-square {
+  width: 2.75rem;
+  height: 2.75rem;
+}

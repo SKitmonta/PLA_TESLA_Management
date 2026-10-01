@@ -1,0 +1,39 @@
+<div class="panel card" role="dialog" aria-label="สลับผู้ใช้และ Role">
+  <div class="panel-head">
+    <app-icon name="user-switch" />
+    <div>
+      <strong>สลับผู้ใช้ / Role</strong>
+      <span class="muted">ตอนนี้: {{ session.user()?.userName ?? '—' }} · {{ session.roleLabel() }}</span>
+    </div>
+  </div>
+
+  @if (session.users().length === 0) {
+    <p class="empty muted">ยังโหลดรายชื่อผู้ใช้ไม่ได้ — ตรวจสอบว่า Server (port 3000) ทำงานอยู่</p>
+  } @else {
+    <div class="cols">
+      <ul class="users">
+        @for (u of session.users(); track u.userId) {
+          <li>
+            <button type="button" [class.on]="u.userId === pickedUserId()" (click)="pickedUserId.set(u.userId)">
+              <span class="u-name">{{ u.userName }}</span>
+              <span class="u-pos muted">{{ u.position }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+
+      <ul class="roles">
+        @for (r of pickedRoles(); track r) {
+          <li>
+            <button type="button" [class.on]="isCurrent(r)" (click)="apply(r)">
+              <span>{{ roleLabel[r] }}</span>
+              @if (isCurrent(r)) {
+                <app-icon name="check" [size]="16" [strokeWidth]="2.2" />
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>

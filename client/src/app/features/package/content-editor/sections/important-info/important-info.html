@@ -1,0 +1,23 @@
+@let f = form();
+@let p = pkg();
+<div class="body">
+  <div class="g3">
+    <app-number-field label="ระยะเวลาเอาประกันภัย (ปี)" [min]="1" [max]="99" [grouping]="false" [(ngModel)]="f.important.coverageYears" />
+    <app-text-field label="อายุผู้ขอเอาประกันภัย" [readonly]="true" [ngModel]="p.derived.ageDisplay" />
+    <app-text-field label="การซื้อสัญญาเพิ่มเติม" [readonly]="true" [ngModel]="p.derived.riderDisplay" />
+    <app-text-field label="การตรวจสุขภาพ" [readonly]="true" [ngModel]="(p.derived.underwriteDisplay ?? '–') + ' (' + uwCode() + ')'" />
+    <app-text-field label="เบี้ยประกันภัยเริ่มต้น" [readonly]="true" [ngModel]="startPremium() === null ? '– (กรอกที่ Sticky bar)' : (startPremium() | number) + ' บาท (ใช้ค่าเดียวกับ Sticky bar)'" />
+    <app-text-field label="การลดหย่อนภาษี" [readonly]="true" [ngModel]="p.derived.taxDisplay" />
+  </div>
+  <div class="fld">
+    <span class="lbl">ช่องทางชำระเบี้ย <span class="src s-drv">DRV</span></span>
+    <div class="chips">
+      @for (m of content().paymentMethodsShown; track m.code) {
+        <p-tag [value]="m.text" icon="pi pi-check" severity="info" />
+      } @empty {
+        <p-tag value="ไม่มีช่องทางที่ตั้งให้แสดง" severity="secondary" />
+      }
+    </div>
+    <p class="help">Package มี {{ p.paymentMethods.length }} วิธี · แสดงเฉพาะวิธีที่ Mapping ใน Master setup กำหนดว่าแสดงบน {{ content().channelName }}</p>
+  </div>
+</div>

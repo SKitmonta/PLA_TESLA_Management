@@ -1,0 +1,83 @@
+@use 'tokens' as *;
+
+// P-01 Seller Workspace (Figma 15:1392)
+:host {
+  display: block;
+}
+
+.v2-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.head {
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .page-h1 {
+    margin: 0;
+  }
+  .page-sub {
+    margin: 6px 0 0;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+:host ::ng-deep .head-btn {
+  height: 40px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+}
+
+:host-context(.mobile) .filters {
+  grid-template-columns: 1fr;
+}
+
+.code a {
+  color: $primary-9;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.name {
+  min-width: 220px;
+}
+
+.num {
+  text-align: right;
+}
+
+.hl {
+  color: $primary-9;
+  font-weight: 600;
+}
+
+.bad {
+  color: $status-rej-fg;
+  font-weight: 600;
+}
+
+:host ::ng-deep .row-btn {
+  white-space: nowrap;
+  height: 32px;
+  padding: 0 14px;
+}
+
+:host ::ng-deep .note {
+  font-size: 13px;
+}

@@ -1,0 +1,38 @@
+@use 'tokens' as *;
+
+// P-04 Referral links — รายการ Campaign
+.v2-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.head {
+  .page-h1 {
+    margin: 0;
+  }
+  .page-sub {
+    margin: 6px 0 0;
+  }
+}
+
+.code a {
+  color: $primary-9;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.name {
+  min-width: 220px;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .row-btn {
+  white-space: nowrap;
+  height: 32px;
+  padding: 0 14px;
+}

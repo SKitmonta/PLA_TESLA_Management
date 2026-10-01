@@ -1,0 +1,18 @@
+@let f = form();
+<div class="body">
+  <div class="g3">
+    <app-upload-box label="Icon สินค้า" spec="120×120 px" accept=".svg,.png" [(value)]="f.sticky.icon" />
+    <app-number-field label="เบี้ยประกันเริ่มต้น (บาท)" [required]="true" [min]="0" [(ngModel)]="f.sticky.minPremium" />
+    @if (isAgent()) {
+      <div>
+        <app-text-field label="ปุ่มหลัก" [readonly]="true" [ngModel]="'ให้ตัวแทนติดต่อกลับ'" />
+        <p class="help">แทนปุ่ม "ซื้อเลย" · Lead ส่งถึงตัวแทนเจ้าของลิงก์</p>
+      </div>
+    } @else {
+      <div>
+        <app-text-field label="หน่วยแสดงผล (จาก Payment mode)" [readonly]="true" [ngModel]="unit()" />
+        <p class="help">{{ modes() }}</p>
+      </div>
+    }
+  </div>
+</div>

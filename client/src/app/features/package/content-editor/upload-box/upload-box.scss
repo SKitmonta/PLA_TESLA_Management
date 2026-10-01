@@ -1,0 +1,99 @@
+@use 'tokens' as *;
+
+// กล่องอัปโหลด (Figma V2): เส้นประน้ำเงิน · พื้นฟ้าอ่อน · ไอคอนรูปภาพ · ข้อความ 2 บรรทัด
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.box {
+  height: 100%;
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 16px;
+  border: 2px dashed $primary-9;
+  border-radius: 12px;
+  background: #f5f9ff;
+  color: $text;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $primary-light;
+  }
+
+  input {
+    display: none;
+  }
+  .ico {
+    margin-bottom: 8px;
+    color: #4d4d4d;
+  }
+  .text {
+    font-size: $fs-body;
+    line-height: 1.4;
+    color: $text;
+  }
+  .file {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: $fs-body;
+    font-weight: 600;
+    color: $primary-9;
+  }
+  .remove {
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: $fs-small;
+    color: $error;
+    cursor: pointer;
+  }
+  .err {
+    font-size: $fs-small;
+    color: $error;
+  }
+}
+
+// แบบเล็ก (ไอคอนในแถวตาราง) — กล่องเทามุมมน
+:host(.compact) .box {
+  width: 50px;
+  min-height: 50px;
+  height: 50px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: #e6e6e6;
+
+  .ico {
+    width: 26px;
+    height: 26px;
+    margin: 0;
+  }
+  .text,
+  .remove,
+  .file {
+    display: none;
+  }
+}
+
+:host(.compact.filled) .box {
+  background: $primary-light;
+
+  .ico {
+    color: $primary-9;
+  }
+}
+
+fieldset:disabled .box {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

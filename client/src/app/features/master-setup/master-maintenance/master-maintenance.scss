@@ -1,0 +1,175 @@
+@use 'tokens' as *;
+
+// สไตล์เฉพาะหน้า MS-02 Master ที่สร้างเอง
+.layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.types {
+  padding: 18px 12px;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+}
+
+.mobile-pick {
+  display: none;
+}
+
+.group h3 {
+  margin: 0 0 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: $text-muted;
+  letter-spacing: 0.04em;
+}
+
+.type {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: $text-nav;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: $bg-subtle;
+  }
+  &.on {
+    background: $primary-light;
+    color: $brand-navy;
+    font-weight: 700;
+  }
+
+  .code {
+    width: 42px;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: $text-muted;
+  }
+  .name {
+    flex: 1;
+  }
+  .count {
+    min-width: 22px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: #eef1f6;
+    font-size: 11px;
+    text-align: center;
+    color: $text-slate;
+  }
+}
+
+.note {
+  margin: 4px 10px 0;
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-card .wide {
+  grid-column: 1 / -1;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 400 !important;
+  color: $text !important;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.tools {
+  display: flex;
+  gap: 10px;
+
+  app-text-field {
+    width: 240px;
+  }
+  app-select-field {
+    width: 160px;
+  }
+}
+
+.code {
+  font-weight: 500;
+}
+
+td.name {
+  min-width: 220px;
+}
+
+.strong {
+  font-weight: 600 !important;
+  color: $primary-9 !important;
+}
+
+.hint {
+  margin: -8px 0 0;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+@media (max-width: #{$bp-desktop - 1px}) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .types {
+    position: static;
+    padding: 16px;
+
+    .group,
+    .note {
+      display: none;
+    }
+  }
+  .mobile-pick {
+    display: block;
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  .tools {
+    width: 100%;
+    app-text-field,
+    app-select-field {
+      width: auto;
+      flex: 1;
+    }
+  }
+}

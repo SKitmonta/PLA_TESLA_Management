@@ -1,0 +1,27 @@
+<ng-template #field>
+  <p-datepicker
+    [inputId]="id"
+    [ngModel]="value()"
+    (ngModelChange)="change($event)"
+    (onBlur)="touch()"
+    [minDate]="minDate()"
+    [maxDate]="maxDate()"
+    dateFormat="dd/mm/yy"
+    [showIcon]="true"
+    iconDisplay="input"
+    [showButtonBar]="true"
+    [disabled]="isDisabled()"
+    [placeholder]="label() ? undefined : placeholder() || undefined"
+    [fluid]="true"
+    appendTo="body"
+  />
+</ng-template>
+
+@if (label()) {
+  <p-floatlabel variant="in">
+    <ng-container *ngTemplateOutlet="field" />
+    <label [for]="id">{{ label() }}@if (required()) { <span class="req">*</span> }</label>
+  </p-floatlabel>
+} @else {
+  <ng-container *ngTemplateOutlet="field" />
+}

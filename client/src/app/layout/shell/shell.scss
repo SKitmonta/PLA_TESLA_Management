@@ -1,0 +1,38 @@
+@use 'tokens' as *;
+
+.shell {
+  display: flex;
+  height: 100vh;
+  background: $bg-page;
+  overflow: hidden;
+}
+
+// tablet: Sidebar ลอย → เว้นที่ซ้ายเท่าความกว้างตอนย่อ
+.shell.tablet .main-col {
+  margin-left: $sidebar-collapsed-width;
+}
+
+.main-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+// พื้นที่เนื้อหา — Figma: หัวข้อหน้าเริ่มห่างขอบซ้าย ~40px ที่ 1920px
+.content {
+  flex: 1;
+  overflow: auto;
+  padding: 24px 40px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.shell.tablet .content {
+  padding: 20px 24px 32px;
+}
+
+.shell.mobile .content {
+  padding: 16px 12px 24px;
+}

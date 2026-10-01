@@ -1,0 +1,206 @@
+@use 'tokens' as *;
+
+.review {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 16px;
+  align-items: start;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.side {
+  position: sticky;
+  top: 12px;
+}
+
+.sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid $border-input;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  color: $primary-9;
+  cursor: pointer;
+
+  &:hover {
+    background: #f5f9ff;
+  }
+}
+
+.gaps {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff7e6;
+  font-size: 14px;
+  color: #a64b00;
+
+  i {
+    margin-right: 6px;
+  }
+}
+
+dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 10px 16px;
+  font-size: 14px;
+
+  dt {
+    color: $text-muted;
+  }
+  dd {
+    margin: 0;
+    color: $text;
+    word-break: break-word;
+  }
+}
+
+.pre {
+  white-space: pre-line;
+}
+
+.rules {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+
+  .none {
+    list-style: none;
+    margin-left: -20px;
+    color: $text-muted;
+  }
+}
+
+// การ์ดโปรโมชันตัวอย่าง
+.promo {
+  overflow: hidden;
+  border: 1px solid $border-input;
+  border-radius: 16px;
+
+  .img {
+    height: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, $primary-9, $brand-navy);
+    color: #fff;
+
+    i {
+      font-size: 40px;
+    }
+    span {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+  }
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+
+    .type {
+      align-self: flex-start;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: $primary-light;
+      font-size: 12px;
+      font-weight: 700;
+      color: $primary-9;
+    }
+    strong {
+      font-size: 18px;
+      color: $brand-navy;
+    }
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: $text;
+    }
+    small {
+      font-size: 12px;
+      color: $text-muted;
+    }
+    .code {
+      align-self: flex-start;
+      padding: 4px 10px;
+      border: 1px dashed $primary-9;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: $primary-9;
+    }
+  }
+}
+
+.check {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: $text;
+
+    i {
+      color: #b0b0b0;
+    }
+    small {
+      margin-left: auto;
+      color: #a64b00;
+    }
+    &.ok i {
+      color: #16a34a;
+    }
+  }
+}
+
+@media (max-width: 1100px) {
+  .review {
+    grid-template-columns: 1fr;
+  }
+  .side {
+    position: static;
+  }
+}
+
+@media (max-width: #{$bp-mobile - 1px}) {
+  dl {
+    grid-template-columns: 1fr;
+    gap: 2px;
+
+    dd {
+      margin-bottom: 8px;
+    }
+  }
+}

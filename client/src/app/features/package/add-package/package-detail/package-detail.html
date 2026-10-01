@@ -1,0 +1,138 @@
+<div class="backdrop" (click)="closed.emit()"></div>
+
+<aside class="panel" role="dialog" aria-label="รายละเอียด Package">
+  <header class="panel-head">
+    <div class="title">
+      <span class="label">รายละเอียด Package</span>
+      <h2>{{ code() }}</h2>
+      @if (detail(); as d) {
+        <div class="tags">
+          @for (ch of d.channels; track ch.code) {
+            <app-template-tag [template]="ch.template" />
+          }
+          @if (d.isMock) {
+            <span class="mock">ข้อมูลจำลอง</span>
+          }
+        </div>
+      }
+    </div>
+    <div class="legend">
+      <span class="src s-pkg">PKG</span> จาก Payload
+      <span class="src s-drv">DRV</span> ระบบแปลง
+    </div>
+    <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="secondary" ariaLabel="ปิด" (onClick)="closed.emit()" />
+  </header>
+
+  <div class="panel-body">
+    @if (error()) {
+      <div class="alert error">{{ error() }}</div>
+    } @else if (!detail()) {
+      <p class="muted">กำลังโหลด…</p>
+    }
+
+    @if (detail(); as d) {
+      <section>
+        <h3>ข้อมูลหลัก</h3>
+        <dl class="grid">
+          <div><dt>package_Code <span class="src s-pkg">PKG</span></dt><dd>{{ d.packageCode }}</dd></div>
+          <div><dt>ชื่อ (TH) <span class="src s-pkg">PKG</span></dt><dd>{{ d.nameTh }}</dd></div>
+          <div><dt>ชื่อ (EN) <span class="src s-pkg">PKG</span></dt><dd>{{ d.nameEn || '–' }}</dd></div>
+          <div><dt>ประเภท Package <span class="src s-pkg">PKG</span></dt><dd>{{ d.packageType || '–' }}</dd></div>
+          <div>
+            <dt>สถานะ <span class="src s-pkg">PKG</span></dt>
+            <dd>
+              @switch (d.displayStatus) {
+                @case ('INACTIVE') { <app-status-badge status="inactive" /> }
+                @case ('DRAFTED') { <app-status-badge status="draft" label="Drafted" /> }
+                @default { <app-status-badge status="active" label="Approved" /> }
+              }
+              <span class="sub">status_Code = {{ d.statusCode }} · is_Active = {{ d.isActive }}</span>
+            </dd>
+          </div>
+          <div><dt>ช่วงขาย <span class="src s-pkg">PKG</span></dt><dd>{{ d.saleStartDate | thDate }} – {{ d.saleEndDate | thDate }}</dd></div>
+          <div><dt>sale_Target (FYP) <span class="src s-pkg">PKG</span></dt><dd>{{ d.saleTarget ? (d.saleTarget | number) + ' บาท' : '– (ยังไม่มี Target)' }}</dd></div>
+          <div><dt>description <span class="src s-pkg">PKG</span></dt><dd>{{ d.description || '–' }}</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h3>ช่องทาง & ผู้ขาย</h3>
+        <dl class="grid">
+          <div class="wide">
+            <dt>package_Channels → Template <span class="src s-pkg">PKG</span> <span class="src s-drv">DRV</span></dt>
+            <dd class="channel-list">
+              @for (ch of d.channels; track ch.code) {
+                <span><span class="tag t-ch">{{ ch.code }} {{ ch.name }}</span> → <app-template-tag [template]="ch.template" /></span>
+              }
+            </dd>
+          </div>
+          <div>
+            <dt>seller_Selection_Mode <span class="src s-pkg">PKG</span></dt>
+            <dd>{{ d.sellerSelectionMode === 'ALL' ? 'ALL (ขายได้ทุกคน)' : 'CUSTOM (เฉพาะรายชื่อ)' }}</dd>
+          </div>
+          <div>
+            <dt>package_Sellers <span class="src s-pkg">PKG</span></dt>
+            <dd>
+              @if (d.sellers.length) {
+                @for (s of d.sellers; track s.sellerCode) {
+                  <span class="line">{{ s.sellerCode }} {{ s.sellerName }} <span class="sub">({{ s.channelCode }})</span></span>
+                }
+              } @else {
+                0 รายการ → ใช้ฐานข้อมูลผู้ขายของเรา
+              }
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      @for (p of d.plans; track p.planCode) {
+        <section>
+          <h3>
+            @if (p.planRole !== 'MASTER') {
+              สัญญาเพิ่มเติม
+            } @else if (d.plans.length > 1) {
+              แผนที่ {{ $index + 1 }} (plan_Role = MASTER)
+            } @else {
+              แผนประกันหลัก (plan_Role = MASTER)
+            }
+          </h3>
+          <dl class="grid">
+            <div><dt>plan_Code <span class="src s-pkg">PKG</span></dt><dd>{{ p.planCode }} <span class="sub">{{ p.planName }}</span></dd></div>
+            <div><dt>product_Type_Code <span class="src s-pkg">PKG</span></dt><dd>{{ p.productTypeCode }} {{ d.derived.productTypeName }}</dd></div>
+            <div><dt>sub_Product_Type_Code <span class="src s-pkg">PKG</span></dt><dd>{{ p.subProductTypeCode }} {{ d.derived.subProductTypeName }}</dd></div>
+            <div><dt>ทุนประกัน <span class="src s-pkg">PKG</span></dt><dd>{{ p.minSumInsured | number }} – {{ p.maxSumInsured | number }} บาท</dd></div>
+            <div><dt>tax_Exempt_Type <span class="src s-pkg">PKG</span> <span class="src s-drv">DRV</span></dt><dd>{{ p.taxExemptType || '–' }} → {{ d.derived.taxDisplay }}</dd></div>
+            <div><dt>Rider <span class="src s-drv">DRV</span></dt><dd>{{ d.derived.riderDisplay }}</dd></div>
+          </dl>
+        </section>
+      }
+
+      <section>
+        <h3>เงื่อนไขการรับประกัน</h3>
+        <dl class="grid">
+          <div><dt>อายุรับประกัน <span class="src s-pkg">PKG</span> <span class="src s-drv">DRV</span></dt><dd>{{ d.derived.ageDisplay }}</dd></div>
+          <div>
+            <dt>type_Of_Underwrite <span class="src s-pkg">PKG</span> <span class="src s-drv">DRV</span></dt>
+            <dd>{{ d.plans[0]?.underwriteType }} {{ d.derived.underwriteName }} <span class="sub">แสดงบนหน้าเว็บ: "{{ d.derived.underwriteDisplay || '–' }}"</span></dd>
+          </div>
+          <div><dt>เพศ <span class="src s-pkg">PKG</span></dt><dd>{{ names(d.genders) }}</dd></div>
+          <div><dt>ชั้นอาชีพ <span class="src s-pkg">PKG</span></dt><dd>{{ codeRange(d.occupationClasses) }}</dd></div>
+          <div><dt>free_Look_Period <span class="src s-pkg">PKG</span></dt><dd>{{ d.freeLookPeriod ?? '–' }} วัน</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h3>การชำระเบี้ย</h3>
+        <dl class="grid">
+          <div><dt>Payment mode <span class="src s-pkg">PKG</span></dt><dd>{{ names(d.paymentModes) }}</dd></div>
+          <div class="wide">
+            <dt>Payment method <span class="src s-pkg">PKG</span></dt>
+            <dd>{{ d.paymentMethods.length }} วิธี: {{ names(d.paymentMethods) }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <p class="foot muted">Sync ล่าสุด {{ d.syncedAt | thDate: '–' : true }} · ข้อมูลในหน้านี้แก้ไขไม่ได้ (แก้ที่ระบบต้นทาง)</p>
+    }
+  </div>
+</aside>

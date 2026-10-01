@@ -1,0 +1,150 @@
+<h1 class="page-h1">Package management</h1>
+
+<div class="stat-row">
+  @for (s of stats; track s.label) {
+    <app-stat-card
+      [label]="s.label"
+      [value]="count(s.key)"
+      [icon]="s.icon"
+      [selected]="(query().status ?? '') === s.status"
+      (click)="setFilter({ status: s.status })"
+      (keydown.enter)="setFilter({ status: s.status })"
+    />
+  }
+</div>
+
+@if (error()) {
+  <div class="alert error">{{ error() }}</div>
+}
+
+<section class="v2-card">
+  <div class="v2-card-head">
+    <h2 class="v2-card-title">Package List</h2>
+    <p-button
+      label="Add"
+      icon="pi pi-plus"
+      styleClass="add-btn"
+      [disabled]="!canAdd()"
+      [pTooltip]="canAdd() ? '' : 'เพิ่ม Package ได้เฉพาะ Role Content Maker'"
+      tooltipPosition="left"
+      (onClick)="dialogOpen.set(true)"
+    />
+  </div>
+
+  <div class="v2-table-wrap">
+    <div class="v2-table-scroll">
+      <table class="v2-table">
+        <thead>
+          <tr>
+            <th>
+              <button type="button" class="th-sort" [class.on]="isSorted('packageCode')" (click)="sortBy('packageCode')">
+                Package Code <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="th-sort" [class.on]="isSorted('nameTh')" (click)="sortBy('nameTh')">
+                Package name <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="th-sort" [class.on]="isSorted('startDate')" (click)="sortBy('startDate')">
+                Start Date <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="th-sort" [class.on]="isSorted('endDate')" (click)="sortBy('endDate')">
+                End Date <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="th-sort" [class.on]="isSorted('channel')" (click)="sortBy('channel')">
+                Channel <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="th-sort" [class.on]="isSorted('status')" (click)="sortBy('status')">
+                Status <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="th-sort" [class.on]="isSorted('approvedBy')" (click)="sortBy('approvedBy')">
+                Approver <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+              </button>
+            </th>
+            <th>
+              <button type="button" class="th-sort" [class.on]="isSorted('createdBy')" (click)="sortBy('createdBy')">
+                Create by <img src="assets/figma/sort.svg" width="14" height="14" alt="" />
+              </button>
+            </th>
+            <th class="sticky-right">Action</th>
+          </tr>
+          <tr class="filters">
+            <td><app-text-field label="Search" [small]="true" (ngModelChange)="typeFilter({ code: $event ?? '' })" ngModel /></td>
+            <td><app-text-field label="Search" [small]="true" (ngModelChange)="typeFilter({ name: $event ?? '' })" ngModel /></td>
+            <td><app-date-field label="Start Date" [small]="true" (ngModelChange)="setFilter({ startDate: $event || '' })" ngModel /></td>
+            <td><app-date-field label="End Date" [small]="true" (ngModelChange)="setFilter({ endDate: $event || '' })" ngModel /></td>
+            <td>
+              <app-select-field label="Select Type" [small]="true" [showClear]="true" [options]="channels()" optionLabel="nameEn" optionValue="code" [ngModel]="query().channel || null" (ngModelChange)="setFilter({ channel: $event ?? '' })" />
+            </td>
+            <td>
+              <app-select-field label="Select Type" [small]="true" [showClear]="true" [options]="statuses" optionLabel="label" optionValue="value" [ngModel]="query().status || null" (ngModelChange)="setFilter({ status: $event ?? '' })" />
+            </td>
+            <td><app-text-field label="Search" [small]="true" (ngModelChange)="typeFilter({ approvedBy: $event ?? '' })" ngModel /></td>
+            <td><app-text-field label="Search" [small]="true" (ngModelChange)="typeFilter({ createdBy: $event ?? '' })" ngModel /></td>
+            <td class="sticky-right"></td>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of data()?.items ?? []; track row.contentCode) {
+            <tr>
+              <td class="nowrap code">
+                {{ row.packageCode }}
+                @if (row.isMock) {
+                  <span class="mock" title="ข้อมูลจำลอง (ไม่ได้มาจาก Payload จริง)">Mock</span>
+                }
+              </td>
+              <td class="name">{{ row.nameTh }}</td>
+              <td class="nowrap">{{ row.startDate | thDate: '–' }}</td>
+              <td class="nowrap">{{ row.endDate | thDate: 'ไม่ระบุ' }}</td>
+              <td class="nowrap">{{ row.channelName ?? row.channelCode }}</td>
+              <td>
+                <app-status-badge [status]="badge(row)" />
+                @if (row.status === 'REJECTED') {
+                  <span class="sub rejected" [attr.title]="row.rejectReason">ตีกลับ</span>
+                }
+              </td>
+              <!-- Approver ว่างถ้ายังไม่อนุมัติ (BR-CT-011) -->
+              <td class="nowrap">{{ row.approvedByName ?? '–' }}</td>
+              <td class="nowrap">{{ row.createdByName ?? '–' }}</td>
+              <td class="sticky-right">
+                <p-button icon="pi pi-ellipsis-v" [text]="true" [rounded]="true" severity="secondary" ariaLabel="เมนูจัดการ" (onClick)="openMenu(row, $event)" />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="9" class="table-empty">{{ loading() ? 'กำลังโหลด…' : 'ไม่พบข้อมูลตามเงื่อนไข' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination
+      class="v2-table-foot"
+      [total]="data()?.total ?? 0"
+      [page]="query().page ?? 1"
+      [pageSize]="query().pageSize ?? 10"
+      (pageChange)="goPage($event)"
+      (pageSizeChange)="setPageSize($event)"
+    />
+  </div>
+</section>
+
+<p-menu #rowMenu [model]="menuItems()" [popup]="true" appendTo="body" />
+
+@if (dialogOpen()) {
+  <app-add-package-dialog (closed)="dialogOpen.set(false)" (created)="onCreated($event)" />
+}
+
+@if (detailCode(); as code) {
+  <app-package-detail [code]="code" (closed)="detailCode.set(null)" />
+}

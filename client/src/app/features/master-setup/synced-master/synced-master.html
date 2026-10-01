@@ -1,0 +1,86 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-h1">Master ที่ Sync จากระบบต้นทาง</h1>
+    <p class="page-sub">อ่านอย่างเดียว · Sync ล่าสุด {{ lastSync() | thDate: '–' : true }}</p>
+  </div>
+  @if (canSync()) {
+    <p-button label="Sync ตอนนี้" icon="pi pi-refresh" [outlined]="true" [loading]="syncing()" (onClick)="sync()" />
+  }
+</div>
+
+@if (error()) {
+  <div class="alert error">{{ error() }}</div>
+}
+
+<section class="v2-card">
+  <div class="tabs" role="tablist">
+    @for (t of types(); track t.type) {
+      <button type="button" role="tab" class="tab" [class.on]="t.type === active()" [attr.aria-selected]="t.type === active()" (click)="pick(t.type)">
+        {{ t.label }} <span class="count">{{ t.count }}</span>
+      </button>
+    }
+  </div>
+
+  <div class="tools">
+    <app-text-field label="ค้นหารหัส / ชื่อ" [small]="true" [ngModel]="search()" (ngModelChange)="search.set($event ?? '')" />
+  </div>
+
+  <div class="v2-table-wrap">
+    <div class="v2-table-scroll">
+      <table class="v2-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name (EN)</th>
+            <th>Name (TH)</th>
+            @if (isChannel()) {
+              <th>Template ที่ใช้</th>
+            }
+            @if (isSubType()) {
+              <th>Product type</th>
+            }
+            <th>สถานะ</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of filtered(); track r.code) {
+            <tr>
+              <td class="code">{{ r.code }}</td>
+              <td>{{ r.nameEn ?? '(ไม่มีชื่อในต้นทาง)' }}</td>
+              <td>{{ r.nameTh ?? '(ไม่มีชื่อในต้นทาง)' }}</td>
+              @if (isChannel()) {
+                <td>
+                  <div class="tpl">
+                    @for (t of r.templates; track t) {
+                      <app-template-tag [template]="t" />
+                    } @empty {
+                      <app-template-tag [template]="null" />
+                    }
+                  </div>
+                </td>
+              }
+              @if (isSubType()) {
+                <td class="nowrap">{{ r.parentCode }} <span class="sub">{{ r.parentName }}</span></td>
+              }
+              <td>
+                @if (r.dataStatus === 'INCOMPLETE') {
+                  <app-status-badge status="pending" label="ข้อมูลไม่ครบ" />
+                } @else {
+                  <app-status-badge [status]="r.isActive ? 'active' : 'inactive'" />
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="table-empty">{{ loading() ? 'กำลังโหลด…' : 'ไม่พบข้อมูล' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (isChannel()) {
+    <p class="muted small">รายการ Channel จาก Payload ตัวอย่าง (planCommissionChannel) · ช่องทางที่ไม่มี Template จะไม่แสดงใน Add Package</p>
+  }
+</section>

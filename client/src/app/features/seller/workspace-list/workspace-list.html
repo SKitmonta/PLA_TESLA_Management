@@ -1,0 +1,72 @@
+<section class="v2-card">
+  <div class="v2-card-head head">
+    <div>
+      <h1 class="page-h1">Seller Workspace</h1>
+      <p class="page-sub">1 Workspace = Package × Channel ที่ Content Approved แล้ว · จัดกลุ่มผู้ขายแยกตาม Workspace</p>
+    </div>
+    <div class="actions">
+      <p-button label="Audit log" icon="pi pi-history" [outlined]="true" severity="secondary" styleClass="head-btn" routerLink="/seller/tools" fragment="audit" />
+      <p-button label="คัดลอกกลุ่ม" icon="pi pi-copy" [outlined]="true" styleClass="head-btn" routerLink="/seller/tools" />
+    </div>
+  </div>
+
+  <div class="filters">
+    <app-text-field class="f-search" label="ค้นหา Package code / ชื่อ" [ngModel]="search()" (ngModelChange)="search.set($event ?? '')" />
+    <app-select-field label="Channel" [showClear]="true" [options]="channels()" optionLabel="label" optionValue="value" [ngModel]="channel()" (ngModelChange)="channel.set($event)" />
+    <app-select-field label="Selection mode" [showClear]="true" [options]="modes" optionLabel="label" optionValue="value" [ngModel]="mode()" (ngModelChange)="mode.set($event)" />
+  </div>
+
+  @if (error()) {
+    <p-message severity="error" icon="pi pi-times-circle">{{ error() }}</p-message>
+  }
+
+  <div class="v2-table-wrap">
+    <div class="v2-table-scroll">
+      <table class="v2-table">
+        <thead>
+          <tr>
+            <th>Package</th>
+            <th>ชื่อ</th>
+            <th>Channel</th>
+            <th>Mode</th>
+            <th class="num">ผู้ขาย</th>
+            <th class="num">กลุ่ม</th>
+            <th class="num">ยังไม่มีกลุ่ม</th>
+            <th class="num">ไม่พร้อมขาย</th>
+            <th class="num">Campaign ที่ผูก</th>
+            <th>แก้ไขล่าสุด</th>
+            <th class="sticky-right"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of filtered(); track r.packageCode + r.channelCode) {
+            <tr>
+              <td class="nowrap code"><a [routerLink]="['/seller/workspace', r.packageCode, r.channelCode]">{{ r.packageCode }}</a></td>
+              <td class="name">{{ r.nameTh }}</td>
+              <td class="nowrap"><p-tag [value]="r.channelCode + ' ' + (r.channelName ?? '')" severity="info" /></td>
+              <td class="nowrap"><p-tag [value]="r.mode" [severity]="r.mode === 'ALL' ? 'secondary' : 'warn'" /></td>
+              <td class="num">{{ r.sellerCount }}</td>
+              <td class="num">{{ r.groupCount }}</td>
+              <td class="num" [class.hl]="r.ungrouped > 0">{{ r.ungrouped }}</td>
+              <td class="num" [class.bad]="r.notReady > 0">{{ r.notReady }}</td>
+              <td class="num">{{ r.campaignCount }}</td>
+              <td class="nowrap muted">{{ dateTime(r.updatedAt) }}</td>
+              <td class="sticky-right">
+                <p-button label="จัดกลุ่ม" [outlined]="true" styleClass="row-btn" (onClick)="open(r)" />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="11" class="table-empty">{{ loading() ? 'กำลังโหลด…' : 'ไม่พบ Workspace ตามเงื่อนไข' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p-message severity="secondary" icon="pi pi-info-circle" styleClass="note">
+    CUSTOM = รายชื่อจาก package_Sellers ของช่องทางนั้น · ALL = ผู้ขายทุกคนในฐานข้อมูลที่ขายช่องทางนั้นได้ ·
+    ผู้ขายไม่พร้อมขาย (ใบอนุญาตหมดอายุ / พักงาน / สิ้นสุด) แสดงสีเทาและลากเข้ากลุ่มไม่ได้
+  </p-message>
+</section>

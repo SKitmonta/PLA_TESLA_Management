@@ -1,0 +1,99 @@
+@if (form(); as f) {
+  <!-- Header: ย้อนกลับ · ชื่อ / รหัส / สถานะ · Save / Submit -->
+  <header class="head wizard-top">
+    <a class="back" routerLink="/campaign/list" aria-label="กลับไป Campaign list">
+      <i class="pi pi-arrow-circle-left"></i>
+    </a>
+    <div class="title">
+      <h1>
+        {{ f.nameTh || (isNew() ? 'Add Campaign' : '(ยังไม่ตั้งชื่อ)') }}
+        <app-status-badge [status]="badge()[0]" [label]="badge()[1]" />
+        @if (detail(); as d) {
+          <span class="ver">v{{ d.versionNo }}</span>
+        }
+      </h1>
+      <p class="meta">
+        <span><i class="pi pi-hashtag"></i> {{ detail()?.campaignCode ?? 'Campaign Code จะสร้างเมื่อบันทึกครั้งแรก' }}</span>
+        @if (f.typeCode) {
+          <span class="sep"><i [class]="typeIcon[f.typeCode]"></i> {{ typeName() }}</span>
+        }
+      </p>
+    </div>
+    <div class="buttons">
+      <p-button label="Save" icon="pi pi-save" [outlined]="true" styleClass="hdr-btn" [loading]="busy() === 'save'" [disabled]="!editable() || !!busy()" (onClick)="save()" />
+      <p-button label="Submit" icon="pi pi-send" styleClass="hdr-btn" [loading]="busy() === 'submit'" [disabled]="!editable() || !!busy() || !f.typeCode" (onClick)="submit()" />
+    </div>
+  </header>
+
+  @if (detail()?.status === 'REJECTED' && detail()?.rejectReason) {
+    <p-message severity="error" icon="pi pi-times-circle" styleClass="msg">ตีกลับ: {{ detail()?.rejectReason }} — แก้ไขแล้วกด "Submit" อีกครั้ง</p-message>
+  }
+  @if (!editable()) {
+    <p-message severity="info" icon="pi pi-info-circle" styleClass="msg">
+      @if (!canEdit()) {
+        Role ปัจจุบันดูได้อย่างเดียว — สร้าง / แก้ไขได้เฉพาะ Campaign Maker
+      } @else {
+        Campaign สถานะ "{{ badge()[1] }}" แก้ไขไม่ได้ (แก้ Campaign ที่อนุมัติแล้วต้องออก Version ใหม่ — ทำในขั้นถัดไป)
+      }
+    </p-message>
+  }
+
+  <!-- Step bar -->
+  <nav class="stepper" aria-label="ขั้นตอน">
+    @for (s of steps; track s.no) {
+      @let skipped = s.no === 4 && referral();
+      <button
+        type="button"
+        class="step"
+        [class.on]="step() === s.no"
+        [class.done]="stepDone(s.no)"
+        [class.skip]="skipped"
+        [disabled]="!canGo(s.no)"
+        [attr.aria-current]="step() === s.no ? 'step' : null"
+        (click)="goTo(s.no)"
+      >
+        <span class="dot">
+          @if (stepDone(s.no) && step() !== s.no) {
+            <i class="pi pi-check"></i>
+          } @else {
+            {{ s.no }}
+          }
+        </span>
+        <span class="txt">
+          <strong>{{ s.title }}</strong>
+          <small>{{ skipped ? 'ไม่ต้องตั้งค่า (Referral)' : s.sub }}</small>
+        </span>
+      </button>
+    }
+  </nav>
+
+  <section class="body">
+    @if (!lookup.ready()) {
+      <p class="loading">กำลังโหลดตัวเลือก…</p>
+    } @else {
+      @switch (step()) {
+        @case (1) { <app-step-type [form]="f" [locked]="!isNew() || !editable()" (picked)="pickType($event)" /> }
+        @case (2) { <app-step-general [form]="f" [code]="detail()?.campaignCode ?? ''" /> }
+        @case (3) { <app-step-benefit [form]="f" /> }
+        @case (4) { <app-step-rules [form]="f" /> }
+        @case (5) { <app-step-review [form]="f" [detail]="detail()" (jump)="goTo($event)" /> }
+      }
+    }
+  </section>
+
+  <!-- ปุ่มเลื่อนขั้น -->
+  <footer class="foot">
+    <p-button label="ย้อนกลับ" icon="pi pi-chevron-left" [outlined]="true" severity="secondary" [disabled]="step() === 1" (onClick)="prev()" />
+    <span class="where">ขั้นที่ {{ step() }} / 5</span>
+    @if (step() < 5) {
+      <p-button label="ถัดไป" icon="pi pi-chevron-right" iconPos="right" [disabled]="!f.typeCode" (onClick)="next()" />
+    } @else {
+      <p-button label="ส่งอนุมัติ" icon="pi pi-send" [loading]="busy() === 'submit'" [disabled]="!editable() || !!busy()" (onClick)="submit()" />
+    }
+  </footer>
+} @else if (error()) {
+  <p-message severity="error" styleClass="msg">{{ error() }}</p-message>
+  <a routerLink="/campaign/list">‹ กลับไป Campaign list</a>
+} @else {
+  <p class="loading">กำลังโหลด…</p>
+}

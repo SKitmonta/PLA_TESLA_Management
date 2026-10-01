@@ -1,0 +1,451 @@
+<header class="page-head">
+  <div>
+    <h1 class="page-h1">Overview</h1>
+    <p class="page-sub">
+      <span class="live" [class.on]="!!lastUpdate()"></span>
+      อัปเดตล่าสุด {{ updatedText() || '–' }} (Real-time · ดึงข้อมูลใหม่ทุก 30 วินาที)
+    </p>
+  </div>
+  <div class="head-actions">
+    <p-selectbutton [options]="metrics" optionLabel="label" optionValue="value" [ngModel]="metric()" (ngModelChange)="setMetric($event)" [allowEmpty]="false" aria-label="ตัวชี้วัด" />
+    <p-button label="Export Excel" icon="pi pi-download" [outlined]="true" severity="secondary" styleClass="head-btn" [disabled]="!data()" (onClick)="exportExcel()" />
+  </div>
+</header>
+
+<section class="v2-card filters">
+  <p-floatlabel variant="in" class="f-range">
+    <p-datepicker
+      inputId="ov-range"
+      selectionMode="range"
+      [readonlyInput]="true"
+      dateFormat="dd/mm/yy"
+      [showIcon]="true"
+      iconDisplay="input"
+      [showButtonBar]="true"
+      [fluid]="true"
+      appendTo="body"
+      [ngModel]="range()"
+      (ngModelChange)="setRange($event)"
+    />
+    <label for="ov-range">ช่วงวันที่ (ยื่นใบคำขอ)</label>
+  </p-floatlabel>
+  <app-select-field label="Channel" [showClear]="true" [options]="channelOptions()" optionLabel="label" optionValue="value" [ngModel]="channel()" (ngModelChange)="setFilter('channel', $event)" />
+  <app-select-field label="Package" [showClear]="true" [filter]="true" [options]="packageOptions()" optionLabel="label" optionValue="value" [ngModel]="pkg()" (ngModelChange)="setFilter('pkg', $event)" />
+  <app-select-field label="ประเภทสินค้า" [showClear]="true" [options]="productOptions()" optionLabel="label" optionValue="value" [ngModel]="productType()" (ngModelChange)="setFilter('productType', $event)" />
+  <app-select-field label="ประเภท Campaign" [showClear]="true" [options]="campaignTypeOptions()" optionLabel="label" optionValue="value" [ngModel]="campaignType()" (ngModelChange)="setFilter('campaignType', $event)" />
+</section>
+
+@if (error()) {
+  <p-message severity="error" icon="pi pi-times-circle">{{ error() }}</p-message>
+}
+
+@if (data(); as d) {
+  <div class="view-line">
+    <p-tag [value]="'มุมมอง: ' + session.roleLabel() + ' (เห็น ' + d.sections.join(', ') + ')'" severity="info" icon="pi pi-eye" />
+    <span class="muted">ช่วงวันที่ {{ rangeText() }} · ตัวชี้วัด {{ metricName() }}</span>
+    @if (loading()) {
+      <i class="pi pi-spin pi-spinner muted"></i>
+    }
+  </div>
+
+  <!-- ================================================================ OV-F งานที่ต้องทำ -->
+  @if (d.tasks) {
+    <section class="v2-card">
+      <div class="sec-head">
+        <span class="sec-id">OV-F</span>
+        <h2>งานที่ต้องทำ &amp; ความเคลื่อนไหว</h2>
+        <span class="muted small">แสดงเฉพาะงานของผู้ใช้ / หน่วยงาน</span>
+      </div>
+      <div class="f-grid">
+        <ul class="tasks">
+          @for (t of d.tasks; track t.key) {
+            <li>
+              <button type="button" (click)="openTask(t)" [class.zero]="!t.count">
+                <span class="badge" [class.hot]="t.count > 0">{{ t.count }}</span>
+                <span class="t-label">
+                  {{ t.label }}
+                  @if (t.detail) {
+                    <small>({{ t.detail }})</small>
+                  }
+                </span>
+                <i class="pi pi-angle-right"></i>
+              </button>
+            </li>
+          } @empty {
+            <li class="muted small">ไม่มีงานค้างสำหรับ Role นี้</li>
+          }
+        </ul>
+        <div class="activity">
+          <h3>กิจกรรมล่าสุด</h3>
+          <ul>
+            @for (a of d.activity ?? []; track $index) {
+              <li>
+                <span class="a-time">{{ a.at.slice(8, 10) }}/{{ a.at.slice(5, 7) }} {{ a.at.slice(11, 16) }}</span>
+                <span class="a-text"><strong>{{ actionText[a.action] ?? a.action }}</strong> · {{ a.code }}{{ a.detail ? ' · ' + a.detail : '' }}</span>
+                <span class="a-actor muted">{{ a.actor }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ================================================================ OV-A สรุปผู้บริหาร -->
+  @if (d.kpi; as k) {
+    <section class="v2-card">
+      <div class="sec-head">
+        <span class="sec-id">OV-A</span>
+        <h2>สรุปผู้บริหาร</h2>
+      </div>
+      <div class="kpis">
+        <div class="kpi main">
+          <span class="lbl">{{ metricName() }} อนุมัติแล้ว ({{ monthName() }})</span>
+          <strong>{{ short(k.sales, metric()) }}</strong>
+          <small [class]="pctClass(k.targetPct)">
+            @if (k.target !== null) {
+              {{ k.targetPct }}% ของ Target {{ short(k.target, metric()) }}
+            } @else {
+              ยังไม่มี Target {{ metricName() }} ในช่วงนี้
+            }
+          </small>
+          @if (k.targetPct !== null) {
+            <p-progressbar [value]="k.targetPct > 100 ? 100 : k.targetPct" [showValue]="false" styleClass="kbar" />
+          }
+        </div>
+        <div class="kpi">
+          <span class="lbl">กรมธรรม์</span>
+          <strong>{{ k.approved | number }} <small class="u">อนุมัติ</small></strong>
+          <small>เข้าเงื่อนไข Campaign {{ k.eligible | number }} · ใบคำขอ {{ k.applications | number }}</small>
+        </div>
+        <div class="kpi">
+          <span class="lbl">อัตราอนุมัติ</span>
+          <strong>{{ k.approvalRate ?? '–' }}{{ k.approvalRate !== null ? '%' : '' }}</strong>
+          <small>ของใบคำขอที่มีผลพิจารณาแล้ว</small>
+        </div>
+        <div class="kpi">
+          <span class="lbl">งบ Campaign (ใช้จริง)</span>
+          <strong>{{ k.budget.used | number }}</strong>
+          <small>จอง {{ k.budget.reserved | number }} · คงเหลือ {{ k.budget.remaining | number }}</small>
+        </div>
+        <div class="kpi">
+          <span class="lbl">ต้นทุนต่อกรมธรรม์</span>
+          <strong>{{ k.costPerPolicy !== null ? (k.costPerPolicy | number) + ' บาท' : '–' }}</strong>
+          <small>งบใช้จริง ÷ กรมธรรม์ที่ได้สิทธิ์</small>
+        </div>
+        <div class="kpi">
+          <span class="lbl">FYP ต่องบ</span>
+          <strong>{{ k.salesPerBudget !== null ? k.salesPerBudget + ' เท่า' : '–' }}</strong>
+          <small>FYP ที่ได้สิทธิ์ ÷ งบใช้จริง</small>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ================================================================ OV-B แนวโน้ม + ตามช่องทาง -->
+  @if (d.trend; as t) {
+    <div class="row-2-1">
+      <section class="v2-card">
+        <div class="sec-head">
+          <span class="sec-id">OV-B</span>
+          <h2>แนวโน้ม {{ metricName() }} อนุมัติแล้ว{{ metric() === 'POLICY' ? ' (ฉบับ)' : ' (ล้านบาท)' }} · {{ t.months[0].slice(0, 4) }}</h2>
+          <p-button [label]="trendAsTable() ? 'ดูเป็นกราฟ' : 'ดูเป็นตาราง'" [icon]="trendAsTable() ? 'pi pi-chart-bar' : 'pi pi-table'" [text]="true" size="small" (onClick)="trendAsTable.set(!trendAsTable())" />
+        </div>
+        @if (trendAsTable()) {
+          <div class="v2-table-wrap">
+            <div class="v2-table-scroll">
+              <table class="v2-table">
+                <thead>
+                  <tr>
+                    <th>เดือน</th>
+                    @for (c of t.byChannel; track c.channelCode) {
+                      <th class="num">{{ c.channelCode }}</th>
+                    }
+                    <th class="num">รวม</th>
+                    <th class="num">Target</th>
+                    <th class="num">% ถึงเป้า</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (m of t.months; track m; let i = $index) {
+                    <tr>
+                      <td class="nowrap">{{ monthLabel(m, true) }}</td>
+                      @for (c of t.byChannel; track c.channelCode) {
+                        <td class="num">{{ full(c.values[i]) }}</td>
+                      }
+                      <td class="num"><strong>{{ full(t.actual[i]) }}</strong></td>
+                      <td class="num">{{ full(t.target[i]) }}</td>
+                      <td class="num">{{ t.target[i] ? ((t.actual[i] / t.target[i]!) * 100 | number: '1.0-1') + '%' : '–' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        } @else {
+          @if (trendBars(); as tb) {
+            <div class="legend">
+              @for (l of tb.legend; track l.code) {
+                <span><i [style.background]="l.color"></i>{{ l.code }}</span>
+              }
+              <span><i class="tline"></i>Target</span>
+            </div>
+            <div class="bars" role="img" [attr.aria-label]="'แนวโน้ม ' + metricName() + ' รายเดือน'">
+              <div class="y-axis">
+                @for (y of tb.ticks; track $index) {
+                  <span>{{ y }}</span>
+                }
+              </div>
+              <div class="cols">
+                @for (m of tb.months; track m.label) {
+                  <div class="col" [pTooltip]="m.label + ': ' + full(m.total) + (m.target !== null ? ' / Target ' + full(m.target) : '')" tooltipPosition="top">
+                    <div class="stack">
+                      @if (m.targetPct !== null) {
+                        <span class="target" [style.bottom.%]="m.targetPct"></span>
+                      }
+                      @for (seg of m.segments; track seg.code) {
+                        <span class="seg" [style.height.%]="seg.pct" [style.background]="seg.color"></span>
+                      }
+                    </div>
+                    <span class="val" [class.hit]="m.hit">{{ short(m.total, metric()) }}</span>
+                    <span class="lbl">{{ m.label }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+        <small class="muted">แท่ง = ยอดอนุมัติแยกตามช่องทาง · เส้นประ = Target ระดับช่องทาง (ตั้งที่เมนู ตั้ง Target)</small>
+      </section>
+
+      <section class="v2-card">
+        <div class="sec-head">
+          <h2>{{ metricName() }} {{ monthName() }} ตามช่องทาง</h2>
+        </div>
+        @if (channelBars().length) {
+          <ul class="ch-list">
+            @for (c of channelBars(); track c.channelCode) {
+              <li>
+                <span>{{ c.channelCode }} {{ c.channelName }}</span>
+                <strong>{{ short(c.value, metric()) }}</strong>
+                <small class="muted">{{ c.policies }} ฉบับ</small>
+                <span class="hbar"><i [style.width.%]="c.pct" [style.background]="c.color"></i></span>
+              </li>
+            }
+          </ul>
+          <p class="total">รวม {{ short(channelTotal(), metric()) }} {{ unit() }}</p>
+        } @else {
+          <p class="muted empty">ไม่มียอดขายในช่วงนี้</p>
+        }
+      </section>
+    </div>
+  }
+
+  <!-- ================================================================ OV-C ราย Package -->
+  @if (d.packages; as list) {
+    <section class="v2-card">
+      <div class="sec-head">
+        <span class="sec-id">OV-C</span>
+        <h2>ผลงานราย Package</h2>
+        <span class="muted small">Target ระดับ Package = sale_Target (FYP บาท ตลอดอายุ Package — OV-05) · % ถึงเป้าคิดจากยอดสะสมตั้งแต่เริ่มขาย</span>
+      </div>
+      <div class="v2-table-wrap">
+        <div class="v2-table-scroll">
+          <table class="v2-table">
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>ชื่อ</th>
+                <th>Channel</th>
+                <th class="num">Target</th>
+                <th class="num">{{ metricName() }} จริง</th>
+                <th class="num">% ถึงเป้า</th>
+                <th class="num">กรมธรรม์</th>
+                <th class="num">Campaign Active</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of list; track p.packageCode + p.channelCode) {
+                <tr>
+                  <td class="nowrap code">{{ p.packageCode }}</td>
+                  <td class="name">{{ p.nameTh }}</td>
+                  <td class="nowrap">{{ p.channelCode }}</td>
+                  <td class="num" [pTooltip]="p.target === null ? (metric() === 'FYP' ? 'Package ยังไม่มี sale_Target' : 'sale_Target เทียบได้เฉพาะ FYP') : ''">{{ short(p.target, metric()) }}</td>
+                  <td class="num"><strong>{{ short(p.actual, metric()) }}</strong></td>
+                  <td class="num" [class]="pctClass(p.targetPct)" [pTooltip]="p.lifetime !== null ? 'ยอดสะสม ' + full(p.lifetime) + ' บาท' : ''">{{ p.targetPct !== null ? p.targetPct + '%' : '–' }}</td>
+                  <td class="num">{{ p.policies | number }}</td>
+                  <td class="num">{{ p.activeCampaigns }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="table-empty">ไม่มียอดขายในช่วงนี้</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- ================================================================ OV-D Campaign + OV-E ผู้ขาย -->
+  <div [class.row-3-2]="!!d.sellers">
+    @if (d.campaigns; as list) {
+      <section class="v2-card">
+        <div class="sec-head">
+          <span class="sec-id">OV-D</span>
+          <h2>ผลงานราย Campaign</h2>
+          <span class="muted small">จำนวนสิทธิ์ตามวันที่ยื่นใบคำขอในช่วงที่เลือก · งบ / โควตา = ใช้จริงตลอดอายุ Campaign</span>
+        </div>
+        <div class="v2-table-wrap">
+          <div class="v2-table-scroll">
+            <table class="v2-table">
+              <thead>
+                <tr>
+                  <th>Campaign</th>
+                  <th>ประเภท</th>
+                  <th class="num" pTooltip="Eligible – Reserved">Eligible</th>
+                  <th class="num">Confirmed</th>
+                  <th class="num">Fulfilled</th>
+                  <th class="num">Released</th>
+                  <th class="num">Clawed back</th>
+                  <th>งบที่ใช้</th>
+                  <th>โควตา</th>
+                  <th>หมดอายุ</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of list; track c.campaignCode) {
+                  <tr>
+                    <td class="nowrap code">
+                      <a [routerLink]="['/campaign', c.campaignCode]">{{ c.campaignCode }}</a>
+                      <p-tag [value]="c.displayStatus" [severity]="statusSeverity(c.displayStatus)" styleClass="st" />
+                      <small class="sub">{{ c.nameTh }}</small>
+                    </td>
+                    <td class="nowrap">{{ c.typeName ?? c.typeCode }}</td>
+                    @if (c.referral; as r) {
+                      <td class="num ref" colspan="5">
+                        <a [routerLink]="['/seller/referral', c.campaignCode]">คลิก {{ r.clicks | number }} → ใบคำขอ {{ r.applications | number }} → อนุมัติ {{ r.approved | number }}</a>
+                      </td>
+                      <td class="muted">–</td>
+                      <td class="muted">–</td>
+                    } @else {
+                      <td class="num">{{ c.stats.RESERVED }}</td>
+                      <td class="num">{{ c.stats.CONFIRMED }}</td>
+                      <td class="num">{{ c.stats.FULFILLED }}</td>
+                      <td class="num">{{ c.stats.RELEASED }}</td>
+                      <td class="num">{{ c.stats.CLAWED_BACK }}</td>
+                      <td class="bar-cell">
+                        @if (c.budgetPct !== null) {
+                          <p-progressbar [value]="c.budgetPct > 100 ? 100 : c.budgetPct" [showValue]="false" styleClass="mini" [class.hot]="c.budgetPct >= 80" />
+                          <small>{{ c.budgetPct }}%</small>
+                        } @else {
+                          <small class="muted">–</small>
+                        }
+                      </td>
+                      <td class="bar-cell">
+                        @if (c.quotaPct !== null) {
+                          <p-progressbar [value]="c.quotaPct > 100 ? 100 : c.quotaPct" [showValue]="false" styleClass="mini" [class.hot]="c.quotaPct >= 80" />
+                          <small>{{ c.quotaUsed }}/{{ c.quotaTotal }}</small>
+                        } @else {
+                          <small class="muted">–</small>
+                        }
+                      </td>
+                    }
+                    <td class="nowrap">{{ c.endDate ? c.endDate.split('-').reverse().join('/') : 'ไม่ระบุ' }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="10" class="table-empty">ไม่มี Campaign ตามตัวกรอง</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    }
+
+    @if (d.sellers; as sv) {
+      <section class="v2-card">
+        <div class="sec-head">
+          <span class="sec-id">OV-E</span>
+          <h2>{{ sellerView() === 'seller' ? 'Top 10 ผู้ขาย' : 'ผลงานรายกลุ่ม' }} ({{ metricName() }})</h2>
+          <app-select-field class="sv-select" [options]="sellerViews" optionLabel="label" optionValue="value" [ngModel]="sellerView()" (ngModelChange)="sellerView.set($event ?? 'seller')" />
+        </div>
+        <div class="v2-table-wrap">
+          <div class="v2-table-scroll">
+            @if (sellerView() === 'seller') {
+              <table class="v2-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ผู้ขาย</th>
+                    <th>กลุ่ม</th>
+                    <th class="num">{{ metricName() }}</th>
+                    <th class="num">กรมธรรม์</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (s of sv.top; track s.sellerCode) {
+                    <tr>
+                      <td class="rank">{{ s.rank }}</td>
+                      <td class="nowrap">{{ s.sellerName }} <small class="sub">{{ s.sellerCode }}</small></td>
+                      <td class="nowrap">
+                        @if (s.groupName) {
+                          <span class="gdot" [style.background]="s.groupColor"></span>{{ s.groupName }}
+                        } @else {
+                          <span class="muted">–</span>
+                        }
+                      </td>
+                      <td class="num"><strong>{{ short(s.value, metric()) }}</strong></td>
+                      <td class="num">{{ s.policies }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="5" class="table-empty">ไม่มียอดขายผ่านผู้ขายในช่วงนี้</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <table class="v2-table">
+                <thead>
+                  <tr>
+                    <th>กลุ่ม</th>
+                    <th class="num">Target</th>
+                    <th class="num">ยอดจริง</th>
+                    <th class="num">%</th>
+                    <th>Referral</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (g of sv.groups; track g.groupId) {
+                    <tr>
+                      <td class="nowrap">
+                        <a [routerLink]="['/seller/group', g.groupId]"><span class="gdot" [style.background]="g.color"></span>{{ g.groupName }}</a>
+                        <small class="sub">{{ g.workspace }} · {{ g.members }} คน</small>
+                      </td>
+                      <td class="num">{{ short(g.target, metric()) }}</td>
+                      <td class="num"><strong>{{ short(g.actual, metric()) }}</strong></td>
+                      <td class="num" [class]="pctClass(g.targetPct)">{{ g.targetPct !== null ? g.targetPct + '%' : '–' }}</td>
+                      <td class="nowrap small">
+                        @if (g.referral; as r) {
+                          {{ r.clicks | number }} → {{ r.applications }} → {{ r.approved }}
+                        } @else {
+                          <span class="muted">–</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+} @else if (!error()) {
+  <p class="muted">กำลังโหลด…</p>
+}

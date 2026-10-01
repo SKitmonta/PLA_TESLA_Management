@@ -1,0 +1,23 @@
+@let f = form();
+<div class="body">
+  <div class="rows">
+    <div class="rows-scroll">
+      <table>
+        <tbody>
+          @for (r of f.keyFeatures; track $index; let i = $index) {
+            <tr [attr.draggable]="drag.armed === i" (dragstart)="drag.start(i)" (dragover)="drag.over(i, $event)" (drop)="drag.drop(f.keyFeatures)" (dragend)="drag.end()" [class.dragging]="drag.from === i" [class.drop-target]="drag.isTarget(i)">
+              <td class="handle"><span class="grip" (mousedown)="drag.arm(i)" title="ลากเพื่อเรียงลำดับ"></span></td>
+              <td style="width: 60px"><app-upload-box [compact]="true" accept=".svg,.png" [(value)]="r.icon" /></td>
+              <td><app-text-field label="Topic" [(ngModel)]="r.topic" /></td>
+              <td><app-text-field label="Value" [(ngModel)]="r.value" /></td>
+              <td class="act"><p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบแถว" [disabled]="locked()" (onClick)="remove(i)" /></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="help" style="text-align: center; padding: 16px">ยังไม่มีรายการ (ไม่แสดง Key Features บนหน้าเว็บ)</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p-button label="เพิ่มแถว" icon="pi pi-plus" [outlined]="true" [disabled]="locked()" (onClick)="add()" />
+</div>

@@ -1,0 +1,22 @@
+@let f = form();
+<div class="body">
+  <app-text-field label="Header" [(ngModel)]="f.recommend.header" />
+  <div class="chips">
+    @for (code of f.recommend.contents; track code; let i = $index) {
+      <p-chip [label]="label(code)" [removable]="!locked()" (onRemove)="remove(i)" />
+    }
+  </div>
+  <app-select-field
+    label="+ เลือก Content"
+    [options]="available()"
+    optionLabel="text"
+    optionValue="contentCode"
+    [filter]="true"
+    [ngModel]="pickValue()"
+    (ngModelChange)="pick($event)"
+  />
+  <p class="help">
+    เลือกได้เฉพาะ Content ที่ Approved และช่องทางเดียวกัน{{ content().template === 'AGENT' ? ' (Template AGENT)' : ' · ข้ามประเภทสินค้าได้' }}
+    @if (!available().length && !f.recommend.contents.length) { · ตอนนี้ยังไม่มี Content ที่เลือกได้ }
+  </p>
+</div>

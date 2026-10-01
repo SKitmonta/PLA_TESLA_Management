@@ -1,0 +1,12 @@
+<div class="shell" [class]="layout.screen()" [class.sidebar-collapsed]="layout.collapsed()">
+  <app-sidebar [activeKey]="page().menu?.key" />
+
+  <div class="main-col">
+    <app-header [title]="page().menu?.headerTitle ?? 'TESLA MANAGEMENT'" />
+    <app-breadcrumb [menu]="page().menu" [title]="page().crumbTitle" />
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

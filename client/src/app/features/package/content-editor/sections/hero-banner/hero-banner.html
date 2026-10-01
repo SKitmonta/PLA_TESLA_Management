@@ -1,0 +1,13 @@
+@let f = form();
+<div class="body">
+  <div class="g2">
+    <app-upload-box label="รูปพื้นหลัง Desktop" spec="1920×640 px · .webp/.jpg ≤ 1 MB" accept=".webp,.jpg,.jpeg" [(value)]="f.hero.bgDesktop" />
+    <app-upload-box label="รูปพื้นหลัง Mobile" spec="750×900 px · .webp/.jpg ≤ 1 MB" accept=".webp,.jpg,.jpeg" [(value)]="f.hero.bgMobile" />
+  </div>
+  <div class="g2">
+    <app-text-field label="Label หมวด (ตั้งต้นจาก sub_Product_Type · แก้ได้)" [(ngModel)]="f.hero.label" />
+    <app-text-field label="ชื่อแสดงผล (ตั้งต้นจาก package_Name_Th · แก้ได้)" [required]="true" [(ngModel)]="f.hero.displayName" />
+    <app-text-field label="Headline (≤ 60)" [required]="true" [maxlength]="60" [(ngModel)]="f.hero.headline" />
+    <app-text-field label="Sub-headline (≤ 80)" [maxlength]="80" [(ngModel)]="f.hero.subHeadline" />
+  </div>
+</div>

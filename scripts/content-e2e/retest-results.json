@@ -1,0 +1,142 @@
+{
+ "CT000009": {
+  "submit": {
+   "toasts": [],
+   "status": "PENDING",
+   "saveDisabled": true,
+   "submitDisabled": true
+  },
+  "approve": {
+   "toasts": [
+    "อนุมัติแล้ว CT000009 v1 · เริ่มใช้งานบนหน้าเว็บ"
+   ],
+   "after": {
+    "status": "APPROVED",
+    "displayStatus": "ACTIVE",
+    "version": 1,
+    "approvedBy": "U003",
+    "rejectReason": null
+   }
+  }
+ },
+ "CT000005": {
+  "submit": {
+   "toasts": [],
+   "status": "PENDING",
+   "saveDisabled": true,
+   "submitDisabled": true
+  },
+  "approve": {
+   "toasts": [
+    "อนุมัติแล้ว CT000005 v2 · ใช้งานบนหน้าเว็บแทน Version เดิม"
+   ],
+   "after": {
+    "status": "APPROVED",
+    "displayStatus": "ACTIVE",
+    "version": 2,
+    "approvedBy": "U003",
+    "rejectReason": null
+   }
+  }
+ },
+ "CT000011": {
+  "submit": {
+   "toasts": [],
+   "status": "PENDING",
+   "saveDisabled": true,
+   "submitDisabled": true
+  },
+  "approve": {
+   "toasts": [
+    "อนุมัติแล้ว CT000011 v1 · เริ่มใช้งานบนหน้าเว็บ"
+   ],
+   "after": {
+    "status": "APPROVED",
+    "displayStatus": "ACTIVE",
+    "version": 1,
+    "approvedBy": "U003",
+    "rejectReason": null
+   }
+  }
+ },
+ "CT000012": {
+  "submit": {
+   "toasts": [],
+   "status": "PENDING",
+   "saveDisabled": true,
+   "submitDisabled": true
+  },
+  "approve": {
+   "toasts": [
+    "อนุมัติแล้ว CT000012 v1 · เริ่มใช้งานบนหน้าเว็บ"
+   ],
+   "after": {
+    "status": "APPROVED",
+    "displayStatus": "ACTIVE",
+    "version": 1,
+    "approvedBy": "U003",
+    "rejectReason": null
+   }
+  }
+ },
+ "CT000004": {
+  "submit": {
+   "toasts": [],
+   "status": "PENDING",
+   "saveDisabled": true,
+   "submitDisabled": true
+  },
+  "approve": {
+   "toasts": [
+    "อนุมัติแล้ว CT000004 v1 · เริ่มใช้งานบนหน้าเว็บ"
+   ],
+   "after": {
+    "status": "APPROVED",
+    "displayStatus": "ACTIVE",
+    "version": 1,
+    "approvedBy": "U003",
+    "rejectReason": null
+   }
+  }
+ },
+ "CT000013": {
+  "submit": {
+   "toasts": [],
+   "status": "PENDING",
+   "saveDisabled": true,
+   "submitDisabled": true
+  },
+  "approve": {
+   "toasts": [
+    "อนุมัติแล้ว CT000013 v1 · เริ่มใช้งานบนหน้าเว็บ"
+   ],
+   "after": {
+    "status": "APPROVED",
+    "displayStatus": "ACTIVE",
+    "version": 1,
+    "approvedBy": "U003",
+    "rejectReason": null
+   }
+  }
+ },
+ "CT000008": {
+  "submit": {
+   "toasts": [],
+   "status": "PENDING",
+   "saveDisabled": true,
+   "submitDisabled": true
+  },
+  "approve": {
+   "toasts": [
+    "อนุมัติแล้ว CT000008 v1 · เริ่มใช้งานบนหน้าเว็บ"
+   ],
+   "after": {
+    "status": "APPROVED",
+    "displayStatus": "ACTIVE",
+    "version": 1,
+    "approvedBy": "U003",
+    "rejectReason": null
+   }
+  }
+ }
+}

@@ -100,3 +100,47 @@
 
 - **จอง stock ตอนอนุมัติ** (Voucher MS-10 / ของรางวัล MS-16 — gap plan T3.4): ยังไม่ทำ (Mock ก็ไม่จอง) · ตอนนี้ตรวจ stock คงเหลือตอน Submit เท่านั้น
 - เวลาในประวัติเป็น UTC (F-08 เดิม) · API ยังไม่ตรวจ Role (F-10 เดิม) · "สร้าง Version ใหม่" ของ Campaign ยังไม่มี (ปุ่มถูกปิดไว้)
+
+---
+
+# ส่วนที่ 3 — เวลาไทย (F-08) · จอง Stock ตอนอนุมัติ Campaign · ทดสอบ flow ครบทุก Content (5 ต.ค. 22:20–22:35)
+
+## 9. F-08 เวลาเป็น UTC
+
+| ปัญหา | แก้ | ผล |
+|---|---|---|
+| DB session = `Etc/UTC` → `NOW()` เก็บ UTC · หน้าจอแสดงตัวเลขตรง ๆ (thDate pipe) → ช้ากว่าเวลาไทย 7 ชม. | API v2 เขียนเวลาเป็น**เวลาไทยพร้อม offset** (`2026-10-05T22:13:19+07:00`) — `ThaiTimeJsonConverter` ใส่ 10 ฟิลด์ (history / updatedAt / submittedAt / approvedAt / syncedAt …) · ข้อมูลใน DB ไม่เปลี่ยน | ประวัติ CT000015: อนุมัติ 22:13 (เดิมแสดง 15:13) · Campaign SUSPEND/RESUME 21:38 |
+| เว็บลูกค้าเลือก Version ด้วย `CURRENT_DATE` (UTC) → 00:00–07:00 ไทยยังใช้วันก่อน | `marketing-material` ใช้ `(NOW() AT TIME ZONE 'Asia/Bangkok')::date` | Version เริ่มแสดงตอนเที่ยงคืนเวลาไทย |
+
+## 10. จอง Stock ตอนอนุมัติ Campaign (Voucher MS-10 / ของรางวัล MS-16 · gap plan T3.4)
+
+- อนุมัติ → `reserved_qty += allocated` ของรายการใน Master **ใน transaction เดียวกับการเปลี่ยนสถานะ** · SQL เพิ่มได้เฉพาะเมื่อ `total − reserved − delivered ≥ allocated` (อนุมัติพร้อมกัน 2 ตัวจองเกินไม่ได้) · บันทึกใน `DETAIL_JSON.feV2.stockReserved` + เหตุผลของประวัติ APPROVE
+- Stock ไม่พอ → 409 "อนุมัติไม่ได้ — Stock ของ … ไม่พอ (ต้องจอง … · คงเหลือ …)" · สถานะยังรออนุมัติ
+
+| # | กรณี | ผล |
+|---|---|---|
+| S-01 | CMP25690010 (VOUCHER · VOU-001 × 150 · ST000007) อนุมัติผ่านหน้าจอ (U003) | ✅ อนุมัติ · ประวัติ "จอง Stock MS-10 VOU-001 × 150" · VOU-001 reserved 50 → **200** ([รูป](img/approval/10-stock-reserved.png)) |
+| S-02 | CMP25690011 (VOU-001 × 150 · ST000027) อนุมัติ — คงเหลือ 500 − 200 − 200 = 100 | ✅ ปฏิเสธ "Stock ของ VOU-001 ไม่พอ (ต้องจอง 150 · คงเหลือ 100)" · ยังรออนุมัติ · stock ไม่เปลี่ยน ([รูป](img/approval/11-stock-out.png)) |
+
+ยังไม่ทำ: **คืน Stock** เมื่อ Campaign จบ / ถูกปิด (ยังไม่มี action จบ Campaign) · Suspend คง stock ไว้
+
+## 11. ทดสอบ flow ใหม่ครบทุก Content (ส่ง → อนุมัติ → ตารางเว็บลูกค้า)
+
+ส่งอนุมัติด้วย U002 (Content Maker) แล้วอนุมัติผ่านหน้า "ตรวจสอบ Content" ด้วย U003 — **7/7 สำเร็จ** (รวม CT000014 / 15 ก่อนหน้า = 9 Content PUBLISHED) · นับแถวในตารางที่เว็บอ่าน (PgQuery read-only):
+
+| Content | Template | วันเริ่ม | thumb | banner | KF | KA | tag | rec | T&C | icon |
+|---|---|---|---|---|---|---|---|---|---|---|
+| CT000005 v2 | OL_OB | 06/10 | 1 | 1 | 3 | 3 | 3 | 1 | 1 | 1 |
+| CT000009 | OL_OB | 06/10 | 1 | 1 | 3 | 3 | 3 | 1 | 1 | 1 |
+| CT000011 | OL_OB | **05/10** | 1 | 1 | 6 | 4 | 3 | 1 | 3 | 1 |
+| CT000012 | OL_OB | 06/10 | 1 | 1 | 1 | 3 | 3 | 1 | 2 | 1 |
+| CT000014 | OL_OB | 06/10 | 1 | 1 | 3 | 3 | 4 | 1 | 1 | 1 |
+| CT000004 | AGENT | 06/10 | 1 | 1 | 0 ⚠️ | — | 1 | 0 | 1 | 1 |
+| CT000013 | AGENT | 06/10 | 1 | 1 | 0 ⚠️ | — | 1 | 0 | 1 | 1 |
+| CT000008 | AGENT | 06/10 | 1 | 1 | 0 ⚠️ | — | 0 ⚠️ | 0 | 1 | 1 |
+| CT000015 | OL_PA | **05/10** | 1 | 1 | — | — | 0 ⚠️ | 0 | 1 | 1 |
+
+- **เว็บลูกค้า `marketing-material/ST000025` (CT000011 เริ่มวันนี้):** ได้ชื่อ · ป้าย · หมวด TERM · Banner · Icon · **Key Features + Key Advantages พร้อมรูปจาก Master** · Package recommend ST000030 ✅
+- ⚠️ AGENT Key Features = ข้อความอิสระ ("คุ้มครองถึงอายุ" ฯลฯ) ไม่ตรงชื่อหัวข้อใน Master → ข้าม (`publish-web` แจ้งใน notes) · ต้องเพิ่มหัวข้อ F2F ใน Master (handoff §8 #4) หรือให้ AGENT เลือกจาก Master (#5)
+- ⚠️ หมวด "อุบัติเหตุ" (CT000008 / 15) ไม่มีใน Master insurance type (#5)
+- Content ที่เริ่ม 06/10 จะขึ้นเว็บพรุ่งนี้ 00:00 เวลาไทย (หลังแก้ F-08)

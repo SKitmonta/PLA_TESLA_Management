@@ -27,6 +27,7 @@ export interface TeslaRoute {
 const LIST = 'Package management — รายการ + การ์ด 5 ใบ';
 const ADD = 'Add Package — ตัวเลือก + Save';
 const EDITOR = 'Content Editor — เปิด / บันทึกร่าง / ส่งอนุมัติ / Version ใหม่';
+const REVIEW = 'ตรวจสอบ Content — อนุมัติ (= ขึ้นเว็บตามวันเริ่ม) / ตีกลับ + ประวัติ';
 const PKG_DETAIL = 'รายละเอียด Package (MS-01) — จาก T_PACKAGE';
 const SYNCED = 'Master ที่ Sync (MS-04) — ตาราง Master ของ v1 + Underwrite / Gender จาก T_PACKAGE';
 const CUSTOM = 'Master ที่สร้างเอง (MS-02) — M_CUSTOM_MASTER_* (V036) · MS-01 จาก M_CAMPAIGN_TYPE';
@@ -71,6 +72,9 @@ export const TESLA_ROUTES: TeslaRoute[] = [
   { method: 'PUT', path: /^\/api\/content\/([^/]+)$/, target: `${TESLA_API_BASE}/content/$1`, label: EDITOR },
   { method: 'POST', path: /^\/api\/content\/([^/]+)\/submit$/, target: `${TESLA_API_BASE}/content/$1/submit`, label: EDITOR },
   { method: 'POST', path: /^\/api\/content\/([^/]+)\/new-version$/, target: `${TESLA_API_BASE}/content/$1/new-version`, label: EDITOR },
+  { method: 'GET', path: /^\/api\/content\/([^/]+)\/review$/, target: `${TESLA_API_BASE}/content/$1/review`, label: REVIEW },
+  { method: 'POST', path: /^\/api\/content\/([^/]+)\/approve$/, target: `${TESLA_API_BASE}/content/$1/approve`, label: REVIEW },
+  { method: 'POST', path: /^\/api\/content\/([^/]+)\/reject$/, target: `${TESLA_API_BASE}/content/$1/reject`, label: REVIEW },
 ];
 
 /** กลุ่มเส้นสำหรับแสดงในหน้าต่างสลับผู้ใช้ */

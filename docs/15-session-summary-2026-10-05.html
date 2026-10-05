@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TESLA v2 — สรุปงาน 5 ต.ค. 2569</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --surface: #ffffff; --surface-2: #eef1f8; --text: #1b2333; --muted: #5b6577; --line: #dde2ec;
+    --navy: #00317a; --navy-soft: #e3ebf9; --orange: #c2610c; --orange-soft: #fdf0e2;
+    --green: #17794a; --green-soft: #e3f4ea; --red: #b42318; --red-soft: #fde8e6; --amber: #8a5a00; --amber-soft: #fff4d6;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f141d; --surface: #161d2a; --surface-2: #1d2636; --text: #e6eaf2; --muted: #9aa5b8; --line: #2a3446;
+      --navy: #8db4ff; --navy-soft: #1c2b47; --orange: #f2a65a; --orange-soft: #3a2a17;
+      --green: #6fd39c; --green-soft: #15301f; --red: #ff8f84; --red-soft: #3a1b18; --amber: #f3c766; --amber-soft: #33290f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f141d; --surface: #161d2a; --surface-2: #1d2636; --text: #e6eaf2; --muted: #9aa5b8; --line: #2a3446;
+    --navy: #8db4ff; --navy-soft: #1c2b47; --orange: #f2a65a; --orange-soft: #3a2a17;
+    --green: #6fd39c; --green-soft: #15301f; --red: #ff8f84; --red-soft: #3a1b18; --amber: #f3c766; --amber-soft: #33290f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Leelawadee UI", "Noto Sans Thai", Tahoma, system-ui, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  header.top { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
+  h1 { margin: 0; font-size: 26px; color: var(--navy); letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 4px 0 0; }
+  .stamp { font-size: 13px; color: var(--muted); }
+  h2 { font-size: 19px; margin: 40px 0 12px; color: var(--navy); }
+  h3 { font-size: 16px; margin: 0 0 6px; }
+  p { margin: 0 0 8px; }
+  code { overflow-wrap: anywhere; font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 12px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .kpi b { display: block; font-size: 26px; line-height: 1.2; color: var(--navy); font-variant-numeric: tabular-nums; }
+  .kpi span { color: var(--muted); font-size: 13px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 12px; }
+  .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .timeline > li { display: grid; grid-template-columns: 72px 1fr; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .timeline > li > div { min-width: 0; }
+  .card, .kpi { min-width: 0; }
+  td { overflow-wrap: anywhere; }
+  .timeline .t { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; padding-top: 2px; }
+  .timeline ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+  .ok { background: var(--green-soft); color: var(--green); }
+  .warn { background: var(--amber-soft); color: var(--amber); }
+  .bad { background: var(--red-soft); color: var(--red); }
+  .be { background: var(--navy-soft); color: var(--navy); }
+  .fe { background: var(--orange-soft); color: var(--orange); }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+  .muted { color: var(--muted); }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .flow .step { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 14px; }
+  .flow .step.done { border-color: var(--green); }
+  .flow .arrow { color: var(--muted); }
+  ul.plain { margin: 0; padding-left: 18px; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 560px) { .timeline > li { grid-template-columns: 1fr; gap: 4px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<main>
+
+<header class="top">
+  <div>
+    <h1>TESLA Management v2 — สรุปงาน 5 ต.ค. 2569</h1>
+    <p class="sub">FE v2 (Angular) ↔ Tesla Admin API (.NET 9 · PostgreSQL DEV) · ทดสอบผ่าน browser-use (Chrome headless + CDP)</p>
+  </div>
+  <div class="stamp">ช่วงเวลา 20:38 – 22:40 · branch <code>dev</code> / <code>Dev</code></div>
+</header>
+
+<section class="kpis" aria-label="ตัวเลขสรุป">
+  <div class="kpi"><b>681 / 681</b><span>Unit test BE ผ่าน (เริ่ม 594 · เพิ่ม 87)</span></div>
+  <div class="kpi"><b>41 / 41</b><span>Upload API (ยิงจากในเบราว์เซอร์)</span></div>
+  <div class="kpi"><b>9</b><span>Content PUBLISHED บน DEV — เนื้อหาลงตารางเว็บลูกค้าแล้ว</span></div>
+  <div class="kpi"><b>9 + 9 + 2</b><span>ทดสอบอนุมัติ Content · Campaign · จอง Stock</span></div>
+  <div class="kpi"><b>8</b><span>ปัญหาที่ปิด (#1 #3 #8 #11 F-03 F-07 F-08 F-09)</span></div>
+</section>
+
+<h2>Flow ที่ใช้งานได้ตอนนี้</h2>
+<div class="card">
+  <div class="flow" aria-label="Content flow">
+    <span class="step done">กรอก Content (3 Template)</span><span class="arrow">→</span>
+    <span class="step done">อัปโหลดไฟล์จริง</span><span class="arrow">→</span>
+    <span class="step done">ส่งอนุมัติ</span><span class="arrow">→</span>
+    <span class="step done">อนุมัติ / ตีกลับ (ผู้อนุมัติ ≠ ผู้สร้าง)</span><span class="arrow">→</span>
+    <span class="step done">ลงตารางเว็บลูกค้า</span><span class="arrow">→</span>
+    <span class="step done">แสดงตามวันเริ่ม (เวลาไทย)</span>
+  </div>
+  <div class="flow" style="margin-top:10px" aria-label="Campaign flow">
+    <span class="step done">สร้าง / ส่ง Campaign</span><span class="arrow">→</span>
+    <span class="step done">อนุมัติ + จอง Stock</span><span class="arrow">→</span>
+    <span class="step done">Suspend</span><span class="arrow">⇄</span>
+    <span class="step done">เปิดใช้อีกครั้ง</span><span class="arrow">·</span>
+    <span class="step done">ตีกลับ + เหตุผล</span>
+  </div>
+</div>
+
+<h2>สิ่งที่ทำ (เรียงตามเวลา)</h2>
+<ol class="timeline">
+  <li><div class="t">20:38</div><div>
+    <h3>ทดสอบ Upload API 41 กรณี — ผ่านทั้งหมด</h3>
+    <p>สร้างไฟล์ในหน้าเว็บแล้วยิง <code>fetch()</code> ไป <code>POST /api/v1/image/upload</code> (PackageCode สมมติ <code>APITEST01</code>)</p>
+    <ul><li>ปฏิเสธถูก 29: path traversal, ขนาดเกิน, นามสกุล / MIME / magic byte ปลอม, SVG มีสคริปต์</li>
+        <li>บันทึกจริง 12: ทุก Slot · TH/EN · jpg png webp gif bmp svg pdf · ดึงกลับ SHA-256 ตรง · เขียนทับ 1 ครั้งไม่โดน Antivirus</li></ul>
+    <div class="tags"><span class="tag ok">41/41</span><span class="tag">docs/13 §3–4</span></div></div></li>
+
+  <li><div class="t">20:44</div><div>
+    <h3>กรอก Content ทุก Package ผ่านหน้า Editor จริง</h3>
+    <p>8 Content (OL_OB 4 · AGENT 3 · OL_PA 1) กรอกเฉพาะช่องว่าง · อัปโหลดจริง 28 ไฟล์ทีละไฟล์ ≥ 20 วิ · CT000005 สร้าง Version 2 · ถ่ายรูปทั้งหน้า 8 รูป</p>
+    <div class="tags"><span class="tag ok">8/8 Draft</span><span class="tag">docs/13 §5</span><span class="tag">docs/img/upload-api-test/</span></div></div></li>
+
+  <li><div class="t">21:00</div><div>
+    <h3>รีวิวโค้ด → commit + push ทั้ง 2 repo</h3>
+    <p>FE ที่ค้างหลาย session แยกเป็น 3 commit (feat / e2e / docs) · กัน <code>hl-profile/</code> (โปรไฟล์ Chrome 220 MB) ไม่ให้ขึ้น git · tsc ผ่าน · ไม่พบ secret</p>
+    <div class="tags"><span class="tag ok">#11 commit ✓</span><span class="tag warn">PR ยังไม่เปิด</span></div></div></li>
+
+  <li><div class="t">21:25</div><div>
+    <h3>อนุมัติ / ตีกลับ Content ใน v2 (CT-06)</h3>
+    <p><code>GET review</code> · <code>POST approve</code> (PENDING → PUBLISHED ขั้นเดียว · ไม่ปลด Version เก่า) · <code>POST reject</code> (เหตุผลบังคับ) · D-06 ผู้อนุมัติ ≠ ผู้สร้าง / ผู้ส่ง · ตอน <code>Auth:Disabled</code> อ่านผู้ใช้จาก header <code>X-User-Id</code></p>
+    <div class="tags"><span class="tag ok">9/9</span><span class="tag ok">#8 ปลด CT000014</span><span class="tag">docs/14 ส่วน 1</span></div></div></li>
+
+  <li><div class="t">21:40</div><div>
+    <h3>Campaign อนุมัติ / ตีกลับ / Suspend / เปิดใช้อีกครั้ง</h3>
+    <p>ไม่ต้อง migration: Suspend = v1 <code>INACTIVE</code> (แสดง Suspended) · Resume = กลับเป็น PUBLISHED · ตรวจช่วงวันทับซ้อนซ้ำตอนอนุมัติ / เปิดใช้</p>
+    <div class="tags"><span class="tag ok">9/9</span><span class="tag">docs/14 ส่วน 2</span></div></div></li>
+
+  <li><div class="t">22:00</div><div>
+    <h3>F-03 + F-07 ข้อความ error อัปโหลดภาษาไทย · ไฟล์เกิน 11 MB ได้ 413</h3>
+    <p>32 จุดใน <code>ImageController</code> ส่ง <code>errors</code> ภาษาไทย (M_MESSAGES เดิมไม่แตะ) · <code>[RejectOversizedUpload]</code> อ่าน body ทิ้งก่อนตอบ (ไม่งั้น Chrome "Failed to fetch")</p>
+    <div class="tags"><span class="tag ok">29/29 มีข้อความไทย</span><span class="tag">docs/13 §7</span></div></div></li>
+
+  <li><div class="t">22:15</div><div>
+    <h3>F-09 ฟอร์ม → ตารางเว็บลูกค้า</h3>
+    <p><code>ContentWebMapper</code> แปลง <code>FE_CONTENT_DATA</code> → v1 <code>UpdateContent_Request</code> แล้ว reuse <code>UpdateContentAsync</code> ตอนอนุมัติ · <code>POST publish-web</code> ส่งซ้ำ · เจอ+แก้ bug dangling-else ระหว่างเขียน test</p>
+    <div class="tags"><span class="tag ok">เว็บลูกค้าเห็นเนื้อหาแล้ว</span><span class="tag">BE docs/02_Analysis/fe-v2-content-web-mapping.md</span></div></div></li>
+
+  <li><div class="t">22:25</div><div>
+    <h3>F-08 เวลาไทย</h3>
+    <p>DB session = <code>Etc/UTC</code> · API v2 ส่งเวลาไทยพร้อม offset (<code>+07:00</code>) 10 ฟิลด์ · เว็บลูกค้าเลือก Version ด้วยวันที่ไทย (<code>NOW() AT TIME ZONE 'Asia/Bangkok'</code>)</p>
+    <div class="tags"><span class="tag ok">ประวัติ 22:13 (เดิม 15:13)</span></div></div></li>
+
+  <li><div class="t">22:28</div><div>
+    <h3>จอง Stock ตอนอนุมัติ Campaign</h3>
+    <p>VOUCHER (MS-10) / FREE_GIFT (MS-16): <code>reserved_qty += allocated</code> ใน transaction เดียว เฉพาะเมื่อคงเหลือพอ — อนุมัติพร้อมกันจองเกินไม่ได้</p>
+    <div class="tags"><span class="tag ok">S-01 จอง 150</span><span class="tag ok">S-02 ไม่พอ → 409</span></div></div></li>
+
+  <li><div class="t">22:32</div><div>
+    <h3>ทดสอบ flow ใหม่ครบทุก Content + คู่มือ 1.1</h3>
+    <p>7 Content ส่ง → อนุมัติผ่านหน้าจอ (รวม 9 PUBLISHED) · นับตารางเว็บด้วย PgQuery (read-only) · คู่มือเพิ่ม §8 อนุมัติ/ตีกลับ · §9 ขึ้นเว็บ · §10 Campaign + Stock · PDF ใหม่ 22 หน้า</p>
+    <div class="tags"><span class="tag ok">7/7</span><span class="tag">docs/14 ส่วน 3</span><span class="tag">docs/11 + PDF</span></div></div></li>
+</ol>
+
+<h2>เส้น API ใหม่ / ที่เปลี่ยน</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>เส้น</th><th>ทำอะไร</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET /api/v2/content/{code}/review</code></td><td>Content + Version ที่อนุมัติก่อนหน้า (ไว้เทียบ) + ประวัติ</td></tr>
+    <tr><td><code>POST /api/v2/content/{code}/approve</code></td><td>เขียนตารางเว็บลูกค้า → PENDING → PUBLISHED</td></tr>
+    <tr><td><code>POST /api/v2/content/{code}/reject</code></td><td>PENDING → Draft + เหตุผล</td></tr>
+    <tr><td><code>POST /api/v2/content/{code}/publish-web</code></td><td>ส่งเนื้อหาขึ้นตารางเว็บซ้ำ (Content ที่อนุมัติแล้ว) + หมายเหตุช่องที่ลงไม่ได้</td></tr>
+    <tr><td><code>POST /api/v2/campaign/{code}/approve · reject · suspend · resume</code></td><td>อนุมัติ (+ จอง Stock) · ตีกลับ · หยุดชั่วคราว · เปิดใช้อีกครั้ง</td></tr>
+    <tr><td><code>POST /api/v1/image/upload</code> (เดิม)</td><td>เพิ่ม <code>errors</code> ภาษาไทย · เกิน 11 MB → 413</td></tr>
+    <tr><td><code>GET /api/v1/marketing-content/marketing-material/{pkg}</code> (เดิม)</td><td>เลือก Version ด้วยวันที่ไทย</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Commit</h2>
+<div class="grid2">
+  <div class="card">
+    <h3><span class="tag be">BE</span> philliplife/service-tesla-admin · <code>Dev</code></h3>
+    <ul class="plain">
+      <li><code>ab13ea2</code> handoff 5 ต.ค. + deck</li>
+      <li><code>5bf8e59</code> Content review / approve / reject</li>
+      <li><code>c17218c</code> Campaign approve / reject / suspend / resume</li>
+      <li><code>04d5346</code> F-03 / F-07 upload errors</li>
+      <li><code>268722d</code> F-09 ตารางเว็บลูกค้า</li>
+      <li><code>c8f289f</code> F-08 เวลาไทย + จอง Stock <span class="tag warn">ยังไม่ push</span></li>
+    </ul>
+    <p class="muted" style="margin-top:6px">+ push commit เดิม e5b30d5 · f71f560 · 2bfe86f</p>
+  </div>
+  <div class="card">
+    <h3><span class="tag fe">FE</span> SKitmonta/PLA_TESLA_Management · <code>dev</code></h3>
+    <ul class="plain">
+      <li><code>dc112a3</code> data source Tesla API · upload จริง · OL_OB จาก Master</li>
+      <li><code>7701777</code> e2e scripts (browser-use)</li>
+      <li><code>8e50df1</code> คู่มือ + รายงาน 12 / 13</li>
+      <li><code>591ad4a</code> Content review / approve / reject</li>
+      <li><code>0104050</code> Campaign approve / reject / suspend / resume</li>
+      <li><code>d6979a9</code> ข้อความ error ไทยในหน้าอัปโหลด</li>
+      <li><code>1481fc6</code> คู่มือ 1.1 + รายงาน 14 ส่วน 3 <span class="tag warn">ยังไม่ push</span></li>
+    </ul>
+  </div>
+</div>
+
+<h2>สถานะข้อมูลบน DEV</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>รายการ</th><th>สถานะ</th><th>หมายเหตุ</th></tr></thead>
+  <tbody>
+    <tr><td>CT000004 · 05 (v2) · 08 · 09 · 11 · 12 · 13 · 14 · 15</td><td><span class="tag ok">PUBLISHED</span></td><td>CT000011 / 15 แสดงบนเว็บแล้ว (เริ่ม 05/10) · ที่เหลือเริ่ม 06/10</td></tr>
+    <tr><td>CMP25690008</td><td><span class="tag ok">Approved · รอเริ่ม</span></td><td>ผ่าน Suspend → เปิดใช้อีกครั้ง</td></tr>
+    <tr><td>CMP25690009</td><td><span class="tag">Draft (ตีกลับ)</span></td><td>ทดสอบตีกลับ</td></tr>
+    <tr><td>CMP25690010</td><td><span class="tag ok">Approved · รอเริ่ม</span></td><td>จอง VOU-001 × 150</td></tr>
+    <tr><td>CMP25690011</td><td><span class="tag warn">รออนุมัติ</span></td><td>ตั้งใจให้ Stock ไม่พอ</td></tr>
+    <tr><td>VOU-001 (MS-10)</td><td>total 500 · reserved 200 · delivered 200</td><td>reserved เดิม 50</td></tr>
+    <tr><td><code>uploads/</code> ในเครื่อง</td><td>+ 11 ไฟล์ <code>APITEST01</code> · + 28 ไฟล์ Content</td><td>ไม่มีไฟล์ถูกทับ (ยกเว้น U-18 ที่ตั้งใจ)</td></tr>
+  </tbody>
+</table></div>
+
+<h2>ยังเปิดอยู่ / ต้องตัดสินใจ</h2>
+<div class="grid2">
+  <div class="card">
+    <h3>ทีมเว็บ Tesla-B / BA</h3>
+    <ul class="plain">
+      <li>ช่องที่ยังอยู่ใน <code>FE_CONTENT_DATA</code> อย่างเดียว: slug · SEO · Calculator · ตารางความคุ้มครอง · AGENT เกือบทั้งชุด — เว็บอ่าน JSON ตรง หรือเพิ่มคอลัมน์</li>
+      <li>Q-CT-05 เลิก fallback แสดง DRAFT บนเว็บ</li>
+      <li>หมวด "อุบัติเหตุ" ไม่มีใน Master insurance type</li>
+      <li>AGENT Key Features เป็นข้อความอิสระ → เพิ่มหัวข้อ F2F ใน Master / ให้เลือกจาก Master</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>งานถัดไป (BE / FE)</h3>
+    <ul class="plain">
+      <li>คืน Stock เมื่อ Campaign จบ / ถูกปิด · Version ใหม่ของ Campaign</li>
+      <li>API ตรวจ Role จาก UAM (ตอนนี้ตรวจแค่ผู้อนุมัติ ≠ ผู้สร้าง)</li>
+      <li>เปิด PR ทั้ง 2 repo (ต้องเลือก branch ปลายทาง) · push commit ล่าสุด</li>
+      <li>เก็บกวาดข้อมูลทดสอบ DEV + <code>uploads/APITEST01</code></li>
+      <li><span class="tag bad">ผู้ใช้</span> แจ้ง IT Security เรื่อง Antivirus กักกัน <code>TeslaAdminApi.exe</code> (16:05)</li>
+    </ul>
+  </div>
+</div>
+
+<h2>เอกสาร</h2>
+<div class="tablewrap"><table>
+  <tbody>
+    <tr><td>รายงาน Upload API + กรอก Content</td><td><code>PLA_TESLA_Management/docs/13-upload-api-test-report.md</code></td></tr>
+    <tr><td>รายงานอนุมัติ / Campaign / เวลาไทย / Stock / ทดสอบ flow</td><td><code>PLA_TESLA_Management/docs/14-content-approval-test-report.md</code></td></tr>
+    <tr><td>คู่มือผู้ใช้ 1.1</td><td><code>docs/11-online-content-manual.md</code> · <code>docs/Online-Content-Manual.pdf</code></td></tr>
+    <tr><td>Mapping ฟอร์ม → ตารางเว็บลูกค้า</td><td><code>TeslaAdminApi/docs/02_Analysis/fe-v2-content-web-mapping.md</code></td></tr>
+    <tr><td>Handoff (§10–14 = งานคืนนี้)</td><td><code>TeslaAdminApi/docs/00_Project/handoff-fe-v2-2026-10-05-online-content.md</code></td></tr>
+    <tr><td>สคริปต์ทดสอบ</td><td><code>scripts/content-e2e/</code> — update_all · test_upload_api · shot_contents · a00–a02 · c01–c03</td></tr>
+  </tbody>
+</table></div>
+
+<footer>ข้อมูลทั้งหมดเป็นข้อมูลทดสอบบน DEV · ไม่มีข้อมูลลูกค้าจริง · สร้างโดย Claude Code ร่วมกับเจ้าของงาน</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,12 @@
+const pr = T.q('#sec-PR');
+T.scrollTo('#sec-PR');
+const left = () => T.qa('.result', pr).map((b) => T.norm(b.textContent));
+const right = () => T.qa('.picked', pr).map((b) => T.norm(b.textContent));
+const out = { left: left(), right: right() };
+const search = T.input(pr, 'Search');
+T.setValue(search, 'zzz-not-found'); await T.wait(400);
+out.noMatchHint = T.norm(T.q('.results .hint', pr)?.textContent);
+T.setValue(search, ''); await T.wait(400);
+T.q('.result', pr)?.click(); await T.wait(400);
+out.afterPick = { left: left(), right: right(), hint: T.norm(T.q('.results .hint', pr)?.textContent) };
+return out;

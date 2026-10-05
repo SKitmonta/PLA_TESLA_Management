@@ -1,0 +1,12 @@
+const doc = T.q('#sec-DOC');
+T.scrollTo('#sec-DOC');
+const input = T.q('input[type=file]', doc);
+const out = {};
+T.setFiles(input, [new File(['hello'], 'terms.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })]);
+await T.wait(500);
+out.notPdf = T.errors(doc);
+T.setFiles(input, [T.pdf('big-terms.pdf', 11 * 1024 * 1024)]);
+await T.wait(800);
+out.tooBig = T.errors(doc);
+out.listed = T.qa('.docs li', doc).length;
+return out;

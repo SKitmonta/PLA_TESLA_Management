@@ -1,0 +1,17 @@
+const dlg = T.q('.p-dialog, [role=dialog]');
+const sels = () => T.qa('app-select-field p-select', dlg);
+const out = {};
+out.channels = await T.options(sels()[0]);
+const ch = out.channels.find((o) => /Broker Online/i.test(o));
+await T.pick(sels()[0], ch.replace(' [disabled]', ''));
+out.productTypes = await T.options(sels()[1]);
+await T.pick(sels()[1], out.productTypes[0]);
+out.subTypes = await T.options(sels()[2]);
+await T.pick(sels()[2], null);
+out.packages = await T.options(sels()[3]);
+const pk = out.packages.find((o) => /Tax Fighter|ST000027/.test(o));
+if (pk) await T.pick(sels()[3], pk);
+out.picked = pk || null;
+out.card = T.norm(T.q('.pkg-card, .card, .package-card', dlg)?.textContent);
+out.saveEnabled = !T.button('Save')?.disabled;
+return out;

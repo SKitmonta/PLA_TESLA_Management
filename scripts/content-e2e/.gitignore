@@ -1,0 +1,9 @@
+hl-profile/
+pdf-profile/
+shots/
+update-results.json
+js/.run-*.js
+js/.step-*.js
+hl-shots/
+upload-api-results.json
+__pycache__/

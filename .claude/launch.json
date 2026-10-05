@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tesla-server",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run", "server"],
+      "port": 3000
+    },
+    {
+      "name": "tesla-client",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run", "client"],
+      "port": 4200
+    }
+  ]
+}

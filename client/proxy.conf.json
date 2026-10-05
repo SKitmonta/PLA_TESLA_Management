@@ -3,5 +3,10 @@
     "target": "http://localhost:3000",
     "secure": false,
     "changeOrigin": true
+  },
+  "/tesla-admin": {
+    "target": "http://localhost:5277",
+    "secure": false,
+    "changeOrigin": true
   }
 }

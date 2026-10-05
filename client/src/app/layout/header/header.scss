@@ -80,6 +80,20 @@
   text-align: center;
 }
 
+.source-badge {
+  height: 24px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid $status-ok-fg;
+  background: $status-ok-bg;
+  color: $status-ok-fg;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
 .role-badge {
   height: 24px;
   min-width: 139px;
@@ -175,7 +189,8 @@
     text-align: left;
   }
   .user,
-  .role-badge {
+  .role-badge,
+  .source-badge {
     display: none;
   }
   .right {

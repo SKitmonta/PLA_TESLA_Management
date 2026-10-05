@@ -5,6 +5,6 @@
   </p-message>
   <div class="g2">
     <app-text-field label="จำนวนวัน Free look ในหมายเหตุ" [readonly]="true" [ngModel]="(content().package.freeLookPeriod ?? '–') + ' วัน'" />
-    <app-upload-box label='เอกสารแนบ "ดูเอกสารเพิ่มเติม"' spec=".pdf ≤ 10 MB" accept=".pdf" [maxMb]="10" [(value)]="f.summary.attachment" />
+    <app-upload-box label='เอกสารแนบ "ดูเอกสารเพิ่มเติม"' spec=".pdf ≤ 10 MB" accept=".pdf" [maxMb]="10" slot="tc_doc" kind="pdf" [index]="10" [(value)]="f.summary.attachment" />
   </div>
 </div>

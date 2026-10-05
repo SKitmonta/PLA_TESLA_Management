@@ -17,6 +17,8 @@
   border-radius: 20px;
   background: #fff;
   scroll-margin-top: 16px;
+  // ใช้ความกว้างของการ์ด (ไม่ใช่ของจอ) ตัดสิน Layout ภายใน — การ์ดแคบลงเพราะเมนูซ้าย + List content
+  container-type: inline-size;
 
   h2 {
     margin: 0 0 2px;
@@ -92,22 +94,33 @@
   width: 44px;
 }
 
-// แถวที่ Package ไม่มีข้อมูล: ค่า null + สวิตช์ Active ในช่อง
-.null-box {
-  position: relative;
-  min-width: 0;
+// ไอคอนของหัวข้อ (มาจาก Master — อัปโหลดที่ Content ไม่ได้)
+.kf-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  background: #e6e6e6;
+  color: $text-muted;
+  font-size: 22px;
 
-  .toggle {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: $fs-body;
-    color: $text;
+  &.filled {
+    background: $primary-light;
   }
+  img {
+    max-width: 34px;
+    max-height: 34px;
+    object-fit: contain;
+  }
+}
+
+.stack-tight {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
 // ---------- Key Advantages: การ์ด 4 ใบต่อแถว + การ์ดเพิ่ม
@@ -125,9 +138,29 @@
   padding: 10px;
   border: 1px solid $border-input;
   border-radius: 12px;
+}
 
-  app-upload-box {
-    height: 240px;
+// รูปพื้นการ์ด (มาจาก Master — อัปโหลดที่ Content ไม่ได้)
+.ka-img {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 240px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e6e6e6;
+  font-size: $fs-small;
+  color: $text-muted;
+
+  .pi {
+    font-size: 28px;
+  }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 
@@ -332,7 +365,8 @@
 }
 
 // ---------- Responsive
-@media (max-width: 1100px) {
+// การ์ดแคบกว่า 1000px (เช่น จอ 1440 ที่มีเมนูซ้าย + List content): Icon Asset ขึ้นบน แถว Key Features เต็มความกว้าง
+@container (max-width: 1000px) {
   .kf {
     grid-template-columns: 1fr;
   }

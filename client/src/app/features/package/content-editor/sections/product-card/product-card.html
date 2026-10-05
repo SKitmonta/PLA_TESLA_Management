@@ -1,7 +1,7 @@
 @let f = form();
 <div class="body">
   <div class="card-grid">
-    <app-upload-box label="รูปการ์ด" spec="600×400 px" [(value)]="f.card.image" />
+    <app-upload-box label="รูปการ์ด" spec="600×400 px" slot="thumb_main" [(value)]="f.card.image" />
     <div class="body" style="gap: 12px">
       <div class="g2">
         <app-text-field label="Label หมวด" [(ngModel)]="f.card.label" />

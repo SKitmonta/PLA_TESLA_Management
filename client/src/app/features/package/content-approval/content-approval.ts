@@ -22,7 +22,6 @@ import { NotifyService } from '../../../core/services/notify.service';
 import { apiError } from '../../../core/services/master-api.service';
 import { SessionService } from '../../../core/auth/session.service';
 import { ContentLog, ContentReview } from '../../../core/models/content.model';
-import { findTopic } from '../content-editor/editor-ol-ob/ol-ob-options';
 import { DiffRow, diffContent } from './content-diff';
 
 type Obj = Record<string, unknown>;
@@ -124,10 +123,7 @@ export class ContentApprovalPage implements OnInit {
     const d = this.d();
     const rows = (d['features'] as Obj[] | undefined)?.filter((f) => f['active'] !== false && (f['value'] || f['topic'])) ?? [];
     if (rows.length) {
-      return rows.map((f) => {
-        const t = findTopic(String(f['topic']));
-        return { topic: t && t.code !== 'CUSTOM' ? t.label : '', value: String(f['value'] ?? '') };
-      });
+      return rows.map((f) => ({ topic: String(f['name'] ?? ''), value: String(f['value'] ?? '') }));
     }
     return ((d['keyFeatures'] as Obj[] | undefined) ?? []).map((f) => ({ topic: String(f['topic'] ?? ''), value: String(f['value'] ?? '') }));
   }

@@ -61,6 +61,14 @@
     font-size: $fs-small;
     color: $error;
   }
+  // ตัวอย่างรูปที่อัปโหลดแล้ว (เฉพาะโหมด Tesla API)
+  .preview {
+    max-width: 100%;
+    max-height: 90px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    object-fit: contain;
+  }
 }
 
 // แบบเล็ก (ไอคอนในแถวตาราง) — กล่องเทามุมมน
@@ -80,7 +88,8 @@
   }
   .text,
   .remove,
-  .file {
+  .file,
+  .preview {
     display: none;
   }
 }

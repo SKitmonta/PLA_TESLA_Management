@@ -1,8 +1,8 @@
 @let f = form();
 <div class="body">
   <div class="g2">
-    <app-upload-box label="รูปพื้นหลัง Desktop" spec="1920×640 px · .webp/.jpg ≤ 1 MB" accept=".webp,.jpg,.jpeg" [(value)]="f.hero.bgDesktop" />
-    <app-upload-box label="รูปพื้นหลัง Mobile" spec="750×900 px · .webp/.jpg ≤ 1 MB" accept=".webp,.jpg,.jpeg" [(value)]="f.hero.bgMobile" />
+    <app-upload-box label="รูปพื้นหลัง Desktop" spec="1920×640 px · .webp/.jpg ≤ 1 MB" accept=".webp,.jpg,.jpeg" slot="banner_desktop" [(value)]="f.hero.bgDesktop" />
+    <app-upload-box label="รูปพื้นหลัง Mobile" spec="750×900 px · .webp/.jpg ≤ 1 MB" accept=".webp,.jpg,.jpeg" slot="banner_mobile" [(value)]="f.hero.bgMobile" />
   </div>
   <div class="g2">
     <app-text-field label="Label หมวด (ตั้งต้นจาก sub_Product_Type · แก้ได้)" [(ngModel)]="f.hero.label" />

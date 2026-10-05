@@ -13,6 +13,10 @@
       }
     </button>
 
+    @if (dataSource.source() === 'tesla') {
+      <button type="button" class="source-badge" title="แหล่งข้อมูล: Tesla Admin API (PostgreSQL)" (click)="toggleSwitcher()">Tesla API</button>
+    }
+
     <button type="button" class="role-badge" (click)="toggleSwitcher()" [attr.aria-expanded]="switcherOpen()">
       Role: {{ session.roleLabel() }}
     </button>

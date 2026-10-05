@@ -5,6 +5,7 @@ import { providePrimeNG } from 'primeng/config';
 import { MessageService } from 'primeng/api';
 import { routes } from './app.routes';
 import { actorInterceptor } from './core/auth/actor.interceptor';
+import { dataSourceInterceptor } from './core/data-source/data-source.interceptor';
 import { TeslaPreset } from './core/theme/tesla-preset';
 import { ParamReuseStrategy } from './core/navigation/param-reuse.strategy';
 
@@ -17,7 +18,7 @@ export const appConfig: ApplicationConfig = {
     // เปลี่ยน Parameter (เช่น รหัส Campaign / รหัสกลุ่ม) = สร้างหน้าใหม่
     { provide: RouteReuseStrategy, useClass: ParamReuseStrategy },
     MessageService,
-    provideHttpClient(withFetch(), withInterceptors([actorInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([actorInterceptor, dataSourceInterceptor])),
     // PrimeNG v21 (MIT) — ธีม Aura สีหลักน้ำเงิน Brand · ใช้โหมดสว่างอย่างเดียว
     providePrimeNG({
       theme: { preset: TeslaPreset, options: { darkModeSelector: '.app-dark' } },

@@ -1,7 +1,7 @@
 @let f = form();
 <div class="body">
   <div class="g3">
-    <app-upload-box label="Icon สินค้า" spec="120×120 px" accept=".svg,.png" [(value)]="f.sticky.icon" />
+    <app-upload-box label="Icon สินค้า" spec="120×120 px" accept=".svg,.png" slot="product_icon" [(value)]="f.sticky.icon" />
     <app-number-field label="เบี้ยประกันเริ่มต้น (บาท)" [required]="true" [min]="0" [(ngModel)]="f.sticky.minPremium" />
     @if (isAgent()) {
       <div>

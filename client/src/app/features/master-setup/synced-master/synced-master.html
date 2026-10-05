@@ -4,7 +4,13 @@
     <p class="page-sub">อ่านอย่างเดียว · Sync ล่าสุด {{ lastSync() | thDate: '–' : true }}</p>
   </div>
   @if (canSync()) {
-    <p-button label="Sync ตอนนี้" icon="pi pi-refresh" [outlined]="true" [loading]="syncing()" (onClick)="sync()" />
+    @if (fromTesla()) {
+      <span title="Sync จาก GIO ผ่าน Tesla API ยังไม่เปิด — ต้องใช้ SSO session">
+        <p-button label="Sync ตอนนี้" icon="pi pi-refresh" [outlined]="true" [disabled]="true" />
+      </span>
+    } @else {
+      <p-button label="Sync ตอนนี้" icon="pi pi-refresh" [outlined]="true" [loading]="syncing()" (onClick)="sync()" />
+    }
   }
 </div>
 
@@ -80,7 +86,12 @@
     </div>
   </div>
 
-  @if (isChannel()) {
+  @if (fromTesla()) {
+    <p class="muted small">
+      อ่านจาก Tesla Admin API (เฉพาะรายการที่ Active) · Underwrite type / Gender ไม่มีตาราง Master — รวบรวมจาก Package ที่ Sync แล้ว
+      (Gender ต้นทางส่งมาเฉพาะรหัส)
+    </p>
+  } @else if (isChannel()) {
     <p class="muted small">รายการ Channel จาก Payload ตัวอย่าง (planCommissionChannel) · ช่องทางที่ไม่มี Template จะไม่แสดงใน Add Package</p>
   }
 </section>

@@ -7,14 +7,27 @@
     <app-date-field label="Start Date" [required]="true" [min]="minStart()" [max]="maxEnd()" [(ngModel)]="f.display.startDate" />
     <app-date-field label="End Date" [min]="f.display.startDate || minStart()" [max]="maxEnd()" [(ngModel)]="f.display.endDate" />
     <app-text-field [label]="'URL slug · ' + prefix()" [required]="true" [(ngModel)]="f.page.slug" />
-    <app-select-field label="หมวดสินค้า" [required]="true" [options]="categories" optionLabel="name" optionValue="name" [(ngModel)]="f.page.category" />
+    <div class="stack-tight">
+      <app-select-field label="หมวดสินค้า" [required]="true" [options]="insuranceTypes()" optionLabel="nameTh" optionValue="code" [(ngModel)]="f.page.category" />
+      @if (categoryStale()) {
+        <span class="hint err">หมวดเดิม "{{ f.page.category }}" ไม่มีใน Master — เลือกใหม่</span>
+      }
+    </div>
     <app-number-field label="ลำดับแสดงผล" [min]="1" [grouping]="false" [(ngModel)]="f.page.order" />
     <app-text-field label="SEO title" [maxlength]="70" [(ngModel)]="f.page.seoTitle" />
     <app-text-field class="span2" label="SEO description (≤ 160 ตัวอักษร)" [maxlength]="160" [(ngModel)]="f.page.seoDescription" />
   </div>
+  <span class="sub">Tag Filter</span>
+  <div class="g2">
+    <app-multiselect-field label="ประเภทความคุ้มครอง (Coverage types)" [options]="coverageTypes()" optionLabel="nameTh" optionValue="code" [(ngModel)]="f.tagFilter.coverageTypes" />
+    <app-multiselect-field label="จุดเด่น (Feature tags)" [options]="featureTags()" optionLabel="nameTh" optionValue="code" [(ngModel)]="f.tagFilter.featureTags" />
+  </div>
+  @if (masterError()) {
+    <p class="hint err">โหลดหมวดสินค้า / Tag Filter ไม่สำเร็จ: {{ masterError() }}</p>
+  }
   <p class="hint">
     ช่วงแสดงผล: เริ่มได้ตั้งแต่ {{ minStart().split('-').reverse().join('/') }} · สิ้นสุดได้ถึง
-    {{ maxEnd() ? maxEnd().split('-').reverse().join('/') : 'ไม่จำกัด' }} (FD-09) · URL slug ใช้ a-z, 0-9, ขีด และห้ามซ้ำ
+    {{ maxEnd() ? maxEnd().split('-').reverse().join('/') : 'ไม่จำกัด' }} (FD-09) · URL slug ใช้ a-z, 0-9, ขีด และห้ามซ้ำ · หมวดสินค้าและ Tag Filter มาจาก Master (ใช้กรองหน้ารายการสินค้าบนเว็บ)
   </p>
 </section>
 
@@ -22,7 +35,7 @@
 <section class="card" id="sec-TH" data-sec="TH">
   <h2>Thumbnail</h2>
   <div class="g2 thumb">
-    <app-upload-box label="Click to upload thumbnail" spec="Recommended: 800x600px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" [(value)]="f.card.image" />
+    <app-upload-box label="Click to upload thumbnail" spec="Recommended: 800x600px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" slot="thumb_main" [maxMb]="5" [(value)]="f.card.image" />
     <div class="stack">
       @for (b of f.card.bullets; track $index; let i = $index) {
         <app-text-field [label]="['1st', '2nd', '3rd'][i] + ' Thumbnail'" [(ngModel)]="f.card.bullets[i]" />
@@ -40,14 +53,14 @@
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="4" width="15" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4" /><path d="M1 16h18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" /></svg>
         Desktop
       </span>
-      <app-upload-box label="Click to upload thumbnail" spec="Recommended: 1920x640px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" [(value)]="f.hero.bgDesktop" />
+      <app-upload-box label="Click to upload thumbnail" spec="Recommended: 1920x640px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" slot="banner_desktop" [maxMb]="5" [(value)]="f.hero.bgDesktop" />
     </div>
     <div class="stack">
       <span class="sub">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="5.5" y="2" width="9" height="16" rx="2" stroke="currentColor" stroke-width="1.4" /></svg>
         Mobile
       </span>
-      <app-upload-box label="Click to upload thumbnail" spec="Recommended: 750x900px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" [(value)]="f.hero.bgMobile" />
+      <app-upload-box label="Click to upload thumbnail" spec="Recommended: 750x900px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" slot="banner_mobile" [maxMb]="5" [(value)]="f.hero.bgMobile" />
     </div>
     <app-text-field label="Title text (≤ 60)" [required]="true" [maxlength]="60" [(ngModel)]="f.hero.headline" />
     <app-text-field label="Sub title text (≤ 80)" [maxlength]="80" [(ngModel)]="f.hero.subHeadline" />
@@ -63,7 +76,7 @@
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4" /><rect x="11.5" y="2.5" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4" /><rect x="2.5" y="11.5" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4" /><rect x="11.5" y="11.5" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4" /></svg>
         Icon Asset
       </span>
-      <app-upload-box class="icon-asset" label="Click to upload Banner" spec="Recommended 800x600px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" [(value)]="f.featureIcon" />
+      <app-upload-box class="icon-asset" label="Click to upload Banner" spec="Recommended 800x600px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" slot="product_icon" [maxMb]="5" [(value)]="f.featureIcon" />
     </div>
 
     <div class="stack">
@@ -72,33 +85,34 @@
         Key Features
       </span>
 
+      @if (featureTopics.error()) {
+        <p class="hint err">โหลดหัวข้อ Key Features ไม่สำเร็จ: {{ featureTopics.error() }}</p>
+      }
       @for (r of f.features; track $index; let i = $index; let last = $last) {
-        @let v = topicValue(r.topic);
         <div class="kf-row">
-          <app-upload-box [compact]="true" accept=".svg,.png" [(value)]="r.icon" />
-          <app-select-field [label]="'หัวข้อที่ ' + (i + 1)" [options]="topics" optionLabel="label" optionValue="code" [ngModel]="r.topic" (ngModelChange)="setTopic(i, $event)" />
-          @if (isCustom(r.topic)) {
-            <app-text-field label="Value" [(ngModel)]="r.value" />
-          } @else if (v === null) {
-            <div class="null-box">
-              <app-text-field class="ro-field" [label]="topicLabel(r.topic)" [readonly]="true" [ngModel]="'null'" />
-              <label class="toggle">
-                <p-toggleswitch [(ngModel)]="r.active" [inputId]="'kf-active-' + i" [disabled]="locked()" />
-                <span>Active</span>
-              </label>
-            </div>
-          } @else {
-            <app-text-field label="Value · จาก Package" [readonly]="true" [ngModel]="v" />
-          }
+          <span class="kf-icon" [class.filled]="!!r.icon">
+            @if (r.icon) {
+              <img [src]="r.icon" alt="" />
+            } @else {
+              <i class="pi pi-image" aria-hidden="true"></i>
+            }
+          </span>
+          <div class="stack-tight">
+            <app-select-field [label]="'หัวข้อที่ ' + (i + 1)" [options]="featureOptions()" optionLabel="nameTh" optionValue="code" optionDisabled="used" [filter]="true" [ngModel]="r.topic" (ngModelChange)="setTopic(i, $event)" />
+            @if (featureTopics.isStale(r.topic)) {
+              <span class="hint err">หัวข้อเดิม "{{ r.name || r.topic }}" ไม่มีใน Master แล้ว — เลือกหัวข้อใหม่</span>
+            }
+          </div>
+          <app-text-field label="Value · จาก Master" [readonly]="true" [ngModel]="r.value" />
           <p-button icon="pi pi-trash" [outlined]="true" severity="secondary" styleClass="icon-square" ariaLabel="ลบหัวข้อ" [disabled]="f.features.length <= 1 || locked()" (onClick)="removeFeature(i)" />
           @if (last) {
-            <p-button icon="pi pi-plus" [outlined]="true" styleClass="icon-square" ariaLabel="เพิ่มหัวข้อ" [disabled]="locked()" (onClick)="addFeature()" />
+            <p-button icon="pi pi-plus" [outlined]="true" styleClass="icon-square" ariaLabel="เพิ่มหัวข้อ" [disabled]="locked() || f.features.length >= featureTopics.list().length" (onClick)="addFeature()" />
           } @else {
             <span class="icon-gap"></span>
           }
         </div>
       }
-      <p class="hint">Value สีเทา = ดึงจาก Package อัตโนมัติ (แก้ที่ระบบต้นทาง) · หัวข้อที่ Package ไม่มีข้อมูลแสดง null — เปิด Active เมื่อต้องการแสดง · เลือก "กำหนดเอง" เพื่อกรอกค่าเอง</p>
+      <p class="hint">เลือกหัวข้อจาก Master อย่างเดียว — ไอคอนและ Value มาจากหัวข้อที่เลือก (แก้ได้ที่ Master setup) · หัวข้อเดียวกันเลือกซ้ำไม่ได้</p>
     </div>
   </div>
 </section>
@@ -107,21 +121,35 @@
 <section class="card" id="sec-KA" data-sec="KA">
   <h2>Key Advantages</h2>
   <app-text-field label="Key Advantages Header" [(ngModel)]="f.advantages.header" />
+  @if (advantageTopics.error()) {
+    <p class="hint err">โหลดหัวข้อ Key Advantages ไม่สำเร็จ: {{ advantageTopics.error() }}</p>
+  }
   <div class="ka">
     @for (a of f.advantages.cards; track $index; let i = $index) {
       <div class="ka-card">
         <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" size="small" styleClass="x" ariaLabel="ลบการ์ด" [disabled]="locked()" (onClick)="removeAdvantage(i)" />
-        <app-upload-box label="Click to upload picture" spec="Recommended 800x600px (JPG/PNG/SVG/WEBP)" accept=".jpg,.jpeg,.png,.svg,.webp" [(value)]="a.image" />
-        <app-select-field label="Topic" [options]="advantageTopics" [showClear]="true" [(ngModel)]="a.topic" />
-        <app-text-field label="Title text" [(ngModel)]="a.title" />
-        <app-text-field label="Sub title text" [(ngModel)]="a.subtitle" />
+        <div class="ka-img" [class.filled]="!!a.image">
+          @if (a.image) {
+            <img [src]="a.image" alt="" />
+          } @else {
+            <i class="pi pi-image" aria-hidden="true"></i>
+            <span>รูปมาจากหัวข้อที่เลือก</span>
+          }
+        </div>
+        <app-select-field label="Topic" [options]="advantageOptions()" optionLabel="nameTh" optionValue="code" optionDisabled="used" [filter]="true" [ngModel]="a.topic" (ngModelChange)="setAdvantage(i, $event)" />
+        @if (advantageTopics.isStale(a.topic)) {
+          <span class="hint err">หัวข้อเดิม "{{ a.title || a.topic }}" ไม่มีใน Master แล้ว — เลือกหัวข้อใหม่</span>
+        }
+        <app-text-field label="Title text · จาก Master" [readonly]="true" [ngModel]="a.title" />
+        <app-text-field label="Sub title text · จาก Master" [readonly]="true" [ngModel]="a.subtitle" />
       </div>
     }
-    <button type="button" class="ka-add" (click)="addAdvantage()">
+    <button type="button" class="ka-add" [disabled]="locked() || f.advantages.cards.length >= advantageTopics.list().length" (click)="addAdvantage()">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M14 4v20M4 14h20" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg>
       Add Key Advantages
     </button>
   </div>
+  <p class="hint">เลือกหัวข้อจาก Master อย่างเดียว — รูป Title และ Sub title มาจากหัวข้อที่เลือก (แก้ได้ที่ Master setup) · หัวข้อเดียวกันเลือกซ้ำไม่ได้</p>
 </section>
 
 <!-- ============ Package recommend ============ -->
@@ -131,25 +159,28 @@
     <div class="stack">
       <app-text-field label="Search" [ngModel]="search()" (ngModelChange)="search.set($event ?? '')" />
       <div class="results">
-        @for (o of results(); track o.contentCode) {
-          <button type="button" class="result" (click)="pickRecommend(o.contentCode)">
+        @for (o of results(); track o.packageCode) {
+          <button type="button" class="result" [disabled]="locked()" (click)="pickRecommend(o.packageCode)">
             <span class="code">{{ o.packageCode }}</span>
-            <span class="name">{{ o.nameEn ?? o.nameTh }}<small>{{ o.nameTh }}</small></span>
+            <span class="name">{{ o.packageNameEn ?? o.packageNameTh }}<small>{{ o.packageNameTh }}</small></span>
             <span class="plus">+</span>
           </button>
         } @empty {
-          <p class="hint">{{ options().length ? 'ไม่พบ Package ตามคำค้น' : 'ยังไม่มี Content ที่ Approved ในช่องทางนี้' }}</p>
+          <p class="hint">{{ options().length ? (search() ? 'ไม่พบ Package ตามคำค้น' : 'เลือกครบทุก Package แล้ว') : 'ไม่มี Package อื่นในช่องทางนี้' }}</p>
         }
       </div>
-      <p class="hint">เลือกได้เฉพาะ Content ที่ Approved และช่องทางเดียวกัน · ข้ามประเภทสินค้าได้</p>
+      @if (optionsError()) {
+        <p class="hint err">โหลดรายการ Package ไม่สำเร็จ: {{ optionsError() }}</p>
+      }
+      <p class="hint">แสดง Package ที่ขายในช่องทางเดียวกัน (ไม่รวม Package นี้) · คลิกเพื่อเพิ่มไปที่ Package Display</p>
     </div>
     <div class="display">
       <h3>Package Display</h3>
-      @for (o of selected(); track o.contentCode) {
+      @for (o of selected(); track o.packageCode) {
         <div class="picked">
           <span class="code">{{ o.packageCode }}</span>
-          <span class="name">{{ o.nameEn ?? o.nameTh }}<small>{{ o.nameTh }}</small></span>
-          <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" size="small" ariaLabel="เอาออก" [disabled]="locked()" (onClick)="removeRecommend(o.contentCode)" />
+          <span class="name">{{ o.packageNameEn ?? o.packageNameTh }}<small>{{ o.packageNameTh }}</small></span>
+          <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" size="small" ariaLabel="เอาออก" [disabled]="locked()" (onClick)="removeRecommend(o.packageCode)" />
         </div>
       } @empty {
         <div class="empty">

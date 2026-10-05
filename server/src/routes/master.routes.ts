@@ -9,6 +9,9 @@
  *   PUT  /custom/:type/:code       MS-02 แก้ไข (System Admin)
  *   GET  /display-mapping          MS-03 Mapping ข้อความแสดงผล (?channel=CHN04)
  *   PUT  /display-mapping          MS-03 บันทึก (System Admin)
+ *   GET  /key-topics               หัวข้อ Key Features / Key Advantages (?topicType=FEATURE&systemCode=ONLINE)
+ *   GET  /insurance-types · /coverage-types · /feature-tags   หมวดสินค้า + Tag Filter ของ Content (OL_OB)
+ *   GET  /channel-packages         Package ที่ขาย (Approved) ในช่องทางเดียวกัน (?channelCode=CHN04) — Package recommend
  *   GET  /synced                   MS-04 สรุป Master ที่ Sync
  *   GET  /synced/:type             MS-04 รายการของ Master ที่ Sync
  */
@@ -191,6 +194,82 @@ masterRoutes.put('/display-mapping', ADMIN, (req, res) => {
     for (const p of body.paymentMethods ?? []) upsert.run('PAYMENT_METHOD', p.code, body.channel, p.displayText?.trim() ?? '', p.isShown ? 1 : 0, p.icon ?? null, req.actor.userId);
   });
   res.json({ message: 'บันทึก Mapping เรียบร้อย' });
+});
+
+// ---------------------------------------------------------------- หัวข้อ Key Features / Key Advantages
+// Tesla ใช้ M_MARKETING_KEY_TOPIC (เส้น v1) — Mock มีชุดตัวอย่างคงที่ ไม่มีหน้าแก้ไข
+const FEATURE_TOPICS = [
+  { code: 'SINGLE_PREMIUM', nameTh: 'จ่ายเบี้ยครั้งเดียวจบ', nameEn: 'Single Premium', formatTemplate: 'เริ่มต้นเพียง 5,000 บาท' },
+  { code: 'LIFE_COVERAGE', nameTh: 'คุ้มครองชีวิตตลอดสัญญา', nameEn: 'Life coverage', formatTemplate: '10 ปี' },
+  { code: 'DEATH_COVERAGE', nameTh: 'คุ้มครองการเสียชีวิต', nameEn: 'Death coverage', formatTemplate: '110%' },
+  { code: 'EASY_TO_SIGN_UP', nameTh: 'สมัครง่าย', nameEn: 'Easy to sign up', formatTemplate: 'ไม่ต้องตรวจสุขภาพ' },
+  { code: 'CONVENIENT_PREMIUM_PAYMENTS', nameTh: 'จ่ายเบี้ยฯ สะดวก', nameEn: 'Convenient premium payments', formatTemplate: 'ผ่านบัตรเครดิต และ QR Promptpay' },
+  { code: 'TAX', nameTh: 'ลดหย่อนภาษีสูงสุด', nameEn: 'Tax', formatTemplate: '100,000 บาท' },
+].map((t) => ({ ...t, topicType: 'FEATURE', descriptionTh: null }));
+const ADVANTAGE_TOPICS = [
+  { code: 'EASY_BUY', nameTh: 'ซื้อง่าย จ่ายสั้น', nameEn: 'Easy buy', descriptionTh: 'ซื้อง่าย จ่ายสั้น จ่ายเบี้ย 1 ปี คุ้มครอง 10 ปี' },
+  { code: 'EASY_REGISTER', nameTh: 'สมัครง่าย', nameEn: 'Easy register', descriptionTh: 'สมัครง่ายใน 5 นาที' },
+  { code: 'NO_HEALTH_CHECK', nameTh: 'ไม่ต้องตรวจสุขภาพ', nameEn: 'No health check', descriptionTh: 'สมัครได้โดยไม่ต้องตรวจสุขภาพ' },
+  { code: 'TAX_DEDUCTIBLE', nameTh: 'ลดหย่อนภาษี', nameEn: 'Tax deductible', descriptionTh: 'นำไปลดหย่อนภาษีได้' },
+  { code: 'GUARANTEE', nameTh: 'การันตี', nameEn: 'Guarantee', descriptionTh: 'การันตีผลตอบแทน' },
+].map((t) => ({ ...t, topicType: 'ADVANTAGE', formatTemplate: null }));
+const KEY_TOPICS = [...FEATURE_TOPICS, ...ADVANTAGE_TOPICS].map((t, i) => ({ id: i + 1, systemCode: 'ONLINE', imageUrl: null, displayOrder: i + 1, ...t }));
+
+masterRoutes.get('/key-topics', (req, res) => {
+  const { topicType, systemCode } = req.query as { topicType?: string; systemCode?: string };
+  res.json(
+    KEY_TOPICS.filter(
+      (t) => (!topicType || t.topicType === topicType.toUpperCase()) && (!systemCode || t.systemCode === systemCode.toUpperCase()),
+    ),
+  );
+});
+
+// ---------------------------------------------------------------- หมวดสินค้า + Tag Filter (OL_OB)
+// Tesla ใช้ Master ของ v1 (/marketing-content/master/*) — Mock มีชุดตัวอย่างคงที่
+const CONTENT_MASTERS: Record<string, [string, string, string][]> = {
+  'insurance-types': [
+    ['SAVING', 'ประกันสะสมทรัพย์', 'Saving'],
+    ['WHOLE_LIFE', 'ตลอดชีพ', 'Whole life'],
+    ['TERM', 'ระยะสั้น', 'Term'],
+    ['ANNUITY', 'บำนาญ', 'Annuity'],
+    ['UNIT_LINKED', 'ยูนิตลิงค์', 'Unit linked'],
+  ],
+  'coverage-types': [
+    ['IPD', 'ผู้ป่วยใน', 'IPD'],
+    ['OPD', 'ผู้ป่วยนอก', 'OPD'],
+    ['CRITICAL', 'โรคร้ายแรง', 'Critical illness'],
+    ['ACCIDENT', 'อุบัติเหตุ', 'Accident'],
+    ['CANCER', 'มะเร็ง', 'Cancer'],
+  ],
+  'feature-tags': [
+    ['NO_HEALTH_Q', 'ไม่ตอบคำถามสุขภาพ', 'No health questions'],
+    ['TAX_BENEFIT', 'ลดหย่อนภาษี', 'Tax benefit'],
+    ['HIGH_RETURN', 'ผลตอบแทนสูง', 'High return'],
+    ['GUARANTEE', 'การันตีผลตอบแทน', 'Guaranteed return'],
+    ['SHORT_PAY', 'จ่ายสั้น คุ้มครองยาว', 'Short pay'],
+  ],
+};
+
+for (const [type, rows] of Object.entries(CONTENT_MASTERS)) {
+  masterRoutes.get(`/${type}`, (_req, res) => {
+    res.json(rows.map(([code, nameTh, nameEn], i) => ({ id: i + 1, code, nameTh, nameEn, displayOrder: i + 1 })));
+  });
+}
+
+// ---------------------------------------------------------------- Package recommend (OL_OB) — รูปแบบเดียวกับเส้น v1
+masterRoutes.get('/channel-packages', (req, res) => {
+  const channel = String(req.query['channelCode'] ?? '');
+  if (!channel) throw new AppError(400, 'ต้องระบุ channelCode');
+  const { items } = listPackages({ channel, status: 'APPROVED', pageSize: 100 });
+  res.json(
+    items.map((p) => ({
+      packageCode: p.packageCode,
+      packageNameTh: p.nameTh,
+      packageNameEn: p.nameEn,
+      subProductTypeNameTh: p.subProductTypeName,
+      saleStartDate: p.saleStartDate,
+    })),
+  );
 });
 
 // ---------------------------------------------------------------- MS-04 Master ที่ Sync

@@ -50,7 +50,9 @@
       @if (error()) {
         <div class="alert error">{{ error() }}</div>
       }
-      @if (!canEdit()) {
+      @if (t.readOnly) {
+        <div class="alert info">Master นี้อ่านจากตารางของเมนู Campaign (Tesla Admin API) — ดูได้อย่างเดียว เพิ่ม / แก้ไขที่หน้านี้ไม่ได้</div>
+      } @else if (!roleCanEdit()) {
         <div class="alert info">Role ปัจจุบันดูได้อย่างเดียว — เพิ่ม / แก้ไขได้เฉพาะ System Admin</div>
       }
 

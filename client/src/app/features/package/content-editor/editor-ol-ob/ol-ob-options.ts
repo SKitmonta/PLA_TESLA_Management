@@ -1,48 +1,44 @@
 /**
  * ตัวเลือกและกฎของ Editor OL_OB (Figma V2 — 27 ก.ย. 2569)
- *  - หัวข้อ Key Features: ค่า (Value) ดึงจาก Package อัตโนมัติ (DRV · อ่านอย่างเดียว) ยกเว้น "กำหนดเอง"
- *    หัวข้อที่ Package ไม่มีข้อมูล (เช่น Contractual payout) แสดง null + สวิตช์ Active (ปิดไว้ = ไม่แสดงบนเว็บ)
+ *  - หัวข้อ Key Features / Key Advantages: เลือกจาก Master ของ API อย่างเดียว (GET /api/master/key-topics · FEATURE / ADVANTAGE + ONLINE)
+ *    ค่า ข้อความ และรูปมาจากหัวข้อที่เลือก — แก้ที่ Master ไม่ใช่ที่ Content
  *  - เครื่องหมาย ✓ ใน List content = Section นั้นกรอกครบแล้ว
- * แก้หัวข้อ / ที่มาของค่า ได้ที่ไฟล์นี้
  */
-import { ContentDetail } from '../../../../core/models/content.model';
+import { signal } from '@angular/core';
+import { KeyTopic } from '../../../../core/models/master.model';
 import { ContentFormData } from '../content-form';
 
-export interface FeatureTopic {
-  code: string;
-  label: string;
-  /** ค่าจาก Package — null = Package ไม่มีข้อมูล · undefined = กรอกเอง */
-  value?: (c: ContentDetail) => string | null;
+export type TopicOption = KeyTopic & { used: boolean };
+
+/** หัวข้อจาก Master สำหรับ Dropdown ของแถว / การ์ด — หัวข้อที่แถวอื่นเลือกแล้วกดไม่ได้ (used) */
+export class TopicPicker {
+  readonly list = signal<KeyTopic[]>([]);
+  readonly error = signal('');
+  private cacheKey = '#';
+  private cacheSrc: KeyTopic[] | null = null;
+  private cache: TopicOption[] = [];
+
+  find(code: string | null | undefined): KeyTopic | undefined {
+    return this.list().find((t) => t.code === code);
+  }
+
+  /** หัวข้อที่ไม่อยู่ใน Master แล้ว (ข้อมูลเดิม / หัวข้อถูกปิด) */
+  isStale(code: string): boolean {
+    return !!code && this.list().length > 0 && !this.find(code);
+  }
+
+  /** คืน Array เดิมถ้าไม่เปลี่ยน (ไม่ให้ Dropdown สร้างตัวเลือกใหม่ทุกรอบ) */
+  options(usedCodes: string[]): TopicOption[] {
+    const used = new Set(usedCodes.filter(Boolean));
+    const key = [...used].sort().join('|');
+    if (key !== this.cacheKey || this.list() !== this.cacheSrc) {
+      this.cacheKey = key;
+      this.cacheSrc = this.list();
+      this.cache = this.cacheSrc.map((t) => ({ ...t, used: used.has(t.code) }));
+    }
+    return this.cache;
+  }
 }
-
-const num = (n: number | null | undefined) => (n === null || n === undefined ? '' : n.toLocaleString('en-US'));
-
-export const FEATURE_TOPICS: FeatureTopic[] = [
-  {
-    code: 'SUM_INSURED',
-    label: 'ทุนประกันภัย',
-    value: (c) => {
-      const p = c.package.plans.find((x) => x.planRole === 'MASTER');
-      return p ? `${num(p.minSumInsured)} – ${num(p.maxSumInsured)} บาท` : null;
-    },
-  },
-  { code: 'ISSUE_AGE', label: 'อายุที่รับประกัน', value: (c) => c.package.derived.ageDisplay },
-  { code: 'UNDERWRITE', label: 'การตรวจสุขภาพ', value: (c) => c.package.derived.underwriteDisplay },
-  { code: 'TAX', label: 'การลดหย่อนภาษี', value: (c) => c.package.derived.taxDisplay },
-  { code: 'PAYMENT_MODE', label: 'การชำระเบี้ย', value: (c) => c.package.paymentModes.map((m) => m.name ?? m.code).join(', ') || null },
-  { code: 'PAYMENT_METHOD', label: 'ช่องทางชำระเบี้ย', value: (c) => c.paymentMethodsShown.map((m) => m.text).join(', ') || null },
-  { code: 'FREE_LOOK', label: 'ระยะเวลาพิจารณากรมธรรม์ (Free look)', value: (c) => (c.package.freeLookPeriod ? `${c.package.freeLookPeriod} วัน` : null) },
-  { code: 'RIDER', label: 'สัญญาเพิ่มเติม', value: (c) => c.package.derived.riderDisplay },
-  { code: 'CONTRACTUAL_PAYOUT', label: 'Contractual payout (เงินคืนตามสัญญา)', value: () => null },
-  { code: 'CUSTOM', label: 'กำหนดเอง' },
-];
-
-export function findTopic(code: string): FeatureTopic | undefined {
-  return FEATURE_TOPICS.find((t) => t.code === code);
-}
-
-/** หัวข้อของการ์ด Key Advantages (สมมติฐาน — รอรายการจริง) */
-export const ADVANTAGE_TOPICS = ['ความคุ้มครอง', 'ผลตอบแทน', 'ลดหย่อนภาษี', 'สมัครง่าย', 'ความยืดหยุ่น'];
 
 /** Section นี้กรอกครบหรือยัง (แสดง ✓ ใน List content) */
 export function sectionDone(id: string, f: ContentFormData): boolean {
@@ -58,7 +54,7 @@ export function sectionDone(id: string, f: ContentFormData): boolean {
     case 'KA':
       return f.advantages.cards.some((a) => a.title.trim());
     case 'PR':
-      return f.recommend.contents.length > 0;
+      return f.recommend.packages.length > 0;
     case 'DOC':
       return f.documents.length > 0;
     default:

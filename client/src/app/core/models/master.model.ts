@@ -118,6 +118,8 @@ export interface CustomMasterType {
   description: string;
   fields: MasterField[];
   stock?: boolean;
+  /** Tesla API: รายการมาจากตารางอื่น (MS-01 → M_CAMPAIGN_TYPE) — เพิ่ม / แก้ไขไม่ได้ */
+  readOnly?: boolean;
   count: number;
 }
 
@@ -154,6 +156,43 @@ export interface DisplayMappingResponse {
   paymentMethods: PaymentMethodMapping[];
   updatedBy: string | null;
   updatedAt: string | null;
+}
+
+// ---------- หมวดสินค้า + Tag Filter ของ Content (Tesla: Master ของ v1 · เส้น /marketing-content/master/*)
+export type ContentMasterType = 'insurance-types' | 'coverage-types' | 'feature-tags';
+
+export interface ContentMasterItem {
+  id: number;
+  code: string;
+  nameTh: string | null;
+  nameEn: string | null;
+  displayOrder: number;
+}
+
+/** Package ที่ขายในช่องทางหนึ่ง (Tesla: v1 /marketing-content/master/packages?channelCode=) — ใช้ใน Package recommend */
+export interface ChannelPackage {
+  packageCode: string;
+  packageNameTh: string;
+  packageNameEn: string | null;
+  subProductTypeNameTh: string | null;
+  saleStartDate: string | null;
+}
+
+// ---------- หัวข้อ Key Features / Key Advantages (Tesla: M_MARKETING_KEY_TOPIC · เส้น v1)
+export interface KeyTopic {
+  id: number;
+  code: string;
+  topicType: 'FEATURE' | 'ADVANTAGE';
+  systemCode: 'F2F' | 'ONLINE';
+  nameTh: string;
+  nameEn: string | null;
+  /** ADVANTAGE: ข้อความรองของการ์ด (Sub title) */
+  descriptionTh: string | null;
+  /** FEATURE: ค่าที่แสดงคู่หัวข้อ เช่น "10 ปี" */
+  formatTemplate: string | null;
+  /** FEATURE: ไอคอน · ADVANTAGE: รูปพื้นการ์ด */
+  imageUrl: string | null;
+  displayOrder: number;
 }
 
 // ---------- MS-04 Master ที่ Sync

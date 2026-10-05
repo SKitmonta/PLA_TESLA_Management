@@ -622,6 +622,11 @@ p-inputnumber {
   line-height: normal;
 }
 
+// Multiselect แบบ Chip: เลือกหลายค่าแล้วขึ้นบรรทัดใหม่ — ไม่ถูกตัดท้ายช่อง
+.p-multiselect-display-chip .p-multiselect-label {
+  flex-wrap: wrap;
+}
+
 // ป้ายลอยในช่อง (FloatLabel variant="in") — ไม่ตัดคำยาว
 .p-floatlabel-in label {
   max-width: calc(100% - 2.5rem);

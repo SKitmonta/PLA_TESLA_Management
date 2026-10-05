@@ -36,4 +36,53 @@
       </ul>
     </div>
   }
+
+  <section class="source" aria-label="แหล่งข้อมูล">
+    <div class="source-head">
+      <app-icon name="master" [size]="18" />
+      <strong>แหล่งข้อมูล</strong>
+      <span class="muted">เปลี่ยนแล้วหน้าจะโหลดใหม่</span>
+    </div>
+
+    <div class="source-opts">
+      <button type="button" [class.on]="dataSource.source() === 'local'" (click)="dataSource.use('local')">
+        <span class="s-name">
+          Local (ที่มีอยู่)
+          @if (dataSource.source() === 'local') {
+            <app-icon name="check" [size]="16" [strokeWidth]="2.2" />
+          }
+        </span>
+        <span class="s-desc muted">Mock server · port 3000 · SQLite</span>
+      </button>
+
+      <button type="button" [class.on]="dataSource.source() === 'tesla'" (click)="dataSource.use('tesla')">
+        <span class="s-name">
+          Tesla Admin API
+          @if (dataSource.source() === 'tesla') {
+            <app-icon name="check" [size]="16" [strokeWidth]="2.2" />
+          }
+        </span>
+        <span class="s-desc muted">PostgreSQL · {{ teslaBase }}</span>
+        <span class="health" [attr.data-state]="dataSource.health()">
+          @switch (dataSource.health()) {
+            @case ('ok') { เชื่อมต่อได้ }
+            @case ('down') { เชื่อมต่อไม่ได้ (port 5277) }
+            @default { กำลังตรวจสอบ… }
+          }
+        </span>
+      </button>
+    </div>
+
+    @if (dataSource.source() === 'tesla') {
+      <div class="source-note">
+        <span>ใช้ Tesla Admin API ({{ dataSource.routes.length }} เส้น · {{ teslaBase }}):</span>
+        <ul>
+          @for (g of dataSource.routeGroups; track g.label) {
+            <li>{{ g.label }} <code>{{ g.endpoints.join(' · ') }}</code></li>
+          }
+        </ul>
+        <span class="muted">ส่วนที่ v2 ยังไม่มี (อนุมัติ / ตีกลับ / ประวัติ) จะแจ้งว่ายังไม่มีเส้น · เมนูอื่นยังใช้ Local</span>
+      </div>
+    }
+  </section>
 </div>

@@ -5,6 +5,7 @@
  */
 import { Component, ElementRef, computed, inject, input, signal } from '@angular/core';
 import { SessionService } from '../../core/auth/session.service';
+import { DataSourceService } from '../../core/data-source/data-source.service';
 import { LayoutService } from '../../core/layout/layout.service';
 import { RoleSwitcher } from '../role-switcher/role-switcher';
 
@@ -20,6 +21,7 @@ import { RoleSwitcher } from '../role-switcher/role-switcher';
 })
 export class Header {
   readonly session = inject(SessionService);
+  readonly dataSource = inject(DataSourceService);
   readonly layout = inject(LayoutService);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 

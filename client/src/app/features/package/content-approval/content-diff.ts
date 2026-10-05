@@ -16,7 +16,7 @@ type Obj = Record<string, unknown>;
 
 /** Field (ส่วนหัวของ path) → รหัส Section ในแต่ละ Template */
 const SECTION: Record<TemplateCode, Record<string, string>> = {
-  OL_OB: { display: 'CI', page: 'CI', card: 'TH', hero: 'BN', featureIcon: 'KF', features: 'KF', advantages: 'KA', recommend: 'PR', documents: 'DOC' },
+  OL_OB: { display: 'CI', page: 'CI', tagFilter: 'CI', card: 'TH', hero: 'BN', featureIcon: 'KF', features: 'KF', advantages: 'KA', recommend: 'PR', documents: 'DOC' },
   OL_PA: {
     plans: 'PA-00', display: 'OB-01', page: 'OB-01', hero: 'OB-02', quickFacts: 'PA-03', coverage: 'PA-03', sticky: 'OB-04', calculator: 'PA-05',
     highlights: 'PA-06', coverageTable: 'PA-07', promotion: 'OB-08', important: 'OB-09', summary: 'OB-10', recommend: 'OB-11', card: 'OB-12',
@@ -37,6 +37,8 @@ const LABEL: Record<string, string> = {
   'page.order': 'ลำดับการแสดงผล',
   'page.seoTitle': 'SEO title',
   'page.seoDescription': 'SEO description',
+  'tagFilter.coverageTypes': 'Tag Filter: ประเภทความคุ้มครอง',
+  'tagFilter.featureTags': 'Tag Filter: จุดเด่น',
   'card.image': 'รูป Thumbnail',
   'card.label': 'ป้ายการ์ด',
   'card.name': 'ชื่อบนการ์ด',
@@ -54,6 +56,7 @@ const LABEL: Record<string, string> = {
   'advantages.cards': 'การ์ดจุดเด่น',
   'recommend.header': 'Header',
   'recommend.contents': 'ประกันอื่นที่น่าสนใจ',
+  'recommend.packages': 'Package recommend',
   documents: 'เอกสารเงื่อนไข',
   'sticky.minPremium': 'เบี้ยเริ่มต้น',
   'quickFacts.premium': 'เบี้ยประกันเริ่มต้น',

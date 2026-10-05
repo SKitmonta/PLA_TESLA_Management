@@ -9,7 +9,10 @@ import { TemplateCode } from '../../../core/models/master.model';
 export interface ContentFormData {
   /** ช่วงแสดงผล Content (FD-04, FD-09) — บันทึกลงคอลัมน์ display_start/end_date */
   display: { startDate: string; endDate: string };
+  /** category: OL_OB = รหัส Insurance type จาก Master (เช่น SAVING) · OL_PA / AGENT = ชื่อใน CATEGORIES */
   page: { slug: string; category: string; order: number | null; seoTitle: string; seoDescription: string };
+  /** Tag Filter (OL_OB) — ตัวกรองหน้ารายการสินค้าบนเว็บ · เก็บรหัสจาก Master coverage-types / feature-tags */
+  tagFilter: { coverageTypes: string[]; featureTags: string[] };
   hero: { bgDesktop: string; bgMobile: string; label: string; displayName: string; headline: string; subHeadline: string };
   keyFeatures: { icon: string; topic: string; value: string }[];
   sticky: { icon: string; minPremium: number | null };
@@ -19,16 +22,21 @@ export interface ContentFormData {
   promotion: { header: string };
   important: { coverageYears: number | null };
   summary: { attachment: string };
-  recommend: { header: string; contents: string[] };
+  /** contents = รหัส Content ที่แนะนำ (OL_PA / AGENT) · packages = รหัส Package ช่องทางเดียวกัน (OL_OB — Package Display ตามลำดับที่เลือก) */
+  recommend: { header: string; contents: string[]; packages: string[] };
   card: { image: string; label: string; name: string; bullets: string[] };
   // ---------- OL_OB (Figma V2 — Content · Editor OL_OB, 27 ก.ย.)
   /** Icon Asset ของ Key Features */
   featureIcon: string;
-  /** Key Features: topic = รหัสหัวข้อ (ค่า DRV จาก Package) หรือ 'CUSTOM' (กรอกเอง) · active = แสดงบนหน้าเว็บ */
-  features: { icon: string; topic: string; value: string; active: boolean }[];
+  /**
+   * Key Features: เลือกหัวข้อจาก Master (GET /api/master/key-topics · FEATURE + ONLINE) อย่างเดียว
+   * topic = รหัสหัวข้อ · name / value / icon = ชื่อ / FORMAT_TEMPLATE / ไอคอนของหัวข้อ (คัดลอกตอนเลือก · แก้เองไม่ได้)
+   * active = แสดงบนหน้าเว็บ
+   */
+  features: { icon: string; topic: string; name?: string; value: string; active: boolean }[];
   advantages: { header: string; cards: { image: string; topic: string; title: string; subtitle: string }[] };
   /** Document General Terms & Conditions (PDF ≤ 10 MB · สูงสุด 10 ไฟล์) */
-  documents: { name: string; size: number }[];
+  documents: { name: string; size: number; /** URL ที่ API คืนหลังอัปโหลด (โหมด Tesla) */ url?: string; /** ลำดับ 1–10 ที่ใช้ตอนอัปโหลด (tc_doc) */ index?: number }[];
   // ---------- OL_PA
   plans: { planCode: string; displayName: string; premium: number | null }[];
   quickFacts: { premium: number | null; coveragePeriod: string };
@@ -52,6 +60,14 @@ export const CATEGORIES: { name: string; path: string }[] = [
 
 export const AGENT_POSITIONS = ['ใต้ Hero Banner', 'ท้าย Key Features', 'เหนือฟอร์มติดต่อกลับ'];
 
+/** หมวดสินค้า OL_OB (รหัส Insurance type) → ส่วนของ URL — ที่ไม่อยู่ในรายการใช้รหัสตัวพิมพ์เล็ก เช่น WHOLE_LIFE → whole-life */
+const INSURANCE_TYPE_PATH: Record<string, string> = { SAVING: 'savings' };
+
+export function insuranceTypePath(code: string): string {
+  if (!code) return '…';
+  return INSURANCE_TYPE_PATH[code] ?? code.toLowerCase().replace(/_/g, '-');
+}
+
 export function slugPrefix(template: TemplateCode, category: string): string {
   if (template === 'AGENT') return '/agent/products/';
   const path = CATEGORIES.find((c) => c.name === category)?.path ?? '…';
@@ -71,6 +87,7 @@ function defaults(c: ContentDetail): ContentFormData {
   return {
     display: { startDate: c.startDate ?? '', endDate: c.endDate ?? '' },
     page: { slug: '', category, order: 1, seoTitle: c.nameTh, seoDescription: '' },
+    tagFilter: { coverageTypes: [], featureTags: [] },
     hero: { bgDesktop: '', bgMobile: '', label, displayName: c.nameTh, headline: '', subHeadline: '' },
     keyFeatures: [{ icon: '', topic: '', value: '' }],
     sticky: { icon: '', minPremium: null },
@@ -80,17 +97,10 @@ function defaults(c: ContentDetail): ContentFormData {
     promotion: { header: 'โปรดี ๆ ที่ไม่ควรพลาด!' },
     important: { coverageYears: null },
     summary: { attachment: '' },
-    recommend: { header: '', contents: [] },
+    recommend: { header: '', contents: [], packages: [] },
     card: { image: '', label, name: c.nameTh, bullets: ['', '', ''] },
     featureIcon: '',
-    features: [
-      { icon: '', topic: 'SUM_INSURED', value: '', active: true },
-      { icon: '', topic: 'ISSUE_AGE', value: '', active: true },
-      { icon: '', topic: 'UNDERWRITE', value: '', active: true },
-      { icon: '', topic: 'TAX', value: '', active: true },
-      { icon: '', topic: 'CONTRACTUAL_PAYOUT', value: '', active: false },
-      { icon: '', topic: 'CUSTOM', value: '', active: true },
-    ],
+    features: [{ icon: '', topic: '', name: '', value: '', active: true }],
     advantages: { header: '', cards: [0, 1, 2].map(() => ({ image: '', topic: '', title: '', subtitle: '' })) },
     documents: [],
     plans: c.plans.map((p, i) => ({ planCode: p.planCode, displayName: `แผน ${i + 1}`, premium: null })),

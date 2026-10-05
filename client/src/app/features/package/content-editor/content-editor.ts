@@ -20,6 +20,7 @@ import { ContentDetail, SaveContentPayload } from '../../../core/models/content.
 import { ContentFormData, NAV, buildForm } from './content-form';
 import { sectionDone } from './editor-ol-ob/ol-ob-options';
 import { ThDatePipe } from '../../../shared/pipes/th-date.pipe';
+import { ContentUploadService } from './upload.service';
 import { EditorOlOb } from './editor-ol-ob/editor-ol-ob';
 import { EditorOlPa } from './editor-ol-pa/editor-ol-pa';
 import { EditorAgent } from './editor-agent/editor-agent';
@@ -45,6 +46,7 @@ export class ContentEditorPage implements OnInit, AfterViewChecked, OnDestroy {
   private readonly api = inject(ContentApiService);
   private readonly notify = inject(NotifyService);
   readonly session = inject(SessionService);
+  private readonly uploads = inject(ContentUploadService);
 
   readonly content = signal<ContentDetail | null>(null);
   readonly form = signal<ContentFormData | null>(null);
@@ -96,6 +98,7 @@ export class ContentEditorPage implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.uploads.context.set(null);
     this.scrollHost?.removeEventListener('scroll', this.onScroll);
   }
 
@@ -113,6 +116,8 @@ export class ContentEditorPage implements OnInit, AfterViewChecked, OnDestroy {
 
   private load(c: ContentDetail): void {
     this.content.set(c);
+    // อัปโหลดไฟล์ (โหมด Tesla API) ต้องรู้ Package / Channel / Version ของหน้านี้
+    this.uploads.context.set({ packageCode: c.packageCode, channelCode: c.channelCode, versionNo: c.versionNo });
     this.form.set(buildForm(c));
     this.active.set(NAV[c.template][0]?.id ?? '');
   }

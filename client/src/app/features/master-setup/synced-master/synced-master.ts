@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { TextField } from '../../../shared/components/form/text-field/text-field';
 import { MasterApiService, apiError } from '../../../core/services/master-api.service';
 import { SessionService } from '../../../core/auth/session.service';
+import { DataSourceService } from '../../../core/data-source/data-source.service';
 import { SyncedRow, SyncedType } from '../../../core/models/master.model';
 import { StatusBadge } from '../../../shared/components/status-badge/status-badge';
 import { TemplateTag } from '../../../shared/components/template-tag/template-tag';
@@ -24,8 +25,11 @@ export class SyncedMaster implements OnInit {
   private readonly api = inject(MasterApiService);
   private readonly notify = inject(NotifyService);
   private readonly session = inject(SessionService);
+  private readonly dataSource = inject(DataSourceService);
 
   readonly canSync = computed(() => this.session.canEdit('master'));
+  /** Tesla API: อ่านจาก PostgreSQL จริง · ปุ่ม Sync ยังไม่ต่อ (Sync จาก GIO ของ v1 ต้องใช้ SSO session) */
+  readonly fromTesla = computed(() => this.dataSource.source() === 'tesla');
 
   readonly types = signal<SyncedType[]>([]);
   readonly lastSync = signal<string | null>(null);

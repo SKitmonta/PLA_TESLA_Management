@@ -42,7 +42,9 @@ export class MasterMaintenance implements OnInit {
   private readonly notify = inject(NotifyService);
   private readonly session = inject(SessionService);
 
-  readonly canEdit = computed(() => this.session.canEdit('master'));
+  readonly roleCanEdit = computed(() => this.session.canEdit('master'));
+  /** Master แบบอ่านอย่างเดียว (Tesla API: MS-01 อ่านจาก M_CAMPAIGN_TYPE) → แก้ไม่ได้แม้เป็น System Admin */
+  readonly canEdit = computed(() => this.roleCanEdit() && !this.current()?.readOnly);
 
   readonly types = signal<CustomMasterType[]>([]);
   readonly current = signal<CustomMasterType | null>(null);

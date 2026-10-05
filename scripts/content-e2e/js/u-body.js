@@ -45,6 +45,8 @@ const result = json?.data?.result ?? json?.data ?? null;
 const out = {
   id: CASE.id, http: res.status, code: json?.status ?? null, message: json?.message ?? raw.slice(0, 160), ms,
   sentBytes: blob ? blob.size : 0,
+  // Thai detail the FE shows (F-03) — data.result.errors[0]
+  thai: json?.data?.result?.errors?.[0] ?? null,
 };
 if (result && result.publicUrl) {
   out.fileName = result.fileName; out.relativePath = result.relativePath; out.publicUrl = result.publicUrl;

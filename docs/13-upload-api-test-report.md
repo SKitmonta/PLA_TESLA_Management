@@ -9,7 +9,7 @@
 |---|---|
 | Upload API `POST /tesla-admin/api/v1/image/upload` | **41 กรณี — ผ่านทั้งหมด** (ปฏิเสธถูกต้อง 29 · บันทึกจริง + ดึงกลับ byte ตรง 12) |
 | กรอก Content ผ่านหน้า Editor + อัปโหลดจริง | **8/8 Content บันทึก Draft สำเร็จ** (CT000005 สร้าง Version 2) · อัปโหลดจริง 28 ไฟล์ · รูปหน้าจอทั้งหน้า 8 รูป (§5) |
-| ข้อสังเกต | 1 รายการ (F-07: ไฟล์เกินเพดาน multipart ได้ error ของ framework ไม่ใช่ envelope ของระบบ) |
+| ข้อสังเกต | F-07 (ไฟล์เกินเพดาน multipart) + F-03 (ข้อความอังกฤษ) — **แก้แล้ว 5 ต.ค. 22:00** (§7) |
 | Antivirus | ไม่เกิดซ้ำ — อัปโหลดทีละไฟล์ เว้น ≥ 20 วิ · `TeslaAdminApi.exe` (pid เดิมตั้งแต่ 16:13) ทำงานตลอด |
 
 ## 2. สภาพแวดล้อม / วิธีทดสอบ
@@ -102,3 +102,15 @@
 |---|---|---|---|
 | F-07 | ไฟล์เกินเพดาน multipart (11 MB) | `[RequestFormLimits]` ตัดก่อนเข้า Controller → ได้ 400 ProblemDetails ภาษาอังกฤษของ ASP.NET แทน 413 `TS_FILE_E_0002` · FE แสดงเป็น "อัปโหลดไม่สำเร็จ" ทั่วไป | ดัก `InvalidDataException` / ตั้ง filter ให้คืน 413 + MessageCode เดียวกัน (รวมกับ F-03 ข้อความภาษาไทย) |
 | — | ไฟล์ค้างต่างนามสกุล | อัปโหลดรูปใหม่คนละนามสกุล ไฟล์เก่ายังอยู่ (ไม่ถูกอ้างถึงแล้ว) | งานเก็บกวาด `uploads/` ภายหลัง (handoff §8 #12) |
+
+## 7. แก้ F-03 + F-07 (5 ต.ค. 22:00)
+
+| # | แก้อย่างไร | ผล |
+|---|---|---|
+| F-03 | `ImageController` ทุกจุดที่ตอบ error (32 จุด: upload + รูป Master KF/KA + ลบรูป) ส่ง **`data.result.errors` ภาษาไทย** บอกสาเหตุ (`Shared/Utilities/UploadErrorText.cs`) · รหัส / ข้อความกลางใน `M_MESSAGES` คงเดิม (ไม่แก้ข้อมูล DB · v1 ไม่กระทบ) · FE `upload.service.ts` แสดง `errors[0]` ก่อน | หน้า Editor: อัปโหลดไฟล์ปลอมชนิด → "เนื้อไฟล์ไม่ตรงกับชนิดไฟล์ (เช่น เปลี่ยนนามสกุลเอง) …" ([รูป](img/upload-api-test/upload-error-thai.png)) |
+| F-07 | `[RejectOversizedUpload]` (resource filter, `Shared/Filters/`) ตรวจ `Content-Length` ก่อนอ่านฟอร์ม → **413 `TS_FILE_E_0002` + ข้อความไทย** · อ่าน body ทิ้งก่อนตอบ (ไม่งั้น Chrome ตัดการเชื่อมต่อ → "Failed to fetch") · ใส่ทั้ง upload (11 MB) และรูป Master (6 MB) | U-07c: 400 ProblemDetails → **413 + "ไฟล์ใหญ่เกินกำหนด (ทั้งคำขอต้องไม่เกิน 11 MB …)"** |
+
+- ทดสอบซ้ำผ่าน browser **29/29** (เพิ่มเงื่อนไข: ทุกกรณีที่ถูกปฏิเสธต้องมีข้อความไทย) · unit test 658/658 (เพิ่ม 7)
+- พบระหว่างแก้: `AllowedImageExtensions` ใน config ซ้ำ 2 ชุด (binding ของ .NET ต่อ array ค่า default + appsettings) — ไม่กระทบการตรวจ · ข้อความใช้ `Distinct()` แล้ว
+- คำขอแบบ chunked (ไม่มี Content-Length) ยังได้ ProblemDetails เดิม — Browser / FE ส่ง Content-Length เสมอ
+

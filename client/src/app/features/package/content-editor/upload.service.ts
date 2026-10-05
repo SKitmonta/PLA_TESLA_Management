@@ -27,7 +27,8 @@ export interface UploadOptions {
 
 interface UploadEnvelope {
   message?: string;
-  data?: { result?: { publicUrl?: string } | null; publicUrl?: string } | null;
+  /** result.errors = รายละเอียดภาษาไทยจาก API (F-03) · message = ข้อความกลางภาษาอังกฤษจาก M_MESSAGES */
+  data?: { result?: { publicUrl?: string; errors?: string[] } | null; publicUrl?: string } | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -72,9 +73,11 @@ export class ContentUploadService {
 function uploadError(err: unknown): string {
   if (err instanceof HttpErrorResponse) {
     if (err.status === 0 || err.status === 502 || err.status === 504) return 'เชื่อมต่อ Tesla Admin API ไม่ได้ — ตรวจสอบว่า API (port 5277) ทำงานอยู่';
+    const env = err.error as UploadEnvelope | null;
+    const detail = env?.data?.result?.errors?.[0];
+    if (detail) return detail;
     if (err.status === 413) return 'ไฟล์ใหญ่เกินที่ API กำหนด';
-    const msg = (err.error as UploadEnvelope | null)?.message;
-    return msg ? `อัปโหลดไม่สำเร็จ: ${msg}` : 'อัปโหลดไม่สำเร็จ';
+    return env?.message ? `อัปโหลดไม่สำเร็จ: ${env.message}` : 'อัปโหลดไม่สำเร็จ';
   }
   return err instanceof Error ? err.message : 'อัปโหลดไม่สำเร็จ';
 }

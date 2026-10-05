@@ -45,7 +45,7 @@ CASES = [
     ("U-06c", "tc_doc Index = 11", dict(form=form(Kind="pdf", Slot="tc_doc", Index=11), file=PDF), 400, "TS_VAL_E_0001", False),
     ("U-07a", "รูป 5 MB + 1 byte", dict(form=form(), file=dict(make="padpng", name="big.png", type="image/png", total=5 * MB + 1)), 413, "TS_FILE_E_0002", False),
     ("U-07b", "PDF 10 MB + 1 byte", dict(form=form(Kind="pdf", Slot="tc_doc", Index=1), file=dict(make="pad", head="%PDF-1.4\n", name="big.pdf", type="application/pdf", total=10 * MB + 1)), 413, "TS_FILE_E_0002", False),
-    ("U-07c", "PDF 12 MB (เกินเพดาน multipart 11 MB)", dict(form=form(Kind="pdf", Slot="tc_doc", Index=1), file=dict(make="pad", head="%PDF-1.4\n", name="huge.pdf", type="application/pdf", total=12 * MB)), None, None, False),
+    ("U-07c", "PDF 12 MB (เกินเพดาน multipart 11 MB)", dict(form=form(Kind="pdf", Slot="tc_doc", Index=1), file=dict(make="pad", head="%PDF-1.4\n", name="huge.pdf", type="application/pdf", total=12 * MB)), 413, "TS_FILE_E_0002", False),
     ("U-08a", "นามสกุล .exe", dict(form=form(), file=dict(make="padpng", name="t.exe", type="image/png", total=64)), 415, "TS_FILE_E_0003", False),
     ("U-08b", "นามสกุล .txt", dict(form=form(), file=dict(make="text", text="hello", name="t.txt", type="text/plain")), 415, "TS_FILE_E_0003", False),
     ("U-09", "นามสกุล .png แต่ MIME text/plain", dict(form=form(), file=dict(make="padpng", name="t.png", type="text/plain", total=64)), 415, "TS_FILE_E_0003", False),
@@ -90,10 +90,12 @@ def main():
         ok = (exp_http is None or out.get("http") == exp_http) and (exp_code is None or out.get("code") == exp_code)
         if stores:
             ok = ok and out.get("fetch", {}).get("sameBytes") is True
+        else:
+            ok = ok and bool(out.get("thai"))   # every rejection carries a Thai detail (F-03 / F-07)
         out.update(desc=desc, expect=f"{exp_http} {exp_code}", pass_=ok)
         res[cid] = out
         RESULTS.write_text(json.dumps(res, ensure_ascii=False, indent=1), encoding="utf-8")
-        print(f"{'PASS' if ok else 'FAIL'} {cid} {desc} -> {out.get('http')} {out.get('code')} {out.get('fileName', '')} {out.get('fetch', '')} {'' if ok else out.get('message') or out}", flush=True)
+        print(f"{'PASS' if ok else 'FAIL'} {cid} {desc} -> {out.get('http')} {out.get('code')} {out.get('fileName', '')} {out.get('fetch', '')} {out.get('thai') or ''} {'' if ok else out.get('message') or out}", flush=True)
     print("DONE", flush=True)
 
 

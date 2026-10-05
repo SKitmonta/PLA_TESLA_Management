@@ -1,4 +1,4 @@
-# รายงานทดสอบ อนุมัติ / ตีกลับ Content ใน v2 (CT-06)
+# รายงานทดสอบ อนุมัติ / ตีกลับ — Content (CT-06) + Campaign (Suspend / เปิดใช้อีกครั้ง)
 
 > **วันที่:** 5 ต.ค. 2569 (21:20–21:25 เวลาไทย) · **ผู้ทดสอบ:** Claude (browser-use / Chrome headless + `cdp.py`) · API `run-api.ps1 -Mode DevWrite` (DEV PostgreSQL)
 
@@ -54,3 +54,49 @@
 | F-10 | สิทธิ์ตาม Role | API ตรวจ D-06 แต่ยังไม่ตรวจว่าเป็น Content Approver (ยังไม่มี role จาก UAM) · FE ซ่อนปุ่มตาม Role | ผูก role ของ UAM เมื่อเชื่อม SSO (G-07) |
 | — | Error 409 แทน 403 | กรณีอนุมัติงานตัวเองตอบ 409 (ไม่มี MessageCode สำหรับ 403 · ต้อง migration ตารางข้อความ) | เพิ่ม MessageCode ภายหลังถ้าต้องการ |
 | — | Campaign อนุมัติ / ตีกลับ / ระงับ | ยังไม่ทำ (handoff §8) | ทำแบบเดียวกัน |
+
+---
+
+# ส่วนที่ 2 — Campaign อนุมัติ / ตีกลับ / Suspend / เปิดใช้อีกครั้ง (5 ต.ค. 21:35–21:40)
+
+## 5. สรุป
+
+| รายการ | ผล |
+|---|---|
+| เส้นใหม่ใน Tesla Admin API v2 | `POST /campaign/{code}/approve` · `/reject` · `/suspend` · `/resume` |
+| Unit test (BE) | **651/651 ผ่าน** (เพิ่ม 30) |
+| ทดสอบผ่านหน้าจอ + API | **ผ่าน 9/9** (§7) |
+| ข้อมูลใหม่บน DEV | **CMP25690008** (DISCOUNT · ST000027 × CHN08 · 10/10–30/11) = อนุมัติแล้ว → Suspend → เปิดใช้อีกครั้ง (สถานะสุดท้าย Approved · รอเริ่ม) · **CMP25690009** (CASHBACK · ST000007 × CHN04) = ถูกตีกลับ |
+
+## 6. การตัดสินใจ (handoff 4 ต.ค. §8 ข้อ 3) — ทำแบบไม่ต้อง migration
+
+| ข้อ | ทำแบบนี้ | เหตุผล |
+|---|---|---|
+| (ก) อนุมัติ | `PENDING` → **`PUBLISHED` คลิกเดียว** · history APPROVE + PUBLISH · **ตรวจช่วงวันทับซ้อนอีกครั้ง** (อาจมี Campaign อื่นถูกอนุมัติหลังส่ง) | ตรงกับ Content และ FE (อนุมัติ = ใช้งาน) |
+| (ข) ห้ามอนุมัติงานตัวเอง | ผู้อนุมัติ ≠ ผู้สร้าง (`T_CAMPAIGN.CREATED_BY`) และ ≠ ผู้ส่งล่าสุด (history SUBMIT) → 409 · ตอน `Auth:Disabled` ผู้ใช้มาจาก `X-User-Id` | ปิดปัญหา "ทุกคน = SYSTEM" |
+| (ค) Suspend | `APPROVED`/`PUBLISHED` → v1 **`INACTIVE`** (history INACTIVE) · v2 แสดงเป็น **Suspended** | `T_CAMPAIGN` CHECK ไม่มีค่า `SUSPENDED` |
+| (ค) Resume | `INACTIVE` → `PUBLISHED` · history **PUBLISH (from INACTIVE)** → v2 แสดงเป็น RESUME · ตรวจช่วงวันทับซ้อน | history CHECK ไม่มี `RESUME` |
+| ตีกลับ | reuse v1 `ICampaignRepository.ChangeStatusAsync("REJECTED")` (→ DRAFT + history REJECT + เหตุผล) · เหตุผลบังคับ ≤ 500 | ใช้ของเดิม |
+
+⚠️ ผลข้างเคียง: Campaign ที่หน้าจอ v1 ตั้งเป็น `INACTIVE` จะแสดงใน v2 เป็น Suspended (เปิดใช้อีกครั้งได้) — ถ้าต้องแยก "ปิดถาวร" กับ "หยุดชั่วคราว" ต้องเพิ่มค่า `SUSPENDED` ใน CHECK (migration + DBA review)
+
+## 7. ผลทดสอบ
+
+| # | กรณี | ผู้ใช้ | ผลที่ได้ | ผล |
+|---|---|---|---|---|
+| G-01 | อนุมัติงานตัวเอง (CMP25690008 สร้าง/ส่งโดย U002) | U002 | 409 "…ผู้อนุมัติต้องไม่ใช่ผู้สร้าง / ผู้ส่ง" | ✅ |
+| G-02 | ตีกลับไม่ใส่เหตุผล | U003 | 400 "กรุณาระบุเหตุผลที่ตีกลับ" | ✅ |
+| G-03 | Suspend Campaign ที่รออนุมัติ | U002 | 409 | ✅ |
+| G-04 | เปิดใช้อีกครั้ง Campaign ที่ไม่ได้ Suspend | U002 | 409 | ✅ |
+| G-05 | อนุมัติ Draft (CMP25690004) | U003 | 409 "อนุมัติได้เฉพาะ Campaign ที่รออนุมัติ" | ✅ |
+| UI-C1 | **อนุมัติ** CMP25690008 (ปุ่ม "อนุมัติ" หน้ารายละเอียด) | U003 Campaign Approver | Toast "อนุมัติแล้ว … Approved · รอเริ่ม" · ผู้อนุมัติ U003 · ประวัติ APPROVE | ✅ |
+| UI-C2 | **ตีกลับ** CMP25690009 (dialog ใส่เหตุผล) | U003 | Toast "ตีกลับแล้ว … Draft" · สถานะ REJECTED + เหตุผล · ประวัติ REJECT + เหตุผล | ✅ |
+| UI-C3 | **Suspend** CMP25690008 | U002 Campaign Maker | Toast "หยุดชั่วคราวแล้ว … Suspended" · ปุ่มเปลี่ยนเป็น "เปิดใช้อีกครั้ง" · ประวัติ SUSPEND | ✅ |
+| UI-C4 | **เปิดใช้อีกครั้ง** CMP25690008 | U002 | Toast "เปิดใช้อีกครั้งแล้ว … Approved · รอเริ่ม" · ปุ่ม Suspend กลับมา · ประวัติ RESUME | ✅ |
+
+รูป: [04 รออนุมัติ](img/approval/04-campaign-pending.png) · [05 อนุมัติแล้ว](img/approval/05-campaign-approved.png) · [06 ตีกลับ](img/approval/06-campaign-rejected.png) · [07 Suspended](img/approval/07-campaign-suspended.png) · [08 เปิดใช้อีกครั้ง](img/approval/08-campaign-resumed.png)
+
+## 8. ยังไม่ทำ / ข้อสังเกต
+
+- **จอง stock ตอนอนุมัติ** (Voucher MS-10 / ของรางวัล MS-16 — gap plan T3.4): ยังไม่ทำ (Mock ก็ไม่จอง) · ตอนนี้ตรวจ stock คงเหลือตอน Submit เท่านั้น
+- เวลาในประวัติเป็น UTC (F-08 เดิม) · API ยังไม่ตรวจ Role (F-10 เดิม) · "สร้าง Version ใหม่" ของ Campaign ยังไม่มี (ปุ่มถูกปิดไว้)

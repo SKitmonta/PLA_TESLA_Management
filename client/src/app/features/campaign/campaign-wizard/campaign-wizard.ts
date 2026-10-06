@@ -32,6 +32,7 @@ const BADGE: Record<CampaignDisplayStatus, [StatusKind, string]> = {
   DRAFT: ['draft', 'Draft'],
   EXPIRED: ['inactive', 'Expired'],
   SUSPENDED: ['inactive', 'Suspended'],
+  CLOSED: ['inactive', 'Closed'],
   INACTIVE: ['inactive', 'Inactive'],
 };
 

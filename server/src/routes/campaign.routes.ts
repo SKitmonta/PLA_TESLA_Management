@@ -12,6 +12,7 @@
  *   POST /:code/approve     อนุมัติ (Campaign Approver · ต้องไม่ใช่ผู้สร้าง)
  *   POST /:code/reject      ตีกลับ { reason } (Campaign Approver · ต้องไม่ใช่ผู้สร้าง)
  *   POST /:code/suspend     หยุดชั่วคราว / POST /:code/resume เปิดใช้อีกครั้ง (Campaign Maker)
+ *   POST /:code/close       ปิดถาวร + เหตุผล (Campaign Maker)
  * ถัดไป: Version ใหม่ของ Campaign ที่อนุมัติแล้ว, รับผลพิจารณากรมธรรม์ผ่าน API (นอกขอบเขตรอบนี้)
  */
 import { Router } from 'express';
@@ -23,6 +24,7 @@ import {
   findOverlaps,
   rejectCampaign,
   suspendCampaign,
+  closeCampaign,
   type OverlapQuery,
   createCampaign,
   getCampaign,
@@ -85,4 +87,8 @@ campaignRoutes.post('/:code/suspend', requireRole('CAMPAIGN_MAKER'), (req, res) 
 
 campaignRoutes.post('/:code/resume', requireRole('CAMPAIGN_MAKER'), (req, res) => {
   res.json(suspendCampaign(req.params.code, false, req.actor.userId));
+});
+
+campaignRoutes.post('/:code/close', requireRole('CAMPAIGN_MAKER'), (req, res) => {
+  res.json(closeCampaign(req.params.code, (req.body ?? {}).reason, req.actor.userId));
 });

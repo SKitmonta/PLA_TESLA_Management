@@ -3,6 +3,7 @@
  *   สรุปสิทธิ์ (Grant) 6 สถานะ · งบประมาณ & โควตา · รายการสิทธิ์ (Export) · รายละเอียดทุกขั้น · ประวัติอนุมัติ
  *   Campaign Approver: อนุมัติ / ตีกลับ (ต้องไม่ใช่ผู้สร้าง — Server ตรวจซ้ำ) เมื่อสถานะ Pending
  *   Campaign Maker: แก้ไข (Draft / ตีกลับ) · Suspend / เปิดใช้อีกครั้ง (Approved)
+ *     · ปิดถาวร (Approved / Suspended) — กรอกจำนวนที่แจกจริง ส่วนที่เหลือคืนเข้า Stock
  */
 import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -14,6 +15,7 @@ import { MessageModule } from 'primeng/message';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { NumberField } from '../../../shared/components/form/number-field/number-field';
 import { TextareaField } from '../../../shared/components/form/textarea-field/textarea-field';
 import { StatusBadge, StatusKind } from '../../../shared/components/status-badge/status-badge';
 import { ThDatePipe } from '../../../shared/pipes/th-date.pipe';
@@ -33,6 +35,7 @@ const BADGE: Record<CampaignDisplayStatus, [StatusKind, string]> = {
   DRAFT: ['draft', 'Draft'],
   EXPIRED: ['inactive', 'Expired'],
   SUSPENDED: ['inactive', 'Suspended'],
+  CLOSED: ['inactive', 'Closed'],
   INACTIVE: ['inactive', 'Inactive'],
 };
 
@@ -52,6 +55,7 @@ const ACTION_TEXT: Record<ApprovalLog['action'], string> = {
   REJECT: 'ตีกลับ',
   SUSPEND: 'หยุดชั่วคราว',
   RESUME: 'เปิดใช้อีกครั้ง',
+  CLOSE: 'ปิดถาวร',
 };
 
 @Component({
@@ -66,6 +70,7 @@ const ACTION_TEXT: Record<ApprovalLog['action'], string> = {
     ProgressBarModule,
     TagModule,
     TooltipModule,
+    NumberField,
     TextareaField,
     StatusBadge,
     ThDatePipe,
@@ -93,6 +98,11 @@ export class CampaignDetailPage implements OnInit {
   readonly rejectOpen = signal(false);
   rejectReason = '';
 
+  readonly closeOpen = signal(false);
+  closeReason = '';
+  /** จำนวนที่แจกจริง — signal เพื่อคำนวณ "คืน Stock" ในกล่องทันที */
+  readonly delivered = signal<number | null>(null);
+
   readonly icon = TYPE_ICON;
   readonly grantMeta = GRANT_META;
   readonly grantOrder: GrantStatus[] = ['RESERVED', 'CONFIRMED', 'FULFILLED', 'RELEASED', 'CLAWED_BACK', 'NOT_GRANTED'];
@@ -102,6 +112,18 @@ export class CampaignDetailPage implements OnInit {
   readonly isApprover = computed(() => this.session.canApprove('campaign'));
   /** อนุมัติงานตัวเองไม่ได้ (D-06) */
   readonly ownWork = computed(() => this.detail()?.createdBy === this.session.user()?.userId);
+
+  /** Stock ที่ยังจองค้างอยู่ (ยังไม่ได้ปิด) — ต้องกรอกจำนวนที่แจกจริงตอนปิด */
+  readonly heldStock = computed(() => {
+    const s = this.detail()?.stock;
+    return s && s.releasedQty === null ? s : null;
+  });
+  /** จำนวนที่จะคืนเข้า Stock ตามที่กรอก (null = ยังกรอกไม่ถูก) */
+  readonly releasing = computed(() => {
+    const s = this.heldStock();
+    const d = this.delivered();
+    return s && d !== null && d >= 0 && d <= s.qty && Number.isInteger(d) ? s.qty - d : null;
+  });
 
   /** ข้อมูลในรูปแบบฟอร์ม Wizard — ใช้แสดงรายละเอียดทุกขั้น (StepReview แบบอ่านอย่างเดียว) */
   readonly form = computed<CampaignForm | null>(() => {
@@ -204,6 +226,35 @@ export class CampaignDetailPage implements OnInit {
     this.api.suspend(c.campaignCode, on).subscribe({
       next: (r) => this.done(r, on ? 'หยุดชั่วคราวแล้ว' : 'เปิดใช้อีกครั้งแล้ว'),
       error: (e) => this.fail(e, on ? 'Suspend ไม่สำเร็จ' : 'เปิดใช้ไม่สำเร็จ'),
+    });
+  }
+
+  openClose(): void {
+    this.closeReason = '';
+    this.delivered.set(null);
+    this.closeOpen.set(true);
+  }
+
+  close(): void {
+    const c = this.detail();
+    if (!c || this.busy()) return;
+    if (!this.closeReason.trim()) {
+      this.notify.warn('กรุณาระบุเหตุผลที่ปิด Campaign');
+      return;
+    }
+    const s = this.heldStock();
+    if (s && this.releasing() === null) {
+      this.notify.warn(`กรุณาระบุจำนวนที่แจกจริงเป็นจำนวนเต็ม 0 – ${s.qty}`);
+      return;
+    }
+    this.busy.set('close');
+    this.api.close(c.campaignCode, this.closeReason, s ? this.delivered() : null).subscribe({
+      next: (r) => {
+        this.closeOpen.set(false);
+        const back = r.stock?.releasedQty;
+        this.done(r, back != null ? `ปิด Campaign แล้ว · คืน Stock ${r.stock!.itemCode} × ${back}` : 'ปิด Campaign แล้ว');
+      },
+      error: (e) => this.fail(e, 'ปิด Campaign ไม่สำเร็จ'),
     });
   }
 

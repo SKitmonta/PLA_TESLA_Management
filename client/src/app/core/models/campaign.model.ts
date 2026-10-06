@@ -4,7 +4,7 @@
  */
 
 /** สถานะบนหน้าจอ — APPROVED แยกเป็น Scheduled (ยังไม่ถึงวันเริ่ม) / Active / Expired ตามวันที่ */
-export type CampaignDisplayStatus = 'ACTIVE' | 'SCHEDULED' | 'PENDING' | 'DRAFT' | 'EXPIRED' | 'SUSPENDED' | 'INACTIVE';
+export type CampaignDisplayStatus = 'ACTIVE' | 'SCHEDULED' | 'PENDING' | 'DRAFT' | 'EXPIRED' | 'SUSPENDED' | 'CLOSED' | 'INACTIVE';
 
 export type CampaignTypeCode =
   | 'VOUCHER'
@@ -24,7 +24,7 @@ export interface CampaignRow {
   typeNameEn: string | null;
   nameTh: string;
   nameEn: string | null;
-  status: 'DRAFT' | 'REJECTED' | 'PENDING' | 'APPROVED' | 'SUSPENDED' | 'INACTIVE';
+  status: 'DRAFT' | 'REJECTED' | 'PENDING' | 'APPROVED' | 'SUSPENDED' | 'CLOSED' | 'INACTIVE';
   displayStatus: CampaignDisplayStatus;
   versionNo: number;
   startDate: string | null;
@@ -77,6 +77,19 @@ export interface CampaignRule {
 
 export interface CampaignDetail extends CampaignRow {
   data: CampaignData;
+  /** Stock ที่จองไว้ตอนอนุมัติ (Voucher MS-10 / ของขวัญ MS-16) — null = ไม่ได้จอง */
+  stock?: CampaignStock | null;
+  /** ปิด Campaign ถาวรแล้ว */
+  closed?: { closedAt: string; closedBy: string | null; reason: string | null } | null;
+}
+
+/** deliveredQty / releasedQty = null ระหว่างที่ยังจองอยู่ · ได้ค่าเมื่อปิด Campaign */
+export interface CampaignStock {
+  typeCode: string;
+  itemCode: string;
+  qty: number;
+  deliveredQty: number | null;
+  releasedQty: number | null;
 }
 
 export interface CampaignListQuery {
@@ -161,7 +174,7 @@ export interface CampaignGrantSummary {
 }
 
 export interface ApprovalLog {
-  action: 'SUBMIT' | 'APPROVE' | 'REJECT' | 'SUSPEND' | 'RESUME';
+  action: 'SUBMIT' | 'APPROVE' | 'REJECT' | 'SUSPEND' | 'RESUME' | 'CLOSE';
   versionNo: number;
   reason: string | null;
   actorName: string | null;

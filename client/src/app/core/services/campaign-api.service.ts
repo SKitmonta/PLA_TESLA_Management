@@ -76,4 +76,9 @@ export class CampaignApiService {
   suspend(code: string, suspend: boolean): Observable<CampaignDetail> {
     return this.http.post<CampaignDetail>(`${this.base}/${encodeURIComponent(code)}/${suspend ? 'suspend' : 'resume'}`, {});
   }
+
+  /** ปิดถาวร — deliveredQty = จำนวนที่แจกจริง (เฉพาะ Campaign ที่จอง Stock) · ส่วนที่เหลือคืนเข้า Stock */
+  close(code: string, reason: string, deliveredQty: number | null): Observable<CampaignDetail> {
+    return this.http.post<CampaignDetail>(`${this.base}/${encodeURIComponent(code)}/close`, { reason, deliveredQty });
+  }
 }

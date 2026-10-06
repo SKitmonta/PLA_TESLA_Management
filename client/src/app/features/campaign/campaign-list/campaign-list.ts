@@ -40,6 +40,7 @@ const BADGE: Record<CampaignDisplayStatus, [StatusKind, string]> = {
   DRAFT: ['draft', 'Draft'],
   EXPIRED: ['inactive', 'Expired'],
   SUSPENDED: ['inactive', 'Suspended'],
+  CLOSED: ['inactive', 'Closed'],
   INACTIVE: ['inactive', 'Inactive'],
 };
 
@@ -85,7 +86,7 @@ export class CampaignList implements OnInit {
     { value: 'PENDING', label: 'Pending' },
     { value: 'DRAFT', label: 'Draft' },
     { value: 'EXPIRING', label: 'หมดอายุใน 7 วัน' },
-    { value: 'ENDED', label: 'Inactive / Expired / Suspended' },
+    { value: 'ENDED', label: 'Inactive / Expired / Suspended / Closed' },
   ];
 
   /** หัวตาราง (sort = คอลัมน์ที่เรียงได้) */

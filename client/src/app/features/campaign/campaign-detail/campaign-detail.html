@@ -32,6 +32,7 @@
           <p-button label="เปิดใช้อีกครั้ง" icon="pi pi-play" [outlined]="true" styleClass="hdr-btn" [loading]="busy() === 'suspend'" (onClick)="suspend(false)" />
         }
         @if (c.status === 'APPROVED' || c.status === 'SUSPENDED') {
+          <p-button label="ปิดถาวร" icon="pi pi-ban" [outlined]="true" severity="danger" styleClass="hdr-btn" [disabled]="!!busy()" (onClick)="openClose()" />
           <p-button label="สร้าง Version ใหม่" icon="pi pi-pencil" [outlined]="true" styleClass="hdr-btn" [disabled]="true" pTooltip="แก้ Campaign ที่อนุมัติแล้วต้องออก Version ใหม่ — ทำในขั้นถัดไป" />
         }
       }
@@ -40,6 +41,16 @@
 
   @if (c.status === 'REJECTED' && c.rejectReason) {
     <p-message severity="error" icon="pi pi-times-circle" styleClass="msg">ตีกลับ: {{ c.rejectReason }}</p-message>
+  }
+  @if (c.displayStatus === 'EXPIRED' && heldStock(); as s) {
+    <p-message severity="warn" icon="pi pi-box" styleClass="msg">
+      หมดอายุแล้ว แต่ยังจอง Stock {{ s.itemCode }} ไว้ {{ s.qty | number }} — กด "ปิดถาวร" แล้วกรอกจำนวนที่แจกจริง เพื่อคืนส่วนที่เหลือเข้า Stock
+    </p-message>
+  }
+  @if (c.closed; as x) {
+    <p-message severity="secondary" icon="pi pi-ban" styleClass="msg">
+      ปิดถาวรแล้ว โดย {{ x.closedBy ?? '–' }} · {{ x.closedAt | thDate: '–' : true }} · เหตุผล: {{ x.reason ?? '–' }}
+    </p-message>
   }
   @if (c.status === 'PENDING') {
     <p-message severity="warn" icon="pi pi-clock" styleClass="msg">
@@ -142,6 +153,21 @@
     </p-message>
   }
 
+  @if (c.stock; as s) {
+    <section class="card">
+      <h2>Stock ที่จองไว้</h2>
+      <div class="stock">
+        <div><span>รายการ</span><b>{{ s.itemCode }}</b><small>Master {{ s.typeCode }}</small></div>
+        <div><span>จองตอนอนุมัติ</span><b>{{ s.qty | number }}</b></div>
+        <div><span>แจกจริง</span><b>{{ s.deliveredQty === null ? '–' : (s.deliveredQty | number) }}</b></div>
+        <div><span>คืนเข้า Stock</span><b>{{ s.releasedQty === null ? '–' : (s.releasedQty | number) }}</b></div>
+      </div>
+      <p class="hint">
+        {{ s.releasedQty === null ? 'ยังจองอยู่ — คืนส่วนที่ไม่ได้แจกเมื่อกด "ปิดถาวร"' : 'ปิดแล้ว — ย้ายจำนวนที่แจกจริงไปช่อง "ส่งแล้ว" ของ Master และคืนส่วนที่เหลือแล้ว' }}
+      </p>
+    </section>
+  }
+
   <!-- รายละเอียดทุกขั้น (อ่านอย่างเดียว) -->
   <h2 class="section-title">รายละเอียด Campaign</h2>
   @if (lookup.ready() && form(); as f) {
@@ -159,7 +185,7 @@
       </li>
       @for (h of history(); track $index) {
         <li [class]="'act-' + h.action.toLowerCase()">
-          <i [class]="h.action === 'APPROVE' ? 'pi pi-check-circle' : h.action === 'REJECT' ? 'pi pi-times-circle' : 'pi pi-circle'"></i>
+          <i [class]="h.action === 'APPROVE' ? 'pi pi-check-circle' : h.action === 'REJECT' ? 'pi pi-times-circle' : h.action === 'CLOSE' ? 'pi pi-ban' : 'pi pi-circle'"></i>
           <span>
             <b>{{ actionText[h.action] }}</b> (v{{ h.versionNo }}) โดย {{ h.actorName ?? '–' }} · {{ h.createdAt | thDate: '–' : true }}
             @if (h.reason) {
@@ -177,6 +203,28 @@
     <ng-template #footer>
       <p-button label="ยกเลิก" [outlined]="true" severity="secondary" (onClick)="rejectOpen.set(false)" />
       <p-button label="ตีกลับ" icon="pi pi-times" severity="danger" [loading]="busy() === 'reject'" (onClick)="reject()" />
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog header="ปิด Campaign ถาวร" [modal]="true" [visible]="closeOpen()" (visibleChange)="closeOpen.set($event)" [style]="{ width: '560px' }" [draggable]="false">
+    <p class="dlg-note">ปิดแล้วเปิดใช้อีกไม่ได้ — กรมธรรม์ใหม่จะไม่ได้รับสิทธิ์ ส่วนสิทธิ์ที่ให้ไปแล้วยังอยู่</p>
+    @if (heldStock(); as s) {
+      <p class="dlg-note">
+        Campaign นี้จอง <b>{{ s.itemCode }}</b> ไว้ <b>{{ s.qty | number }}</b> — กรอกจำนวนที่แจกให้ลูกค้าจริง ระบบจะบันทึกเป็น "ส่งแล้ว" และคืนส่วนที่เหลือเข้า Stock
+      </p>
+      <app-number-field label="จำนวนที่แจกจริง" [required]="true" [min]="0" [max]="s.qty" [ngModel]="delivered()" (ngModelChange)="delivered.set($event)" />
+      <p class="dlg-calc">
+        @if (releasing() !== null) {
+          จอง {{ s.qty | number }} − แจกจริง {{ delivered() | number }} = <b>คืนเข้า Stock {{ releasing() | number }}</b>
+        } @else {
+          ใส่จำนวนเต็ม 0 – {{ s.qty | number }}
+        }
+      </p>
+    }
+    <app-textarea-field label="เหตุผลที่ปิด" [required]="true" [rows]="3" [maxlength]="500" [(ngModel)]="closeReason" />
+    <ng-template #footer>
+      <p-button label="ยกเลิก" [outlined]="true" severity="secondary" (onClick)="closeOpen.set(false)" />
+      <p-button label="ปิดถาวร" icon="pi pi-ban" severity="danger" [loading]="busy() === 'close'" (onClick)="close()" />
     </ng-template>
   </p-dialog>
 } @else if (error()) {

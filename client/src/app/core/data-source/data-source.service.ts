@@ -33,7 +33,7 @@ const SYNCED = 'Master ที่ Sync (MS-04) — ตาราง Master ขอ�
 const CUSTOM = 'Master ที่สร้างเอง (MS-02) — M_CUSTOM_MASTER_* (V036) · MS-01 จาก M_CAMPAIGN_TYPE';
 const MAPPING = 'Mapping ข้อความแสดงผล (MS-03) — M_DISPLAY_MAPPING (V037) · ใช้ใน Package detail / Content Editor';
 const CAMPAIGN = 'Campaign — รายการ + Add Campaign (บันทึกร่าง / ส่งอนุมัติ) · ตาราง T_CAMPAIGN ของ v1';
-const CAMPAIGN_REVIEW = 'Campaign — อนุมัติ (= ขึ้นใช้งาน) / ตีกลับ / Suspend / เปิดใช้อีกครั้ง';
+const CAMPAIGN_REVIEW = 'Campaign — อนุมัติ (= ขึ้นใช้งาน + จอง Stock) / ตีกลับ / Suspend / เปิดใช้อีกครั้ง / ปิดถาวร (คืน Stock)';
 const KEY_TOPIC = 'หัวข้อ Key Features / Key Advantages — M_MARKETING_KEY_TOPIC · เส้น v1 เดิม';
 const CHANNEL_PACKAGES = 'Package recommend (OL_OB) — Package ที่ขายในช่องทางเดียวกัน · เส้น v1 เดิม';
 const CONTENT_MASTER = 'หมวดสินค้า + Tag Filter (OL_OB) — Insurance / Coverage types, Feature tags · เส้น v1 เดิม';
@@ -73,6 +73,7 @@ export const TESLA_ROUTES: TeslaRoute[] = [
   { method: 'POST', path: /^\/api\/campaign\/([^/]+)\/reject$/, target: `${TESLA_API_BASE}/campaign/$1/reject`, label: CAMPAIGN_REVIEW },
   { method: 'POST', path: /^\/api\/campaign\/([^/]+)\/suspend$/, target: `${TESLA_API_BASE}/campaign/$1/suspend`, label: CAMPAIGN_REVIEW },
   { method: 'POST', path: /^\/api\/campaign\/([^/]+)\/resume$/, target: `${TESLA_API_BASE}/campaign/$1/resume`, label: CAMPAIGN_REVIEW },
+  { method: 'POST', path: /^\/api\/campaign\/([^/]+)\/close$/, target: `${TESLA_API_BASE}/campaign/$1/close`, label: CAMPAIGN_REVIEW },
   { method: 'GET', path: /^\/api\/content\/([^/]+)$/, target: `${TESLA_API_BASE}/content/$1`, label: EDITOR },
   { method: 'PUT', path: /^\/api\/content\/([^/]+)$/, target: `${TESLA_API_BASE}/content/$1`, label: EDITOR },
   { method: 'POST', path: /^\/api\/content\/([^/]+)\/submit$/, target: `${TESLA_API_BASE}/content/$1/submit`, label: EDITOR },

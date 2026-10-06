@@ -23,14 +23,14 @@ export const TYPE_ABBR: Record<string, string> = {
   LUCKY_DRAW: 'LKD',
 };
 
-export type CampaignDisplayStatus = 'ACTIVE' | 'SCHEDULED' | 'PENDING' | 'DRAFT' | 'EXPIRED' | 'SUSPENDED' | 'INACTIVE';
+export type CampaignDisplayStatus = 'ACTIVE' | 'SCHEDULED' | 'PENDING' | 'DRAFT' | 'EXPIRED' | 'SUSPENDED' | 'CLOSED' | 'INACTIVE';
 
 const TODAY_SQL = "date('now', 'localtime')";
 const DISPLAY_SQL = `CASE c.status
   WHEN 'APPROVED' THEN CASE WHEN c.start_date > ${TODAY_SQL} THEN 'SCHEDULED'
                             WHEN c.end_date IS NOT NULL AND c.end_date < ${TODAY_SQL} THEN 'EXPIRED'
                             ELSE 'ACTIVE' END
-  WHEN 'PENDING' THEN 'PENDING' WHEN 'SUSPENDED' THEN 'SUSPENDED' WHEN 'INACTIVE' THEN 'INACTIVE'
+  WHEN 'PENDING' THEN 'PENDING' WHEN 'SUSPENDED' THEN 'SUSPENDED' WHEN 'CLOSED' THEN 'CLOSED' WHEN 'INACTIVE' THEN 'INACTIVE'
   ELSE 'DRAFT' END`;
 
 const BASE_SELECT = `
@@ -166,14 +166,14 @@ export function listCampaigns(q: CampaignListQuery) {
     scheduled: count('SCHEDULED'),
     pending: count('PENDING'),
     draft: count('DRAFT'),
-    ended: count('EXPIRED', 'SUSPENDED', 'INACTIVE'),
+    ended: count('EXPIRED', 'SUSPENDED', 'CLOSED', 'INACTIVE'),
   };
 
   let statusSql = '';
   if (q.status === 'EXPIRING') {
     statusSql = `${whereSql ? ' AND' : 'WHERE'} ${DISPLAY_SQL} = 'ACTIVE' AND c.end_date IS NOT NULL AND c.end_date <= date('now', 'localtime', '+7 days')`;
   } else if (q.status === 'ENDED') {
-    statusSql = `${whereSql ? ' AND' : 'WHERE'} ${DISPLAY_SQL} IN ('EXPIRED','SUSPENDED','INACTIVE')`;
+    statusSql = `${whereSql ? ' AND' : 'WHERE'} ${DISPLAY_SQL} IN ('EXPIRED','SUSPENDED','CLOSED','INACTIVE')`;
   } else if (q.status) {
     statusSql = `${whereSql ? ' AND' : 'WHERE'} ${DISPLAY_SQL} = ?`;
     params.push(q.status);
@@ -617,6 +617,20 @@ export function suspendCampaign(code: string, suspend: boolean, userId: string) 
     .prepare("UPDATE campaign SET status = ?, updated_at = datetime('now', 'localtime') WHERE campaign_code = ?")
     .run(suspend ? 'SUSPENDED' : 'APPROVED', code);
   log(code, c.versionNo, suspend ? 'SUSPEND' : 'RESUME', null, userId);
+  return getCampaign(code);
+}
+
+/** ปิดถาวร (Approved / Suspended) — Mock ไม่มี Stock จึงรับแค่เหตุผล (Tesla API คืน Stock ด้วย) */
+export function closeCampaign(code: string, reason: unknown, userId: string) {
+  const c = getCampaign(code);
+  if (c.status !== 'APPROVED' && c.status !== 'SUSPENDED')
+    throw new AppError(409, `ปิด Campaign ได้เฉพาะสถานะ Approved / Suspended (ตอนนี้เป็น ${c.displayStatus})`, 'INVALID_STATUS');
+  const text = String(reason ?? '').trim();
+  if (!text) throw new AppError(400, 'กรุณาระบุเหตุผลที่ปิด Campaign', 'VALIDATION');
+  getDb()
+    .prepare("UPDATE campaign SET status = 'CLOSED', updated_at = datetime('now', 'localtime') WHERE campaign_code = ?")
+    .run(code);
+  log(code, c.versionNo, 'CLOSE', text, userId);
   return getCampaign(code);
 }
 

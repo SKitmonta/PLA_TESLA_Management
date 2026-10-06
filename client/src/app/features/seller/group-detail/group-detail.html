@@ -69,7 +69,7 @@
                     <td class="nowrap">{{ m.sellerName }}</td>
                     <td class="nowrap">{{ typeLabel[m.sellerType] }}</td>
                     <td class="nowrap">{{ m.branch ?? '–' }}</td>
-                    <td class="nowrap">{{ m.licenseNo ?? 'ไม่ต้องมี' }}</td>
+                    <td class="nowrap">{{ m.licenseNo ?? (m.sellerType === 'AGENT' ? (m.licenseExpiry ? 'มี (ไม่เก็บเลขที่ · PDPA)' : 'ไม่พบ') : 'ไม่ต้องมี') }}</td>
                     <td class="nowrap">{{ m.licenseExpiry | thDate: '–' }}</td>
                     <td class="nowrap">
                       <p-tag [value]="readiness(m).text" [severity]="readiness(m).tone === 'ok' ? 'success' : readiness(m).tone === 'warn' ? 'warn' : 'danger'" />

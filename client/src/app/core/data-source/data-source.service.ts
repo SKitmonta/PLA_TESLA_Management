@@ -34,6 +34,8 @@ const CUSTOM = 'Master ที่สร้างเอง (MS-02) — M_CUSTOM_MA
 const MAPPING = 'Mapping ข้อความแสดงผล (MS-03) — M_DISPLAY_MAPPING (V037) · ใช้ใน Package detail / Content Editor';
 const CAMPAIGN = 'Campaign — รายการ + Add Campaign (บันทึกร่าง / ส่งอนุมัติ) · ตาราง T_CAMPAIGN ของ v1';
 const CAMPAIGN_TYPES = 'ประเภท Campaign (MS-01) — M_CAMPAIGN_TYPE ในรหัสฝั่ง FE + ประเภทสิทธิ์ (การ์ด Wizard ขั้น 1 · ตัวกรองรายการ)';
+const SELLER = 'Seller — Workspace / จัดกลุ่มผู้ขาย / ผูก Campaign · ผู้ขายจาก M_AGENT (Porsche) · กลุ่ม V038';
+const SELLER_TOOLS = 'Seller — Referral links / คัดลอกกลุ่ม / Import / Audit log';
 const CAMPAIGN_REVIEW = 'Campaign — อนุมัติ (= ขึ้นใช้งาน + จอง Stock) / ตีกลับ / Suspend / เปิดใช้อีกครั้ง / ปิดถาวร (คืน Stock)';
 const KEY_TOPIC = 'หัวข้อ Key Features / Key Advantages — M_MARKETING_KEY_TOPIC · เส้น v1 เดิม';
 const CHANNEL_PACKAGES = 'Package recommend (OL_OB) — Package ที่ขายในช่องทางเดียวกัน · เส้น v1 เดิม';
@@ -76,6 +78,20 @@ export const TESLA_ROUTES: TeslaRoute[] = [
   { method: 'POST', path: /^\/api\/campaign\/([^/]+)\/suspend$/, target: `${TESLA_API_BASE}/campaign/$1/suspend`, label: CAMPAIGN_REVIEW },
   { method: 'POST', path: /^\/api\/campaign\/([^/]+)\/resume$/, target: `${TESLA_API_BASE}/campaign/$1/resume`, label: CAMPAIGN_REVIEW },
   { method: 'POST', path: /^\/api\/campaign\/([^/]+)\/close$/, target: `${TESLA_API_BASE}/campaign/$1/close`, label: CAMPAIGN_REVIEW },
+  { method: 'GET', path: /^\/api\/people\/workspaces$/, target: `${TESLA_API_BASE}/people/workspaces`, label: SELLER },
+  { method: 'GET', path: /^\/api\/people\/workspaces\/([^/]+)\/([^/]+)$/, target: `${TESLA_API_BASE}/people/workspaces/$1/$2`, label: SELLER },
+  { method: 'POST', path: /^\/api\/people\/workspaces\/([^/]+)\/([^/]+)\/groups$/, target: `${TESLA_API_BASE}/people/workspaces/$1/$2/groups`, label: SELLER },
+  { method: 'POST', path: /^\/api\/people\/workspaces\/([^/]+)\/([^/]+)\/move$/, target: `${TESLA_API_BASE}/people/workspaces/$1/$2/move`, label: SELLER },
+  { method: 'POST', path: /^\/api\/people\/workspaces\/([^/]+)\/([^/]+)\/import$/, target: `${TESLA_API_BASE}/people/workspaces/$1/$2/import`, label: SELLER_TOOLS },
+  { method: 'GET', path: /^\/api\/people\/groups\/(\d+)$/, target: `${TESLA_API_BASE}/people/groups/$1`, label: SELLER },
+  { method: 'PUT', path: /^\/api\/people\/groups\/(\d+)$/, target: `${TESLA_API_BASE}/people/groups/$1`, label: SELLER },
+  { method: 'DELETE', path: /^\/api\/people\/groups\/(\d+)$/, target: `${TESLA_API_BASE}/people/groups/$1`, label: SELLER },
+  { method: 'POST', path: /^\/api\/people\/groups\/(\d+)\/campaigns$/, target: `${TESLA_API_BASE}/people/groups/$1/campaigns`, label: SELLER },
+  { method: 'DELETE', path: /^\/api\/people\/groups\/(\d+)\/campaigns\/([^/]+)$/, target: `${TESLA_API_BASE}/people/groups/$1/campaigns/$2`, label: SELLER },
+  { method: 'GET', path: /^\/api\/people\/referrals$/, target: `${TESLA_API_BASE}/people/referrals`, label: SELLER_TOOLS },
+  { method: 'GET', path: /^\/api\/people\/referrals\/([^/]+)$/, target: `${TESLA_API_BASE}/people/referrals/$1`, label: SELLER_TOOLS },
+  { method: 'POST', path: /^\/api\/people\/copy$/, target: `${TESLA_API_BASE}/people/copy`, label: SELLER_TOOLS },
+  { method: 'GET', path: /^\/api\/people\/audit$/, target: `${TESLA_API_BASE}/people/audit`, label: SELLER_TOOLS },
   { method: 'GET', path: /^\/api\/content\/([^/]+)$/, target: `${TESLA_API_BASE}/content/$1`, label: EDITOR },
   { method: 'PUT', path: /^\/api\/content\/([^/]+)$/, target: `${TESLA_API_BASE}/content/$1`, label: EDITOR },
   { method: 'POST', path: /^\/api\/content\/([^/]+)\/submit$/, target: `${TESLA_API_BASE}/content/$1/submit`, label: EDITOR },
@@ -88,7 +104,7 @@ export const TESLA_ROUTES: TeslaRoute[] = [
 /** กลุ่มเส้นสำหรับแสดงในหน้าต่างสลับผู้ใช้ */
 export const TESLA_ROUTE_GROUPS: { label: string; endpoints: string[] }[] = [...new Set(TESLA_ROUTES.map((r) => r.label))].map((label) => ({
   label,
-  endpoints: TESLA_ROUTES.filter((r) => r.label === label).map((r) => `${r.method} ${r.target.replace(TESLA_API_BASE, '').replace('$1', ':code')}`),
+  endpoints: TESLA_ROUTES.filter((r) => r.label === label).map((r) => `${r.method} ${r.target.replace(TESLA_API_BASE, '').replace('$1', ':code').replace('$2', ':ch')}`),
 }));
 
 /**
@@ -107,6 +123,7 @@ export const TESLA_OWNED_PREFIXES = [
   '/api/master/feature-tags',
   '/api/master/channel-packages',
   '/api/campaign', // เส้นที่ v2 ยังไม่มี → 501 (ไม่ตกไป Mock)
+  '/api/people',
 ];
 
 export type TeslaHealth = 'unknown' | 'checking' | 'ok' | 'down';

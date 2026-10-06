@@ -41,7 +41,8 @@ export function monthYear(d: string | null): string {
 /** 2026-09-24 10:02:00 → 24/09/2026 10:02 */
 export function dateTime(v: string | null): string {
   if (!v) return '–';
-  const [d, t = ''] = v.split(' ');
+  // Mock: 'YYYY-MM-DD HH:mm:ss' · Tesla API v2: ISO with the Thai offset 'YYYY-MM-DDTHH:mm:ss.ffffff+07:00'
+  const [d, t = ''] = v.split(/[ T]/);
   return `${d.split('-').reverse().join('/')} ${t.slice(0, 5)}`.trim();
 }
 

@@ -1,0 +1,187 @@
+{
+ "at": "2026-10-06 22:05",
+ "workspace": "ST000027×CHN08",
+ "copyTarget": "ST000026×CHN08",
+ "results": [
+  {
+   "case": "SL-01",
+   "title": "รายการ Workspace",
+   "pass": true,
+   "detail": "9 Workspace · ST000006×CHN01:5 คน/ALL, ST000007×CHN04:1 คน/ALL, ST000011×CHN01:5 คน/ALL, ST000022×CHN01:5 คน/ALL, ST000024×CHN04:1 คน/ALL, ST000025×CHN07:5 คน/ALL, ST000026×CHN08:8 คน/ALL, ST000027×CHN08:8 คน/ALL, ST000030×CHN07:5 คน/ALL"
+  },
+  {
+   "case": "SL-02",
+   "title": "กรองช่องทาง CHN07",
+   "pass": true,
+   "detail": "2 รายการ"
+  },
+  {
+   "case": "SL-03",
+   "title": "Board ST000027×CHN08",
+   "pass": true,
+   "detail": "ผู้ขาย 8 คน · พร้อมขาย 8 · ประเภท ['AGENT', 'EMPLOYEE']"
+  },
+  {
+   "case": "SL-04",
+   "title": "ไม่มีเบอร์ / อีเมล / เลขใบอนุญาต (PDPA)",
+   "pass": true,
+   "detail": "ทุกคนเป็น null"
+  },
+  {
+   "case": "SL-05",
+   "title": "Workspace ที่ไม่มี → 404",
+   "pass": true,
+   "detail": "ไม่พบ Workspace NOPE × CHN08 (ต้องมี Content Approved)"
+  },
+  {
+   "case": "SL-06",
+   "title": "สร้างกลุ่ม",
+   "pass": true,
+   "detail": "groupId 15"
+  },
+  {
+   "case": "SL-07",
+   "title": "ชื่อซ้ำ → 409",
+   "pass": true,
+   "detail": "ชื่อกลุ่ม \"ทดสอบ-ทีม A\" มีอยู่แล้วใน Workspace นี้"
+  },
+  {
+   "case": "SL-08",
+   "title": "ชื่อว่าง → 400",
+   "pass": true,
+   "detail": "กรุณากรอกชื่อกลุ่ม"
+  },
+  {
+   "case": "SL-09",
+   "title": "ย้ายเข้ากลุ่ม (+ รหัสที่ไม่อยู่ใน Workspace)",
+   "pass": true,
+   "detail": "ย้าย 2 · ข้าม [('NO••01', 'ไม่อยู่ในรายชื่อ Workspace')]"
+  },
+  {
+   "case": "SL-10",
+   "title": "Board หลังย้าย",
+   "pass": true,
+   "detail": "สมาชิกในกลุ่ม 2 คน"
+  },
+  {
+   "case": "SL-11",
+   "title": "นำออกจากกลุ่ม",
+   "pass": true,
+   "detail": "1 คนกลับเป็น ยังไม่มีกลุ่ม"
+  },
+  {
+   "case": "SL-12",
+   "title": "ไม่ได้เลือกผู้ขาย → 400",
+   "pass": true,
+   "detail": "ยังไม่ได้เลือกผู้ขาย"
+  },
+  {
+   "case": "SL-13",
+   "title": "แก้ชื่อ / สี",
+   "pass": true,
+   "detail": "แก้ไข ชื่อ \"ทดสอบ-ทีม A\" → \"ทดสอบ-ทีม A1\", คำอธิบาย, สี #1f8a4c → #c2610c"
+  },
+  {
+   "case": "SL-14",
+   "title": "แก้เป็นชื่อซ้ำ → 409",
+   "pass": true,
+   "detail": "ชื่อกลุ่ม \"ทดสอบ-ทีม B\" มีอยู่แล้วใน Workspace นี้"
+  },
+  {
+   "case": "SL-15",
+   "title": "Campaign ที่ผูกได้ / ไม่ได้",
+   "pass": true,
+   "detail": "2 Campaign ครอบคลุม ST000027×CHN08 · ผูกได้ 1 · CMP25690008:ปิดถาวรแล้ว, CMP25690011:ผูกได้"
+  },
+  {
+   "case": "SL-16",
+   "title": "ผูก CMP25690011",
+   "pass": true,
+   "detail": "อยู่ในรายการผูกแล้ว"
+  },
+  {
+   "case": "SL-16b",
+   "title": "ถอด CMP25690011 แล้วผูกใหม่",
+   "pass": true,
+   "detail": "ถอดแล้วไม่เหลือ · ผูกใหม่ได้ (ใช้ต่อในการลบกลุ่ม)"
+  },
+  {
+   "case": "SL-17",
+   "title": "ผูก CMP25690008 (ปิดถาวรแล้ว) → 400",
+   "pass": true,
+   "detail": "ผูกได้เฉพาะ Campaign ที่ Approved และยังไม่หมดอายุ"
+  },
+  {
+   "case": "SL-18",
+   "title": "Campaign ที่ไม่มี → 404",
+   "pass": true,
+   "detail": "ไม่พบ Campaign CMP00000000"
+  },
+  {
+   "case": "SL-19",
+   "title": "Import ตรวจอย่างเดียว",
+   "pass": true,
+   "detail": "แถว 2: ผ่าน · สร้างกลุ่มใหม่ · แถว 3: รหัสซ้ำในไฟล์ · แถว 4: ไม่พบรหัสใน Workspace · แถว 5: ข้อมูลไม่ครบ"
+  },
+  {
+   "case": "SL-20",
+   "title": "Import บันทึก → สร้างกลุ่มใหม่",
+   "pass": true,
+   "detail": "กลุ่ม ทดสอบ-ทีม C สมาชิก 1"
+  },
+  {
+   "case": "SL-21",
+   "title": "คัดลอก (Preview) → ST000026×CHN08",
+   "pass": true,
+   "detail": "ทดสอบ-ทีม A1: 1/1 · ทดสอบ-ทีม B: 0/0 · ทดสอบ-ทีม C: 1/1"
+  },
+  {
+   "case": "SL-22",
+   "title": "คัดลอกเข้า Workspace เดียวกัน → 400",
+   "pass": true,
+   "detail": "ต้นทางและปลายทางต้องเป็นคนละ Workspace"
+  },
+  {
+   "case": "SL-23",
+   "title": "คัดลอกจริง แล้วคัดลอกซ้ำ → 409",
+   "pass": true,
+   "detail": "คัดลอกได้เฉพาะเข้า Workspace ที่ยังไม่มีกลุ่ม"
+  },
+  {
+   "case": "SL-24",
+   "title": "Audit log",
+   "pass": true,
+   "detail": "23 แถว · ['BIND', 'COPY', 'CREATE_GROUP', 'DELETE_GROUP', 'IMPORT', 'MOVE', 'UNBIND', 'UPDATE_GROUP']"
+  },
+  {
+   "case": "SL-25",
+   "title": "ค้นหา Audit (q)",
+   "pass": true,
+   "detail": "10 แถว"
+  },
+  {
+   "case": "SL-26",
+   "title": "Referral links",
+   "pass": true,
+   "detail": "0 Campaign Referral ที่ Approved (ยอดคลิก = 0: ยังไม่มีแหล่งข้อมูล)"
+  },
+  {
+   "case": "SL-27",
+   "title": "ลบกลุ่ม (ถอด Campaign + สมาชิกกลับเป็น ยังไม่มีกลุ่ม)",
+   "pass": true,
+   "detail": "ไม่พบกลุ่ม (อาจถูกลบแล้ว)"
+  },
+  {
+   "case": "SL-28",
+   "title": "ประวัติกลุ่มที่ลบยังอยู่",
+   "pass": true,
+   "detail": "DELETE_GROUP · UNBIND · BIND · UNBIND · BIND · UPDATE_GROUP · MOVE · MOVE · MOVE · CREATE_GROUP"
+  },
+  {
+   "case": "SL-29",
+   "title": "เก็บกวาดกลุ่มทดสอบ",
+   "pass": true,
+   "detail": "ไม่เหลือกลุ่มทดสอบใน 2 Workspace"
+  }
+ ]
+}

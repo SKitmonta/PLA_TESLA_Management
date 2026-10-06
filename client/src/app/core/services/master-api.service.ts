@@ -4,7 +4,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { keepLocal } from '../data-source/data-source.service';
 import {
   ChannelPackage,
   CustomMasterItem,
@@ -49,9 +48,8 @@ export class MasterApiService {
     return this.http.get<CustomMasterType[]>(`${this.base}/custom-types`);
   }
 
-  /** opts.keepLocal = อ่านจาก Mock เสมอ (หน้าที่ข้อมูลหลักยังอยู่บน Mock เช่น Campaign) — ดู KEEP_LOCAL */
-  customItems(type: string, opts?: { keepLocal?: boolean }): Observable<CustomMasterItem[]> {
-    return this.http.get<CustomMasterItem[]>(`${this.base}/custom/${type}`, { context: keepLocal(!!opts?.keepLocal) });
+  customItems(type: string): Observable<CustomMasterItem[]> {
+    return this.http.get<CustomMasterItem[]>(`${this.base}/custom/${type}`);
   }
 
   createCustomItem(type: string, item: Partial<CustomMasterItem>): Observable<CustomMasterItem> {
@@ -93,8 +91,8 @@ export class MasterApiService {
     return this.http.get<{ lastSync: string | null; types: SyncedType[] }>(`${this.base}/synced`);
   }
 
-  syncedRows(type: string, opts?: { keepLocal?: boolean }): Observable<SyncedRow[]> {
-    return this.http.get<SyncedRow[]>(`${this.base}/synced/${type}`, { context: keepLocal(!!opts?.keepLocal) });
+  syncedRows(type: string): Observable<SyncedRow[]> {
+    return this.http.get<SyncedRow[]>(`${this.base}/synced/${type}`);
   }
 }
 

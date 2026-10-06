@@ -3,12 +3,12 @@
  * - แกะ envelope { status, message, data: { result } } ให้เหลือ result (รูปแบบเดียวกับ Mock server)
  * - Error → { message } แบบเดียวกับ Mock server (apiError อ่านได้เลย)
  * - เส้นใน TESLA_OWNED_PREFIXES ที่ v2 ยังไม่มี → 501 (ไม่ตกไป Local เพื่อไม่ให้ข้อมูลคนละฐานปนกัน)
- * - เส้นอื่น (ผู้ใช้, Campaign ฯลฯ) → Mock server เดิม · คำขอที่ติด KEEP_LOCAL → Mock เสมอ
+ * - เส้นอื่น (ผู้ใช้ ฯลฯ) → Mock server เดิม
  */
 import { HttpErrorResponse, HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, map, throwError } from 'rxjs';
-import { DataSourceService, KEEP_LOCAL, TESLA_OWNED_PREFIXES } from './data-source.service';
+import { DataSourceService, TESLA_OWNED_PREFIXES } from './data-source.service';
 
 interface TeslaEnvelope {
   status?: string;
@@ -18,7 +18,7 @@ interface TeslaEnvelope {
 
 export const dataSourceInterceptor: HttpInterceptorFn = (req, next) => {
   const ds = inject(DataSourceService);
-  if (ds.source() !== 'tesla' || !req.url.startsWith('/api/') || req.context.get(KEEP_LOCAL)) return next(req);
+  if (ds.source() !== 'tesla' || !req.url.startsWith('/api/')) return next(req);
 
   const path = req.url.split('?')[0];
   const route = ds.routes.find((r) => r.method === req.method && r.path.test(path));

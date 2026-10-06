@@ -1,6 +1,7 @@
 /**
  * /api/campaign — เมนู Campaign (doc 06)
  *   GET  /                  รายการ Campaign (กรอง / เรียง / แบ่งหน้า + การ์ดสรุป)
+ *   GET  /types             ประเภท Campaign (MS-01) สำหรับการ์ด Wizard / ตัวกรอง — รูปแบบเดียวกับ Tesla API v2
  *   GET  /package-options   Package ที่เลือกได้ใน Wizard (เฉพาะ Content Approved + ช่องทาง + กรอบวันขาย)
  *   GET  /:code             รายละเอียด Campaign (เปิดใน Wizard)
  *   POST /                  บันทึกร่างครั้งแรก → สร้าง Campaign Code (Campaign Maker)
@@ -25,6 +26,7 @@ import {
   rejectCampaign,
   suspendCampaign,
   closeCampaign,
+  campaignTypes,
   type OverlapQuery,
   createCampaign,
   getCampaign,
@@ -39,6 +41,10 @@ export const campaignRoutes = Router();
 
 campaignRoutes.get('/', (req, res) => {
   res.json(listCampaigns(req.query as unknown as CampaignListQuery));
+});
+
+campaignRoutes.get('/types', (_req, res) => {
+  res.json(campaignTypes());
 });
 
 campaignRoutes.get('/package-options', (_req, res) => {

@@ -4,6 +4,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { CustomMasterItem } from '../models/master.model';
 import {
   ApprovalLog,
   CampaignGrantSummary,
@@ -26,6 +27,11 @@ export class CampaignApiService {
       if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
     }
     return this.http.get<CampaignListResponse>(this.base, { params });
+  }
+
+  /** ประเภท Campaign (MS-01) ในรหัสฝั่ง FE (FREE_GIFT ฯลฯ) + benefit_kind — เฉพาะประเภทที่ Wizard รองรับ */
+  types(): Observable<CustomMasterItem[]> {
+    return this.http.get<CustomMasterItem[]>(`${this.base}/types`);
   }
 
   packageOptions(): Observable<CampaignPackageOption[]> {

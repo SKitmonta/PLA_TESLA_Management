@@ -29,8 +29,8 @@ export class CampaignLookup {
 
   load(): void {
     forkJoin({
-      // Master อ่านจากแหล่งเดียวกับ Campaign · ยกเว้น MS-01 (การ์ดประเภท ต้องใช้รหัส FE + benefit_kind) — ดู KEEP_LOCAL
-      masters: forkJoin(Object.fromEntries(MASTERS.map((m) => [m, this.master.customItems(m, { keepLocal: m === 'MS-01' })]))),
+      // Master อ่านจากแหล่งเดียวกับ Campaign · MS-01 (การ์ดประเภท) ใช้เส้นของ Campaign — รหัสฝั่ง FE + benefit_kind
+      masters: forkJoin(Object.fromEntries(MASTERS.map((m) => [m, m === 'MS-01' ? this.api.types() : this.master.customItems(m)]))),
       synced: forkJoin(Object.fromEntries(SYNCED.map((s) => [s, this.master.syncedRows(s)]))),
       packages: this.api.packageOptions(),
     }).subscribe(({ masters, synced, packages }) => {

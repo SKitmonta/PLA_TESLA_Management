@@ -113,8 +113,8 @@ export class CampaignList implements OnInit {
     const status = this.route.snapshot.queryParamMap.get('status');
     if (status) this.query.update((q) => ({ ...q, status: status as CampaignListQuery['status'], page: 1 }));
     this.load();
-    // ตัวกรองประเภทใช้รหัสฝั่ง FE (MS-01 จาก Mock — API v2 แปลงเป็นรหัส v1 ให้) — ดู KEEP_LOCAL
-    this.master.customItems('MS-01', { keepLocal: true }).subscribe((items) =>
+    // ตัวกรองประเภทใช้รหัสฝั่ง FE (API v2 แปลงเป็นรหัส v1 ให้)
+    this.api.types().subscribe((items) =>
       this.types.set(items.filter((t) => t.isActive).map((t) => ({ value: t.itemCode, label: t.nameEn ?? t.nameTh }))),
     );
     this.master.syncedRows('CHANNEL').subscribe((rows) =>

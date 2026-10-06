@@ -634,6 +634,22 @@ export function closeCampaign(code: string, reason: unknown, userId: string) {
   return getCampaign(code);
 }
 
+/** MS-01 สำหรับเมนู Campaign — Mock เก็บรหัสฝั่ง FE + benefit_kind อยู่แล้ว (Tesla API แปลงจาก M_CAMPAIGN_TYPE) */
+export function campaignTypes() {
+  return (
+    getDb().prepare("SELECT * FROM custom_master_item WHERE type_code = 'MS-01' ORDER BY sort_order, item_code").all() as DbRow[]
+  ).map((r) => ({
+    itemCode: String(r['item_code']),
+    nameTh: String(r['name_th']),
+    nameEn: r['name_en'] as string | null,
+    sortOrder: Number(r['sort_order']),
+    isActive: r['is_active'] === 1,
+    attributes: JSON.parse(String(r['attributes'] ?? '{}')) as Record<string, unknown>,
+    updatedBy: r['updated_by'] as string | null,
+    updatedAt: r['updated_at'] as string | null,
+  }));
+}
+
 export function approvalHistory(code: string) {
   return (
     getDb()

@@ -4,7 +4,7 @@
  * - tesla : Tesla Admin API (/tesla-admin/api/v2 · PostgreSQL) — เฉพาะเส้นที่ทำแล้วใน TESLA_ROUTES
  * ค่าที่เลือกจำไว้ใน localStorage ของ Browser
  */
-import { HttpClient, HttpContext, HttpContextToken } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 
 export type DataSource = 'local' | 'tesla';
@@ -33,6 +33,7 @@ const SYNCED = 'Master ที่ Sync (MS-04) — ตาราง Master ขอ�
 const CUSTOM = 'Master ที่สร้างเอง (MS-02) — M_CUSTOM_MASTER_* (V036) · MS-01 จาก M_CAMPAIGN_TYPE';
 const MAPPING = 'Mapping ข้อความแสดงผล (MS-03) — M_DISPLAY_MAPPING (V037) · ใช้ใน Package detail / Content Editor';
 const CAMPAIGN = 'Campaign — รายการ + Add Campaign (บันทึกร่าง / ส่งอนุมัติ) · ตาราง T_CAMPAIGN ของ v1';
+const CAMPAIGN_TYPES = 'ประเภท Campaign (MS-01) — M_CAMPAIGN_TYPE ในรหัสฝั่ง FE + ประเภทสิทธิ์ (การ์ด Wizard ขั้น 1 · ตัวกรองรายการ)';
 const CAMPAIGN_REVIEW = 'Campaign — อนุมัติ (= ขึ้นใช้งาน + จอง Stock) / ตีกลับ / Suspend / เปิดใช้อีกครั้ง / ปิดถาวร (คืน Stock)';
 const KEY_TOPIC = 'หัวข้อ Key Features / Key Advantages — M_MARKETING_KEY_TOPIC · เส้น v1 เดิม';
 const CHANNEL_PACKAGES = 'Package recommend (OL_OB) — Package ที่ขายในช่องทางเดียวกัน · เส้น v1 เดิม';
@@ -61,6 +62,7 @@ export const TESLA_ROUTES: TeslaRoute[] = [
     label: CONTENT_MASTER,
   },
   { method: 'GET', path: /^\/api\/campaign$/, target: `${TESLA_API_BASE}/campaign`, label: CAMPAIGN },
+  { method: 'GET', path: /^\/api\/campaign\/types$/, target: `${TESLA_API_BASE}/campaign/types`, label: CAMPAIGN_TYPES },
   { method: 'GET', path: /^\/api\/campaign\/package-options$/, target: `${TESLA_API_BASE}/campaign/package-options`, label: CAMPAIGN },
   { method: 'GET', path: /^\/api\/campaign\/overlap$/, target: `${TESLA_API_BASE}/campaign/overlap`, label: CAMPAIGN },
   { method: 'POST', path: /^\/api\/campaign$/, target: `${TESLA_API_BASE}/campaign`, label: CAMPAIGN },
@@ -106,14 +108,6 @@ export const TESLA_OWNED_PREFIXES = [
   '/api/master/channel-packages',
   '/api/campaign', // เส้นที่ v2 ยังไม่มี → 501 (ไม่ตกไป Mock)
 ];
-
-/**
- * ส่งคำขอนี้ไป Local (Mock) เสมอ แม้เลือก Tesla API
- * ตอนนี้ใช้กับ MS-01 Campaign Type ในเมนู Campaign เท่านั้น: การ์ดประเภทใน Wizard ต้องใช้รหัสฝั่ง FE (FREE_GIFT ฯลฯ) และ
- * benefit_kind ซึ่ง M_CAMPAIGN_TYPE ของ Tesla ไม่มี (รหัส v1 = GIFT / POINTS / DRAW — API v2 แปลงรหัสให้ตอนบันทึก / อ่าน Campaign)
- */
-export const KEEP_LOCAL = new HttpContextToken<boolean>(() => false);
-export const keepLocal = (on = true) => new HttpContext().set(KEEP_LOCAL, on);
 
 export type TeslaHealth = 'unknown' | 'checking' | 'ok' | 'down';
 

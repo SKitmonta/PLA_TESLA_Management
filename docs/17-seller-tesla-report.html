@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seller บน Tesla — สรุปและผลทดสอบ</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --surface: #ffffff; --surface-2: #eef1f8; --text: #1b2333; --muted: #5b6577; --line: #dde2ec;
+    --navy: #00317a; --navy-soft: #e3ebf9; --orange: #c2610c; --orange-soft: #fdf0e2;
+    --green: #17794a; --green-soft: #e3f4ea; --red: #b42318; --red-soft: #fde8e6; --amber: #8a5a00; --amber-soft: #fff4d6;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f141d; --surface: #161d2a; --surface-2: #1d2636; --text: #e6eaf2; --muted: #9aa5b8; --line: #2a3446;
+      --navy: #8db4ff; --navy-soft: #1c2b47; --orange: #f2a65a; --orange-soft: #3a2a17;
+      --green: #6fd39c; --green-soft: #15301f; --red: #ff8f84; --red-soft: #3a1b18; --amber: #f3c766; --amber-soft: #33290f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f141d; --surface: #161d2a; --surface-2: #1d2636; --text: #e6eaf2; --muted: #9aa5b8; --line: #2a3446;
+    --navy: #8db4ff; --navy-soft: #1c2b47; --orange: #f2a65a; --orange-soft: #3a2a17;
+    --green: #6fd39c; --green-soft: #15301f; --red: #ff8f84; --red-soft: #3a1b18; --amber: #f3c766; --amber-soft: #33290f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Leelawadee UI", "Noto Sans Thai", Tahoma, system-ui, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  header.top { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
+  h1 { margin: 0; font-size: 26px; color: var(--navy); letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 4px 0 0; }
+  .stamp { font-size: 13px; color: var(--muted); }
+  h2 { font-size: 19px; margin: 40px 0 12px; color: var(--navy); }
+  h3 { font-size: 16px; margin: 0 0 6px; }
+  p { margin: 0 0 8px; }
+  code { overflow-wrap: anywhere; font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 12px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+  .kpi b { display: block; font-size: 26px; line-height: 1.2; color: var(--navy); font-variant-numeric: tabular-nums; }
+  .kpi span { color: var(--muted); font-size: 13px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 12px; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+  .ok { background: var(--green-soft); color: var(--green); }
+  .warn { background: var(--amber-soft); color: var(--amber); }
+  .be { background: var(--navy-soft); color: var(--navy); }
+  .fe { background: var(--orange-soft); color: var(--orange); }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td { overflow-wrap: anywhere; }
+  th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { font-variant-numeric: tabular-nums; text-align: right; }
+  td:first-child { white-space: nowrap; }
+  .muted { color: var(--muted); }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .flow .step { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 14px; }
+  .flow .arrow { color: var(--muted); }
+  ul.plain { margin: 0; padding-left: 18px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 14px; }
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; min-width: 0; }
+  figure img { display: block; max-width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); background: #fff; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  figure.wide { grid-column: 1 / -1; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 560px) { h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <h1>เมนู Seller ต่อ Tesla Admin API</h1>
+      <p class="sub">สรุปงานและผลทดสอบ · กลุ่มผู้ขาย · ผูก Campaign · คัดลอก / Import / Audit · (รวมงานเช้า: ประเภท Campaign จาก Tesla)</p>
+    </div>
+    <div class="stamp">6 ต.ค. 2569 (ค่ำ) · DEV (TESLA_ADMIN) · ทดสอบ API + หน้าจอจริง</div>
+  </header>
+
+  <section class="kpis" aria-label="ตัวเลขสรุป">
+    <div class="kpi"><b>30/30</b><span>ทดสอบ API บน DEV</span></div>
+    <div class="kpi"><b>7/7</b><span>ทดสอบผ่านหน้าจอ</span></div>
+    <div class="kpi"><b>727/727</b><span>unit test · ใหม่ 25 (Seller)</span></div>
+    <div class="kpi"><b>14</b><span>เส้น API ใหม่ /api/v2/people</span></div>
+    <div class="kpi"><b>V038</b><span>4 ตาราง · ลง DEV แล้ว</span></div>
+  </section>
+
+  <h2>สิ่งที่ตัดสินใจ (ข้อ 1–5 ตามที่อนุญาต)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>เรื่อง</th><th>ที่ทำ</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>ขอบเขตรอบแรก</td><td>กลุ่มผู้ขายครบ (Workspace · Board · ย้าย · รายละเอียดกลุ่ม · ผูก Campaign · คัดลอก · Import · Audit) · Referral แสดงรายการลิงก์ได้ แต่ยอดคลิก / ใบคำขอ / กรมธรรม์ = 0 (ยังไม่มีแหล่งข้อมูล)</td></tr>
+      <tr><td>2</td><td>Migration</td><td><code>V038__add_seller_group.sql</code> + rollback · ลง DEV แล้ว (ได้รับอนุญาต) · <b>ยังไม่ผ่าน DBA review</b></td></tr>
+      <tr><td>3</td><td>ข้อมูลส่วนบุคคล</td><td>ไม่เก็บ / ไม่ส่ง เบอร์โทร · อีเมล · เลขใบอนุญาต (null เสมอ) · ใช้แค่วันหมดอายุใบอนุญาต · หน้าจอเขียน "มี (ไม่เก็บเลขที่ · PDPA)" · รูปในรายงานปิดชื่อผู้ขาย</td></tr>
+      <tr><td>4</td><td>พนักงาน (EMPLOYEE)</td><td>ใช้ M_AGENT อย่างเดียว: Agent / Broker = ตัวแทน (ต้องมีใบอนุญาต) · Direct / Marketer = พนักงาน (ไม่ต้องมี) — <span class="tag warn">รอ BA ยืนยัน</span> ว่าพนักงานขายมาจากระบบไหน</td></tr>
+      <tr><td>5</td><td>กลุ่ม ↔ Campaign</td><td>เก็บการผูกอย่างเดียว (D-03 ไม่ต้องอนุมัติ) · ยังไม่ใช้คำนวณสิทธิ์</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>กติกาที่ใช้หา "ผู้ขายของ Workspace"</h2>
+  <div class="card">
+    <ul class="plain">
+      <li><b>Workspace</b> = Package × ช่องทาง ที่มี Content Approved / Published (แหล่งเดียวกับตัวเลือก Package ของ Campaign)</li>
+      <li><b>โหมด</b> จาก GIO (<code>T_PACKAGE.gio_payload</code> → <code>package_Channels[].seller_Selection_Mode</code>) — DEV ทุก Workspace เป็น ALL</li>
+      <li><b>ALL</b>: ตัวแทนที่ <code>AGENT_TYPE</code> หรือช่องทางขายที่ ACTIVE ใน <code>T_AGENT_CHANNEL</code> เป็นคำหนึ่งในชื่อช่องทาง — "Agent Online" ← Agent · "Broker Online" ← Broker · "Direct Online" ← Direct</li>
+      <li><b>CUSTOM</b>: เฉพาะรหัสใน <code>package_Sellers</code> (เทียบรหัสตัวแทน หรือรหัสขายรายช่องทาง) · รหัสที่ไม่พบใน M_AGENT แสดงเป็น "ไม่พบข้อมูลตัวแทน (Porsche)"</li>
+      <li><b>พร้อมขาย</b> = Active และ (ตัวแทน) ใบอนุญาตยังไม่หมดอายุ · เตือนเมื่อหมดภายใน 30 วัน · ไม่พร้อมขายลากเข้ากลุ่มไม่ได้</li>
+      <li><span class="tag warn">สมมติฐาน</span> การจับคู่ชื่อช่องทาง Porsche ↔ CHN0x ใช้คำในชื่อ — ควรให้ BA ยืนยัน หรือทำตาราง mapping</li>
+    </ul>
+  </div>
+
+  <h2>สิ่งที่สร้าง</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3><span class="tag be">BE</span> Tesla Admin API (<code>254a06f</code>)</h3>
+      <ul class="plain">
+        <li><code>SellerV2Controller</code> <code>/api/v2/people</code>: workspaces · board · groups (สร้าง / แก้ / ลบ) · move · import · bind / unbind · referrals · copy · audit</li>
+        <li><code>SellerV2Service</code> + <code>SellerV2Rules</code> (กติกาเดียวกับ Mock prototype) · <code>SellerV2Repository</code> — ทุกการเขียนหลายแถวอยู่ใน transaction เดียวกับ Audit</li>
+        <li>V038: <code>T_SELLER_GROUP</code> (ชื่อห้ามซ้ำใน Workspace · ลบแบบ soft) · <code>_MEMBER</code> (1 คน 1 กลุ่มต่อ Workspace) · <code>_CAMPAIGN</code> · <code>T_SELLER_AUDIT_LOG</code> (เพิ่มได้อย่างเดียว)</li>
+        <li>คัดลอกกลุ่มกันชนกันด้วย advisory lock · ชื่อซ้ำจับจาก unique index → 409</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="tag fe">FE</span> TESLA Management v2 (<code>ee2603a</code>)</h3>
+      <ul class="plain">
+        <li>14 route <code>/api/people/*</code> → Tesla · <code>/api/people</code> เป็นเส้นของ Tesla (ไม่ตกไป Mock)</li>
+        <li><code>dateTime()</code> อ่านเวลา ISO ของ API v2 ได้ (เดิมแสดงเพี้ยน)</li>
+        <li>คอลัมน์ใบอนุญาต: "มี (ไม่เก็บเลขที่ · PDPA)" แทนการเขียน "ไม่ต้องมี" ผิด ๆ</li>
+        <li>สคริปต์ <code>test_seller_api.py</code> (30 กรณี · เก็บกวาดเอง) + <code>mask-names.js</code> ปิดชื่อก่อนถ่ายรูป</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>ผลทดสอบ API บน DEV (30/30)</h2>
+  <p class="muted">Workspace ทดสอบ ST000027×CHN08 · ปลายทางคัดลอก ST000026×CHN08 · รันเมื่อ 2026-10-06 22:05 · กลุ่มทดสอบ "ทดสอบ-…" ถูกลบหลังจบ (ประวัติยังอยู่)</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>กรณี</th><th>ผลที่ได้</th><th>ผล</th></tr></thead>
+    <tbody>
+<tr><td>SL-01</td><td>รายการ Workspace</td><td>9 Workspace · ST000006×CHN01:5 คน/ALL, ST000007×CHN04:1 คน/ALL, ST000011×CHN01:5 คน/ALL, ST000022×CHN01:5 คน/ALL, ST000024×CHN04:1 คน/ALL, ST000025×CHN07:5 คน/ALL, ST000026×CHN08:8 คน/ALL, ST000027×CHN08:8 คน/ALL, ST000030×CHN07:5 คน/ALL</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-02</td><td>กรองช่องทาง CHN07</td><td>2 รายการ</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-03</td><td>Board ST000027×CHN08</td><td>ผู้ขาย 8 คน · พร้อมขาย 8 · ประเภท [&#x27;AGENT&#x27;, &#x27;EMPLOYEE&#x27;]</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-04</td><td>ไม่มีเบอร์ / อีเมล / เลขใบอนุญาต (PDPA)</td><td>ทุกคนเป็น null</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-05</td><td>Workspace ที่ไม่มี → 404</td><td>ไม่พบ Workspace NOPE × CHN08 (ต้องมี Content Approved)</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-06</td><td>สร้างกลุ่ม</td><td>groupId 15</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-07</td><td>ชื่อซ้ำ → 409</td><td>ชื่อกลุ่ม &quot;ทดสอบ-ทีม A&quot; มีอยู่แล้วใน Workspace นี้</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-08</td><td>ชื่อว่าง → 400</td><td>กรุณากรอกชื่อกลุ่ม</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-09</td><td>ย้ายเข้ากลุ่ม (+ รหัสที่ไม่อยู่ใน Workspace)</td><td>ย้าย 2 · ข้าม [(&#x27;NO••01&#x27;, &#x27;ไม่อยู่ในรายชื่อ Workspace&#x27;)]</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-10</td><td>Board หลังย้าย</td><td>สมาชิกในกลุ่ม 2 คน</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-11</td><td>นำออกจากกลุ่ม</td><td>1 คนกลับเป็น ยังไม่มีกลุ่ม</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-12</td><td>ไม่ได้เลือกผู้ขาย → 400</td><td>ยังไม่ได้เลือกผู้ขาย</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-13</td><td>แก้ชื่อ / สี</td><td>แก้ไข ชื่อ &quot;ทดสอบ-ทีม A&quot; → &quot;ทดสอบ-ทีม A1&quot;, คำอธิบาย, สี #1f8a4c → #c2610c</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-14</td><td>แก้เป็นชื่อซ้ำ → 409</td><td>ชื่อกลุ่ม &quot;ทดสอบ-ทีม B&quot; มีอยู่แล้วใน Workspace นี้</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-15</td><td>Campaign ที่ผูกได้ / ไม่ได้</td><td>2 Campaign ครอบคลุม ST000027×CHN08 · ผูกได้ 1 · CMP25690008:ปิดถาวรแล้ว, CMP25690011:ผูกได้</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-16</td><td>ผูก CMP25690011</td><td>อยู่ในรายการผูกแล้ว</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-16b</td><td>ถอด CMP25690011 แล้วผูกใหม่</td><td>ถอดแล้วไม่เหลือ · ผูกใหม่ได้ (ใช้ต่อในการลบกลุ่ม)</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-17</td><td>ผูก CMP25690008 (ปิดถาวรแล้ว) → 400</td><td>ผูกได้เฉพาะ Campaign ที่ Approved และยังไม่หมดอายุ</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-18</td><td>Campaign ที่ไม่มี → 404</td><td>ไม่พบ Campaign CMP00000000</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-19</td><td>Import ตรวจอย่างเดียว</td><td>แถว 2: ผ่าน · สร้างกลุ่มใหม่ · แถว 3: รหัสซ้ำในไฟล์ · แถว 4: ไม่พบรหัสใน Workspace · แถว 5: ข้อมูลไม่ครบ</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-20</td><td>Import บันทึก → สร้างกลุ่มใหม่</td><td>กลุ่ม ทดสอบ-ทีม C สมาชิก 1</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-21</td><td>คัดลอก (Preview) → ST000026×CHN08</td><td>ทดสอบ-ทีม A1: 1/1 · ทดสอบ-ทีม B: 0/0 · ทดสอบ-ทีม C: 1/1</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-22</td><td>คัดลอกเข้า Workspace เดียวกัน → 400</td><td>ต้นทางและปลายทางต้องเป็นคนละ Workspace</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-23</td><td>คัดลอกจริง แล้วคัดลอกซ้ำ → 409</td><td>คัดลอกได้เฉพาะเข้า Workspace ที่ยังไม่มีกลุ่ม</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-24</td><td>Audit log</td><td>23 แถว · [&#x27;BIND&#x27;, &#x27;COPY&#x27;, &#x27;CREATE_GROUP&#x27;, &#x27;DELETE_GROUP&#x27;, &#x27;IMPORT&#x27;, &#x27;MOVE&#x27;, &#x27;UNBIND&#x27;, &#x27;UPDATE_GROUP&#x27;]</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-25</td><td>ค้นหา Audit (q)</td><td>10 แถว</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-26</td><td>Referral links</td><td>0 Campaign Referral ที่ Approved (ยอดคลิก = 0: ยังไม่มีแหล่งข้อมูล)</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-27</td><td>ลบกลุ่ม (ถอด Campaign + สมาชิกกลับเป็น ยังไม่มีกลุ่ม)</td><td>ไม่พบกลุ่ม (อาจถูกลบแล้ว)</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-28</td><td>ประวัติกลุ่มที่ลบยังอยู่</td><td>DELETE_GROUP · UNBIND · BIND · UNBIND · BIND · UPDATE_GROUP · MOVE · MOVE · MOVE · CREATE_GROUP</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>SL-29</td><td>เก็บกวาดกลุ่มทดสอบ</td><td>ไม่เหลือกลุ่มทดสอบใน 2 Workspace</td><td><span class="tag ok">ผ่าน</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>ผลทดสอบผ่านหน้าจอ (7/7)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>กรณี</th><th>ผลที่ได้</th><th>ผล</th></tr></thead>
+    <tbody>
+<tr><td>UI-01</td><td>Workspace list จาก Tesla</td><td>9 Workspace · จำนวนผู้ขาย / กลุ่ม / ยังไม่มีกลุ่ม ตรงกับ API</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>UI-02</td><td>Board ST000027 × CHN08</td><td>ผู้ขาย 8 คนจาก M_AGENT · โหมด ALL · ประเภทตัวแทน / พนักงาน · วันหมดใบอนุญาต</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>UI-03</td><td>สร้างกลุ่ม &quot;ทีมทดสอบ UI&quot; (สีเขียว)</td><td>การ์ดกลุ่มขึ้นทันที</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>UI-04</td><td>เลือก 3 คน → วางเข้ากลุ่ม</td><td>toast &quot;ย้าย 3 คนไปกลุ่ม…แล้ว&quot; · ยังไม่มีกลุ่ม 8 → 5</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>UI-05</td><td>รายละเอียดกลุ่ม → ผูก CMP25690011</td><td>toast &quot;ผูก Campaign แล้ว&quot; · CMP25690008 แสดงเหตุผล &quot;ปิดถาวรแล้ว&quot;</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>UI-06</td><td>วันที่ &quot;แก้ไขล่าสุด&quot;</td><td>พบบั๊กรูปแบบวันที่ (ISO จาก API v2) → แก้ dateTime() แล้วแสดง 06/10/2026 22:07</td><td><span class="tag ok">ผ่าน</span></td></tr>
+<tr><td>UI-07</td><td>เครื่องมือ / Audit log · Referral links</td><td>Audit แสดงทุก action ของวันนี้ · Referral: ยังไม่มี Campaign Referral ที่ Approved</td><td><span class="tag ok">ผ่าน</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>รูปหน้าจอ</h2>
+  <div class="shots">
+<figure class="wide"><img src="img/seller/sl-01-workspaces.png" alt="Workspace — 9 รายการจาก Tesla"><figcaption>Workspace — 9 รายการจาก Tesla</figcaption></figure>
+<figure class=""><img src="img/seller/sl-02-board.png" alt="Board — กลุ่ม &quot;ทีมทดสอบ UI&quot; 3 คน + CMP25690011 (ชื่อผู้ขายปิดไว้)"><figcaption>Board — กลุ่ม &quot;ทีมทดสอบ UI&quot; 3 คน + CMP25690011 (ชื่อผู้ขายปิดไว้)</figcaption></figure>
+<figure class=""><img src="img/seller/sl-03-group-detail.png" alt="รายละเอียดกลุ่ม — สมาชิก · Campaign ที่ผูก · เหตุผลที่ผูกไม่ได้"><figcaption>รายละเอียดกลุ่ม — สมาชิก · Campaign ที่ผูก · เหตุผลที่ผูกไม่ได้</figcaption></figure>
+<figure class="wide"><img src="img/seller/sl-04-tools.png" alt="เครื่องมือ — คัดลอก / Import / Audit log"><figcaption>เครื่องมือ — คัดลอก / Import / Audit log</figcaption></figure>
+<figure class="wide"><img src="img/seller/sl-05-referral.png" alt="Referral links — ยังไม่มี Campaign Referral ที่ Approved"><figcaption>Referral links — ยังไม่มี Campaign Referral ที่ Approved</figcaption></figure>
+  </div>
+
+  <h2>งานเช้า–บ่ายวันนี้ (สรุป)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>งาน</th><th>ผล</th><th>Commit</th></tr></thead>
+    <tbody>
+      <tr><td>ปิด Campaign ถาวร + คืน Stock</td><td>DEV 11/11 · คู่มือ 1.2 · รายงาน 16</td><td>BE fd73075 · FE 499f37c</td></tr>
+      <tr><td>ประเภท Campaign (MS-01) จาก Tesla · ลบ KEEP_LOCAL</td><td>Wizard 9 การ์ด (ไม่มี RIDER) · ตัวกรองรายการ · 702/702</td><td>BE 300eba2 · FE 5ad1aa7</td></tr>
+      <tr><td>เมนู Seller บน Tesla (รายงานนี้)</td><td>API 30/30 · หน้าจอ 7/7 · 727/727</td><td>BE 254a06f · FE ee2603a</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>สถานะข้อมูลบน DEV</h2>
+  <div class="tablewrap"><table>
+    <tbody>
+      <tr><td>V038</td><td>4 ตารางใหม่ (ลงแล้ว) · rollback = <code>V038__rollback.sql</code></td></tr>
+      <tr><td>กลุ่ม "ทีมทดสอบ UI"</td><td>ST000027 × CHN08 · สมาชิก 3 คน · ผูก CMP25690011 — <b>ทิ้งไว้ให้ดูพรุ่งนี้</b> (ลบได้ที่หน้ารายละเอียดกลุ่ม)</td></tr>
+      <tr><td>กลุ่ม "ทดสอบ-…"</td><td>ลบแล้ว (soft delete) · Audit ยังอยู่ใน T_SELLER_AUDIT_LOG</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>ข้อจำกัด / งานต่อ</h2>
+  <div class="card">
+    <ul class="plain">
+      <li><span class="tag warn">ตัดสินใจ</span> ชื่อช่องทาง Porsche (Bancassurance / Broker / Direct) ↔ CHN0x — ตอนนี้เทียบคำในชื่อ</li>
+      <li><span class="tag warn">ตัดสินใจ</span> พนักงานขาย (EMPLOYEE) มาจากไหน — ตอนนี้ใช้ Direct / Marketer ใน M_AGENT</li>
+      <li>Referral: ยังไม่มีแหล่งยอดคลิก / ใบคำขอ / กรมธรรม์ · ลิงก์เป็นแบบคำนวณ (ไม่เก็บ token)</li>
+      <li>API ยังไม่ตรวจ Role (Seller Admin) — รวมในงาน "ตรวจ Role จาก UAM"</li>
+      <li>V038 ต้องให้ DBA ตรวจก่อน merge เข้า <code>uat</code> (เหมือน V035–V037)</li>
+      <li>การผูก Campaign กับกลุ่มยังไม่ถูกใช้ตอนคำนวณสิทธิ์ (รอบัญชีการแจกสิทธิ์)</li>
+      <li>ข้อมูล M_AGENT บน DEV sync ล่าสุด 24/09/2026 (8 คน) — ถ้า Porsche เพิ่มคนต้อง sync ใหม่ (<code>POST /api/v1/agent/sync</code>)</li>
+    </ul>
+  </div>
+
+  <footer>ข้อมูลทั้งหมดเป็นข้อมูลทดสอบบน DEV · ไม่มีข้อมูลลูกค้าจริง · ชื่อผู้ขายในรูปถูกปิดไว้ · สร้างโดย Claude Code ร่วมกับเจ้าของงาน · ตรวจทานก่อนนำไปใช้อ้างอิง</footer>
+</main>
+</body>
+</html>

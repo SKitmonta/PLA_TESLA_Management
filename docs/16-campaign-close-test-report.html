@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ปิด Campaign + คืน Stock — สรุปและผลทดสอบ</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --surface: #ffffff; --surface-2: #eef1f8; --text: #1b2333; --muted: #5b6577; --line: #dde2ec;
+    --navy: #00317a; --navy-soft: #e3ebf9; --orange: #c2610c; --orange-soft: #fdf0e2;
+    --green: #17794a; --green-soft: #e3f4ea; --red: #b42318; --red-soft: #fde8e6; --amber: #8a5a00; --amber-soft: #fff4d6;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f141d; --surface: #161d2a; --surface-2: #1d2636; --text: #e6eaf2; --muted: #9aa5b8; --line: #2a3446;
+      --navy: #8db4ff; --navy-soft: #1c2b47; --orange: #f2a65a; --orange-soft: #3a2a17;
+      --green: #6fd39c; --green-soft: #15301f; --red: #ff8f84; --red-soft: #3a1b18; --amber: #f3c766; --amber-soft: #33290f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f141d; --surface: #161d2a; --surface-2: #1d2636; --text: #e6eaf2; --muted: #9aa5b8; --line: #2a3446;
+    --navy: #8db4ff; --navy-soft: #1c2b47; --orange: #f2a65a; --orange-soft: #3a2a17;
+    --green: #6fd39c; --green-soft: #15301f; --red: #ff8f84; --red-soft: #3a1b18; --amber: #f3c766; --amber-soft: #33290f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Leelawadee UI", "Noto Sans Thai", Tahoma, system-ui, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  header.top { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
+  h1 { margin: 0; font-size: 26px; color: var(--navy); letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 4px 0 0; }
+  .stamp { font-size: 13px; color: var(--muted); }
+  h2 { font-size: 19px; margin: 40px 0 12px; color: var(--navy); }
+  h3 { font-size: 16px; margin: 0 0 6px; }
+  p { margin: 0 0 8px; }
+  code { overflow-wrap: anywhere; font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 12px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+  .kpi b { display: block; font-size: 26px; line-height: 1.2; color: var(--navy); font-variant-numeric: tabular-nums; }
+  .kpi span { color: var(--muted); font-size: 13px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 12px; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+  .ok { background: var(--green-soft); color: var(--green); }
+  .warn { background: var(--amber-soft); color: var(--amber); }
+  .be { background: var(--navy-soft); color: var(--navy); }
+  .fe { background: var(--orange-soft); color: var(--orange); }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td { overflow-wrap: anywhere; }
+  th { background: var(--surface-2); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { font-variant-numeric: tabular-nums; text-align: right; }
+  td:first-child { white-space: nowrap; }
+  .muted { color: var(--muted); }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .flow .step { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 14px; }
+  .flow .arrow { color: var(--muted); }
+  ul.plain { margin: 0; padding-left: 18px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 14px; }
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; min-width: 0; }
+  figure img { display: block; max-width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); background: #fff; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  figure.wide { grid-column: 1 / -1; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 560px) { h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <h1>ปิด Campaign ถาวร + คืน Stock</h1>
+      <p class="sub">สรุปงานและผลทดสอบ · TESLA Management v2 + Tesla Admin API v2</p>
+    </div>
+    <div class="stamp">6 ต.ค. 2569 · DEV (TESLA_ADMIN) · ทดสอบผ่านหน้าจอจริง</div>
+  </header>
+
+  <section class="kpis" aria-label="ตัวเลขสรุป">
+    <div class="kpi"><b>11/11</b><span>กรณีทดสอบบน DEV ผ่าน</span></div>
+    <div class="kpi"><b>701/701</b><span>unit test (<code>dotnet test</code>) · ใหม่ 20</span></div>
+    <div class="kpi"><b>100 → 210</b><span>VOU-001 คงเหลือ หลังปิด CMP25690010</span></div>
+    <div class="kpi"><b>0</b><span>migration ใหม่</span></div>
+  </section>
+
+  <h2>ปัญหาที่แก้</h2>
+  <div class="card">
+    <p>ตอนอนุมัติ Campaign ประเภท Voucher (MS-10) / ของรางวัล (MS-16) ระบบ <b>จอง Stock</b> ไว้ (<code>reserved_qty</code>) แต่ <b>ไม่เคยคืน</b> — Campaign จบไปแล้ว Stock ก็ยังถูกล็อก ทำให้ Campaign ใหม่อนุมัติไม่ได้ทั้งที่ของยังอยู่จริง</p>
+    <p><b>การตัดสินใจ (6 ต.ค.):</b> ทางเลือก ข — ผู้ใช้กรอก <b>จำนวนที่แจกจริง</b> ตอนปิด (ยังไม่มีบัญชีการแจกสิทธิ์) · มีปุ่ม <b>ปิด Campaign ถาวร</b></p>
+  </div>
+
+  <h2>Flow</h2>
+  <div class="flow">
+    <span class="step">อนุมัติ → จอง 150</span><span class="arrow">→</span>
+    <span class="step">ใช้งาน / Suspend</span><span class="arrow">→</span>
+    <span class="step">กด <b>ปิดถาวร</b> + แจกจริง 40 + เหตุผล</span><span class="arrow">→</span>
+    <span class="step">จองแล้ว −150 · ส่งแล้ว +40 · <b>คืน 110</b></span><span class="arrow">→</span>
+    <span class="step">สถานะ <b>Closed</b> (เปิดใช้อีกไม่ได้)</span>
+  </div>
+
+  <h2>สิ่งที่สร้าง</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3><span class="tag be">BE</span> Tesla Admin API</h3>
+      <ul class="plain">
+        <li><code>POST /api/v2/campaign/{code}/close</code> body <code>{ reason, deliveredQty }</code></li>
+        <li>Approved / Suspended → v1 <code>INACTIVE</code> + history <code>INACTIVE</code> ที่ <code>TO_STATUS = CLOSED</code> (ไม่ต้อง migration)</li>
+        <li>transaction เดียว: lock Campaign · อ่านยอดจองใน lock · ปรับ <code>reserved_qty</code> / <code>delivered_qty</code> · บันทึก <code>feV2.closed</code> + <code>stockReserved.deliveredQty / releasedQty</code></li>
+        <li>Resume / ปิดซ้ำ ของ Campaign ที่ปิดแล้ว → 409</li>
+        <li>GET detail คืน <code>stock</code> และ <code>closed</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="tag fe">FE</span> TESLA Management v2</h3>
+      <ul class="plain">
+        <li>ปุ่ม <b>ปิดถาวร</b> + กล่องกรอกจำนวนที่แจกจริง (แสดงจำนวนที่จะคืน) และเหตุผล</li>
+        <li>การ์ด <b>Stock ที่จองไว้</b> · แถบผู้ปิด / เวลา / เหตุผล · ประวัติ "ปิดถาวร"</li>
+        <li>เตือน Campaign หมดอายุที่ยังจอง Stock</li>
+        <li>ป้าย <b>Closed</b> ในรายการ / Wizard · Mock server มีเส้น close (ไม่มี Stock)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>ผลทดสอบบน DEV</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>#</th><th>กรณี</th><th>ผลที่ได้</th><th>ผล</th></tr></thead>
+      <tbody>
+        <tr><td>CL-01</td><td>หน้าจอ: กดปิดถาวรโดยไม่กรอกอะไร</td><td>เตือน "กรุณาระบุเหตุผลที่ปิด Campaign"</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-02</td><td>หน้าจอ: กรอกเหตุผล ไม่กรอกจำนวน</td><td>เตือน "กรุณาระบุจำนวนที่แจกจริงเป็นจำนวนเต็ม 0 – 150"</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-03</td><td>API: deliveredQty 151 / 1.5 / ไม่ส่ง · reason ว่าง</td><td>400 พร้อมข้อความไทยตามกรณี</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-04</td><td>หน้าจอ: CMP25690010 (จอง VOU-001 × 150) ปิดโดยแจกจริง 40</td><td>Closed · toast "คืน Stock VOU-001 × 110" · การ์ด Stock 150 / 40 / 110 · ประวัติมียอด</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-05</td><td>Master MS-10 หลัง CL-04</td><td>VOU-001 จองแล้ว 200 → 50 · ส่งแล้ว 200 → 240 · คงเหลือ 100 → 210</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-06</td><td>API: ปิดซ้ำ / Resume / Suspend Campaign ที่ปิดแล้ว</td><td>409 ทั้ง 3 กรณี</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-07</td><td>หน้าจอ: CMP25690008 (ส่วนลด ไม่มี Stock) Suspend → ปิดถาวร</td><td>กล่องถามแค่เหตุผล · Closed</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-08</td><td>Campaign list + ตัวกรอง ENDED</td><td>ป้าย Closed · นับในการ์ด Inactive</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-09</td><td>หน้าจอ: อนุมัติ CMP25690011 (ต้องจอง 150) ที่เคยอนุมัติไม่ได้เพราะ Stock ไม่พอ</td><td>อนุมัติได้หลัง Stock ถูกคืน · จอง 150 → คงเหลือ 210 → 60</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-10</td><td>หน้าจอ: เปิดกล่องปิดถาวร CMP25690011 กรอก 25</td><td>แสดง "จอง 150 − แจกจริง 25 = คืนเข้า Stock 125" · กดยกเลิก (ไม่ได้ปิด)</td><td><span class="tag ok">ผ่าน</span></td></tr>
+        <tr><td>CL-11</td><td>Console ของหน้าเว็บระหว่างทดสอบ</td><td>ไม่มี error</td><td><span class="tag ok">ผ่าน</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>สถานะข้อมูลบน DEV หลังทดสอบ</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>รายการ</th><th>สถานะ</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td>CMP25690010</td><td>Closed</td><td>แจกจริง 40 · คืน 110</td></tr>
+        <tr><td>CMP25690008</td><td>Closed</td><td>Suspend แล้วปิด · ไม่มี Stock</td></tr>
+        <tr><td>CMP25690011</td><td>Approved · รอเริ่ม</td><td>จอง VOU-001 × 150 (เดิมรออนุมัติ — Stock ไม่พอ)</td></tr>
+        <tr><td>VOU-001 (MS-10)</td><td>ทั้งหมด 500 · จองแล้ว 200 · ส่งแล้ว 240</td><td>คงเหลือ 60</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>รูปหน้าจอ</h2>
+  <div class="shots">
+    <figure><img src="img/campaign-close/cl-03-stock-held.png" alt="การ์ด Stock ที่จองไว้ ก่อนปิด"><figcaption>การ์ด Stock ที่จองไว้ — ระหว่างใช้งาน</figcaption></figure>
+    <figure><img src="img/campaign-close/cl-04-close-dialog.png" alt="กล่องปิด Campaign ถาวร"><figcaption>กล่องปิดถาวร — คำนวณจำนวนที่คืน (CL-10)</figcaption></figure>
+    <figure class="wide"><img src="img/campaign-close/cl-02-approved-buttons.png" alt="ปุ่มปิดถาวร"><figcaption>ปุ่ม ปิดถาวร (Approved)</figcaption></figure>
+    <figure class="wide"><img src="img/campaign-close/cl-05-closed-head.png" alt="สถานะ Closed"><figcaption>สถานะ Closed — ปุ่มหายหมด (CL-04)</figcaption></figure>
+    <figure class="wide"><img src="img/campaign-close/cl-06-closed-banner.png" alt="แถบผู้ปิด"><figcaption>แถบผู้ปิด / เวลาไทย / เหตุผล</figcaption></figure>
+    <figure><img src="img/campaign-close/cl-07-stock-settled.png" alt="Stock หลังปิด"><figcaption>Stock หลังปิด — 150 / 40 / 110</figcaption></figure>
+    <figure><img src="img/campaign-close/cl-08-history.png" alt="ประวัติ"><figcaption>ประวัติ — ปิดถาวร พร้อมยอด</figcaption></figure>
+    <figure class="wide"><img src="img/campaign-close/cl-09-list.png" alt="Campaign list"><figcaption>Campaign list — Closed 2 รายการ · CMP25690011 Scheduled (CL-08, CL-09)</figcaption></figure>
+    <figure class="wide"><img src="img/campaign-close/cl-10-master-ms10.png" alt="Master MS-10"><figcaption>Master MS-10 — VOU-001 คงเหลือ 60 หลังอนุมัติ CMP25690011</figcaption></figure>
+  </div>
+
+  <h2>Unit test ที่เพิ่ม (BE)</h2>
+  <div class="card">
+    <p><code>CampaignV2ApprovalTests</code> — ปิดแบบมี / ไม่มี Stock · input ผิด 5 แบบ · สถานะที่ปิดไม่ได้ 3 แบบ · repository ปฏิเสธ 3 แบบ · Resume หลังปิด · detail แสดงยอดและผู้ปิด · <code>LogActionOf</code> / <code>FeStatus</code> แยก CLOSED จาก SUSPENDED → รวม 701/701 ผ่าน</p>
+  </div>
+
+  <h2>ข้อจำกัด / งานต่อ</h2>
+  <div class="card">
+    <ul class="plain">
+      <li><span class="tag warn">ต้องรู้</span> Campaign หมดอายุ <b>ไม่คืน Stock เอง</b> — ต้องกดปิดถาวร (หน้ารายละเอียดเตือนให้)</li>
+      <li><span class="tag warn">ต้องรู้</span> จำนวนที่แจกจริงมาจากผู้ใช้ — เปลี่ยนเป็นยอดจริงเมื่อมีบัญชีการแจกสิทธิ์ (ทางเลือก ก)</li>
+      <li>API ยังไม่ตรวจ Role จาก UAM (เหมือน Suspend) — อยู่ในงาน "ตรวจ Role จาก UAM"</li>
+      <li>ถ้าหน้าจอ v1 เปลี่ยน INACTIVE กลับเป็น PUBLISHED ได้ จะข้ามการกันนี้ — ยังไม่ได้ตรวจหน้าจอ v1</li>
+      <li>ช่องจำนวนแสดงยอดคืนหลังคลิกออกจากช่อง (พฤติกรรมเดิมของช่องตัวเลข)</li>
+    </ul>
+  </div>
+
+  <h2>เอกสาร / Commit</h2>
+  <div class="tablewrap">
+    <table>
+      <tbody>
+        <tr><td>คู่มือ 1.2 §10.1</td><td><code>11-online-content-manual.md</code> · <code>Online-Content-Manual.pdf</code> (25 หน้า)</td></tr>
+        <tr><td>BE <code>Dev</code></td><td><code>fd73075</code> feat(v2): close campaign for good + release the reserved stock</td></tr>
+        <tr><td>FE <code>dev</code></td><td><code>499f37c</code> feat(fe-v2): close campaign for good + settle the reserved stock</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>ข้อมูลทั้งหมดเป็นข้อมูลทดสอบบน DEV · ไม่มีข้อมูลลูกค้าจริง · สร้างโดย Claude Code ร่วมกับเจ้าของงาน · ตรวจทานก่อนนำไปใช้อ้างอิง</footer>
+</main>
+</body>
+</html>
